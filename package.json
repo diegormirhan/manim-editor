@@ -1,0 +1,33 @@
+{
+  "name": "manim-editor",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "node scripts/generate-contract.mjs && tsc --noEmit && vite build",
+    "test": "vitest run src",
+    "tauri": "tauri",
+    "desktop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 dev",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "ajv": "^8",
+    "lucide-react": "^0.577.0",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest",
+    "@tauri-apps/cli": "^2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "latest",
+    "json-schema-to-typescript": "^16.0.0",
+    "prettier": "^3.9.6",
+    "typescript": "^5.9",
+    "vite": "latest",
+    "vitest": "latest"
+  }
+}

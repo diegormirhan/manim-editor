@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.egg-info/
+work/
+node_modules/
+dist/
+target/
+test-results/
+playwright-report/
+.session.log
+.session-memory.md

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "name": "Function graph",
+  "scene": {
+    "durationMs": 4000,
+    "elements": {
+      "axes": { "kind": "axes", "position": [0, 0, 0], "appearsAtMs": 0, "xRange": [-4, 4], "yRange": [-2, 8] },
+      "graph": { "kind": "functionGraph", "expression": "x^2", "position": [0, 0, 0], "appearsAtMs": 1000, "xRange": [-3, 3], "color": "#58C4DD" }
+    },
+    "animations": [
+      { "kind": "create", "targetId": "axes", "startMs": 0, "durationMs": 800 },
+      { "kind": "create", "targetId": "graph", "startMs": 1000, "durationMs": 1400 }
+    ]
+  }
+}

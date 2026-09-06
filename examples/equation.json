@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "name": "First equation",
+  "scene": {
+    "durationMs": 3000,
+    "elements": {
+      "equation-1": {
+        "kind": "mathTex",
+        "latex": "a^2 + b^2 = c^2",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "appearsAtMs": 0
+      }
+    }
+  }
+}
+
