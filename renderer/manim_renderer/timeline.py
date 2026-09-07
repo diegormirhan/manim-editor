@@ -1,7 +1,19 @@
 import math
 
 FPS = 15
-ENTRANCES = {"create", "write", "fadeIn"}
+ENTRANCES = {"create", "write", "fadeIn", "grow", "drawBorder"}
+# A clip carries exactly the extra field its kind names here.
+CLIP_FIELDS = {
+    "moveTo": "destination",
+    "transform": "destinationId",
+    "rotate": "degrees",
+    "scaleTo": "factor",
+    "recolor": "color",
+}
+ANIMATION_CLASSES = {
+    "create": "Create", "write": "Write", "fadeIn": "FadeIn", "grow": "GrowFromCenter",
+    "drawBorder": "DrawBorderThenFill", "fadeOut": "FadeOut", "indicate": "Indicate", "wiggle": "Wiggle",
+}
 
 
 def frame_at(milliseconds):
@@ -28,6 +40,12 @@ def lifetimes(scene):
     return spans
 
 
+def check_clip_fields(clip):
+    for kind, field in CLIP_FIELDS.items():
+        if (clip["kind"] == kind) != (field in clip):
+            raise ValueError(f"The field {field!r} belongs only to animation {kind!r}.")
+
+
 def validate_timeline(scene):
     clips = sorted(scene.get("animations", []), key=lambda clip: clip["startMs"])
     leaves = leaf_clips(scene)
@@ -37,9 +55,9 @@ def validate_timeline(scene):
             continue
         destination = clip.get("destinationId")
         if not destination or destination not in scene["elements"] or destination == clip.get("targetId"):
-            raise ValueError("Transform precisa de um destino diferente e existente.")
+            raise ValueError("Transform requires a different, existing destination.")
         if destination in owners:
-            raise ValueError("Cada destino de Transform pertence a uma única transformação.")
+            raise ValueError("Each Transform destination belongs to exactly one transformation.")
         owners[destination] = clip
 
     available = {key: element["appearsAtMs"] for key, element in scene["elements"].items() if key not in owners}
@@ -48,46 +66,41 @@ def validate_timeline(scene):
     for block in clips:
         start, end = block["startMs"], block["startMs"] + block["durationMs"]
         if start < previous_end or end > scene["durationMs"]:
-            raise ValueError("Animações devem ser sequenciais e terminar dentro da cena.")
+            raise ValueError("Animations must be sequential and end within the scene.")
         if frame_at(end) <= frame_at(start):
-            raise ValueError("Animação precisa ocupar pelo menos um frame.")
+            raise ValueError("An animation must span at least one frame.")
         children = children_of(block)
         if block["kind"] == "parallel":
             if len(children) < 2 or any(child["kind"] == "parallel" for child in children):
-                raise ValueError("Grupo paralelo precisa de pelo menos duas animações, sem grupos aninhados.")
+                raise ValueError("A parallel group requires at least two animations and no nested groups.")
             if any(child["startMs"] != start or child["durationMs"] != block["durationMs"] for child in children):
-                raise ValueError("Animações do grupo devem compartilhar início e duração.")
+                raise ValueError("Group animations must share their start time and duration.")
         elif "clips" in block:
-            raise ValueError("Somente grupos paralelos aceitam filhos.")
+            raise ValueError("Only parallel groups accept child animations.")
         touched, pending = set(), []
         for clip in children:
             target = clip.get("targetId")
             element = scene["elements"].get(target)
             if element is None:
-                raise ValueError("Animação referencia um elemento inexistente.")
+                raise ValueError("The animation references an element that does not exist.")
             if target in touched:
-                raise ValueError("O mesmo elemento não pode receber duas animações no grupo.")
+                raise ValueError("An element cannot have two animations in the same group.")
             touched.add(target)
             if target in removed or target not in available or start < available[target]:
-                raise ValueError("O elemento não está disponível nesse instante.")
+                raise ValueError("The element is not available at this time.")
             if end > element.get("disappearsAtMs", scene["durationMs"]):
-                raise ValueError("A animação ultrapassa o fim do elemento.")
+                raise ValueError("The animation extends beyond the element's end.")
             if clip["kind"] in ENTRANCES:
                 if target in entered or target in owners or start != available[target]:
-                    raise ValueError("A entrada deve começar junto com o elemento, uma única vez.")
+                    raise ValueError("An entrance must start with its element and occur only once.")
                 entered.add(target)
-            if clip["kind"] == "moveTo" and "destination" not in clip:
-                raise ValueError("Movimento precisa de uma posição de destino.")
-            if clip["kind"] != "moveTo" and "destination" in clip:
-                raise ValueError("Somente movimento aceita uma posição de destino.")
-            if clip["kind"] != "transform" and "destinationId" in clip:
-                raise ValueError("Somente Transform aceita um elemento destino.")
+            check_clip_fields(clip)
             if clip["kind"] == "transform":
                 destination = clip["destinationId"]
                 if destination in available or destination in removed or destination in touched:
-                    raise ValueError("O destino de Transform deve estar oculto.")
+                    raise ValueError("The Transform destination must be hidden.")
                 if scene["elements"][destination].get("disappearsAtMs", scene["durationMs"]) <= end:
-                    raise ValueError("O destino precisa permanecer na cena após Transform.")
+                    raise ValueError("The destination must remain in the scene after Transform.")
                 touched.add(destination)
                 pending.append((destination, end))
                 removed.add(target)
@@ -99,14 +112,20 @@ def validate_timeline(scene):
             if identifier not in owners:
                 times.append(item["appearsAtMs"])
             if any(start < time < end for time in times):
-                raise ValueError("Aparição ou corte durante outra animação: ajuste o intervalo ou use um grupo paralelo.")
+                raise ValueError("An element appears or disappears during another animation: adjust its timing or use a parallel group.")
         previous_end = end
 
 
 def compile_animation(clip, variable, variables=None):
-    if clip["kind"] == "moveTo":
+    kind = clip["kind"]
+    if kind == "moveTo":
         return f"{variable}.animate.move_to({clip['destination']!r})"
-    if clip["kind"] == "transform":
+    if kind == "transform":
         return f"ReplacementTransform({variable}, {variables[clip['destinationId']]})"
-    classes = {"create": "Create", "write": "Write", "fadeIn": "FadeIn", "fadeOut": "FadeOut"}
-    return f"{classes[clip['kind']]}({variable})"
+    if kind == "rotate":
+        return f"Rotate({variable}, angle=np.deg2rad({clip['degrees']!r}))"
+    if kind == "scaleTo":
+        return f"{variable}.animate.scale({clip['factor']!r})"
+    if kind == "recolor":
+        return f"{variable}.animate.set_color({clip['color']!r})"
+    return f"{ANIMATION_CLASSES[kind]}({variable})"
