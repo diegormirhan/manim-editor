@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "node scripts/generate-contract.mjs && tsc --noEmit && vite build",
-    "test": "vitest run src",
+    "build": "node scripts/generate-schema.mjs && node scripts/generate-contract.mjs && tsc --noEmit && vite build",
+    "test": "node scripts/generate-schema.mjs && node scripts/generate-contract.mjs && vitest run src",
     "tauri": "tauri",
     "desktop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 dev",
     "test:e2e": "playwright test"
