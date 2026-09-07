@@ -124,7 +124,7 @@ For the MVP, a `Transform` clip creates and owns its destination definition. The
 - Element lifecycle and identity changes are explicit domain behavior.
 - Transforming between two elements already visible on the timeline is deferred.
 
-## ADR-010: Timeline concurrency is explicit
+## ADR-013: Timeline concurrency is explicit
 
 **Status:** Accepted
 
@@ -151,9 +151,11 @@ The primary end-to-end scenario is a 30–45 second animation that creates axes 
 
 ## ADR-012: Restricted mathematical expression language
 
-**Status:** Accepted
+**Status:** Accepted and implemented
 
 Function-graph inputs use a documented mathematical notation such as `x^2`, `sin(x)`, and `sqrt(x)`. Python expressions, lambdas, imports, attribute access, and arbitrary calls are rejected.
+
+The grammar is `+ - * / ^`, parentheses, implicit multiplication after a number, the variable `x`, the constants `pi` and `e`, and the functions `sin`, `cos`, `tan`, `sqrt`, `abs`, `exp`, `ln`, and `log`. A recursive-descent parser produces a closed node vocabulary; generated Python is rebuilt from that vocabulary, so no user text reaches the emitted source. Both languages sample the parsed expression across the plotted range and reject a curve that is undefined anywhere in it, which replaced the earlier per-function domain rules.
 
 **Consequences:**
 
@@ -161,3 +163,16 @@ Function-graph inputs use a documented mathematical notation such as `x^2`, `sin
 - Expressions can be validated before rendering with precise field diagnostics.
 - The parser and approved function list become part of the project contract.
 - Advanced Python-defined functions are outside the MVP and may require a separate, explicitly sandboxed feature later.
+
+## ADR-014: The persisted contract is generated from one element specification
+
+**Status:** Accepted
+
+`contracts/schema.mjs` describes shared element properties once and lists what each kind adds. `scripts/generate-schema.mjs` writes `contracts/project.schema.json`, which stays committed because Python reads it at runtime.
+
+**Consequences:**
+
+- Adding an element or animation kind touches one specification instead of a repeated JSON block.
+- Shared properties such as `rotationDegrees` and `opacity` cannot drift between kinds.
+- The committed schema can fall behind its source, so a contract test regenerates it and compares.
+- Widening the contract with new kinds and properties keeps `schemaVersion` at 1: projects saved by older builds still validate.
