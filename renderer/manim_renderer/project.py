@@ -3,6 +3,7 @@ from pathlib import Path
 import tempfile
 
 from jsonschema import Draft202012Validator
+from .elements.expressions import check_expression
 from .timeline import validate_timeline, frame_at
 
 
@@ -19,31 +20,38 @@ def validate_project(project: dict) -> None:
         raise ValueError(f"{path or '/'}: {error.message}")
     scene = project["scene"]
     if frame_at(scene["durationMs"]) < 1:
-        raise ValueError("A cena precisa ocupar pelo menos um frame (67 ms).")
+        raise ValueError("The scene must span at least one frame (67 ms).")
     for element_id, element in scene["elements"].items():
         if element["appearsAtMs"] >= scene["durationMs"]:
             raise ValueError(f"elements/{element_id}/appearsAtMs: must precede scene end")
         if frame_at(element["appearsAtMs"]) >= frame_at(scene["durationMs"]):
-            raise ValueError("O elemento deve aparecer antes do último frame.")
+            raise ValueError("The element must appear before the final frame.")
         if element["kind"] in ("line", "arrow") and element["position"] == element["end"]:
-            raise ValueError("Linha e seta precisam de pontos distintos.")
+            raise ValueError("Lines and arrows require distinct endpoints.")
         end = element.get("disappearsAtMs", scene["durationMs"])
         if end > scene["durationMs"] or frame_at(end) <= frame_at(element["appearsAtMs"]):
-            raise ValueError("O fim do elemento deve ser posterior ao início e estar dentro da cena.")
+            raise ValueError("The element must end after it starts and within the scene.")
         for key in ("xRange", "yRange"):
             if key in element:
                 low, high = element[key]
                 if low >= high or low < -100 or high > 100 or high - low < 0.1:
-                    raise ValueError("Intervalo dos eixos inválido: use mínimo menor que máximo, entre −100 e 100.")
+                    raise ValueError("Invalid axis range: the minimum must be less than the maximum, between −100 and 100.")
         if element["kind"] == "functionGraph":
-            if element["expression"] == "sqrt(x)" and element["xRange"][0] < 0:
-                raise ValueError("A raiz quadrada exige X inicial maior ou igual a zero.")
+            check_expression(element["expression"], element["xRange"])
             if "axesId" in element:
                 axes = scene["elements"].get(element["axesId"])
                 if not axes or axes["kind"] not in ("axes", "numberPlane"):
-                    raise ValueError("Selecione eixos existentes para o gráfico.")
+                    raise ValueError("Select existing axes for the graph.")
                 if axes.get("scale", 1) != 1:
-                    raise ValueError("Ajuste largura e altura dos eixos vinculados, mantendo escala em 1.")
+                    raise ValueError("Adjust linked axes width and height, keeping their scale at 1.")
+        if element["kind"] == "areaUnderGraph":
+            graph = scene["elements"].get(element["graphId"])
+            if not graph or graph["kind"] != "functionGraph":
+                raise ValueError("Select an existing graph for the area.")
+            if "axesId" not in graph:
+                raise ValueError("The area requires a graph linked to axes.")
+            if element["xRange"][0] < graph["xRange"][0] or element["xRange"][1] > graph["xRange"][1]:
+                raise ValueError("The area range must stay within the graph range.")
     validate_timeline(scene)
 
 
