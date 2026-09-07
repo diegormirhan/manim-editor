@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-07T13:57:29.5545049Z",
+  "title": "Design System: manim-editor",
+  "extensions": {
+    "colorMeta": {
+      "accent-light": { "role": "primary", "displayName": "Selection blue, light theme" },
+      "accent-dark": { "role": "primary", "displayName": "Selection blue, dark theme" },
+      "animation-light": { "role": "secondary", "displayName": "Animation purple, light theme" },
+      "animation-dark": { "role": "secondary", "displayName": "Animation purple, dark theme" },
+      "stage": { "role": "neutral", "displayName": "Video stage" }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "button-press", "value": "translateY(1px)", "purpose": "Immediate active-button displacement; removed by prefers-reduced-motion: reduce. No transition duration is defined." }
+    ],
+    "breakpoints": [{ "name": "compact-desktop", "value": "850px" }]
+  },
+  "components": [
+    {
+      "name": "Render button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The filled toolbar action; specimen uses the light theme and inherits the live accent when available.",
+      "html": "<button class=\"ds-render\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><polygon points=\"6 3 20 12 6 21 6 3\"/></svg>Render</button>",
+      "css": ".ds-render{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 14px/1.5 'Segoe UI',system-ui,sans-serif;background:var(--accent,#1465ce);color:white;border:0;border-radius:6px;padding:9px 16px;cursor:pointer}.ds-render:hover{background:#0c53ae}.ds-render:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-render:active{transform:translateY(1px)}.ds-render:disabled{opacity:.45;cursor:default}@media(prefers-reduced-motion:reduce){.ds-render:active{transform:none}}"
+    },
+    {
+      "name": "File action",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Transparent compact toolbar button, shown in light theme.",
+      "html": "<button class=\"ds-file\" aria-label=\"Save project\" title=\"Save project\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z\"/><path d=\"M17 21v-8H7v8M7 3v5h8\"/></svg></button>",
+      "css": ".ds-file{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:14px/1.5 'Segoe UI',system-ui,sans-serif;background:transparent;color:#24272d;border:0;border-radius:6px;padding:8px;cursor:pointer}.ds-file:hover{background:#e0e5ed}.ds-file:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-file:active{transform:translateY(1px)}.ds-file:disabled{opacity:.45;cursor:default}@media(prefers-reduced-motion:reduce){.ds-file:active{transform:none}}"
+    },
+    {
+      "name": "Library entry",
+      "kind": "button",
+      "refersTo": "library-button",
+      "description": "A catalog addition button in the light-theme two-column library.",
+      "html": "<button class=\"ds-library\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg><span>Equation</span></button>",
+      "css": ".ds-library{display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;font:12px/1.5 'Segoe UI',system-ui,sans-serif;background:#eaf0fa;color:#24272d;border:0;border-radius:6px;padding:8px;cursor:pointer}.ds-library svg{color:var(--accent,#1465ce)}.ds-library span{text-align:left}.ds-library:hover{background:#eaf0fa}.ds-library:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-library:active{transform:translateY(1px)}.ds-library:disabled{opacity:.45;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-library:active{transform:none}}"
+    },
+    {
+      "name": "Numeric field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A labeled inspector input in the light theme.",
+      "html": "<label class=\"ds-label\">X minimum<input class=\"ds-input\" type=\"number\" value=\"-1\" /></label>",
+      "css": ".ds-label{display:grid;gap:7px;font:12px/1.5 'Segoe UI',system-ui,sans-serif;color:#444d59}.ds-input{font:14px/1.5 'Segoe UI',system-ui,sans-serif;font-variant-numeric:tabular-nums;border:1px solid #cbd0d8;background:#fff;border-radius:6px;padding:8px;width:100%;color:#24272d}.ds-input:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-input[aria-invalid=true]{border-color:#c0392b}"
+    },
+    {
+      "name": "Presence clip",
+      "kind": "custom",
+      "refersTo": "presence-clip",
+      "description": "Visual specimen of an editable element span; application gesture logic is not included.",
+      "html": "<div class=\"ds-clip\"><button class=\"ds-grip ds-start\" aria-label=\"Adjust start of Axes 1\"></button><button class=\"ds-body\" aria-label=\"Select axes 1\"><span>Axes</span></button><button class=\"ds-grip ds-end\" aria-label=\"Adjust end of Axes 1\"></button></div>",
+      "css": ".ds-clip{display:flex;align-items:stretch;height:30px;min-width:8px;border-radius:5px;background:#c8ddfa;border:1px solid var(--accent,#1465ce);color:#204575}.ds-clip button{display:inline-flex;align-items:center;font:11px/1.5 'Segoe UI',system-ui,sans-serif;background:transparent;color:inherit;border:0;cursor:pointer}.ds-body{flex:1;min-width:0;overflow:hidden;justify-content:flex-start;padding:3px 7px;border-radius:4px;cursor:grab!important}.ds-body span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ds-body:hover{background:#e0e5ed}.ds-body:active{cursor:grabbing!important;transform:translateY(1px)}.ds-grip{width:8px;flex:0 0 8px;padding:0;cursor:ew-resize!important;border-radius:0}.ds-start{border-radius:4px 0 0 4px}.ds-end{border-radius:0 4px 4px 0}.ds-grip:hover{background:rgba(20,101,206,.28)}.ds-grip:active{transform:translateY(1px)}.ds-clip button:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-clip button:active{transform:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Clarity and restraint",
+    "overview": "The established direction applies Apple principles of clarity, agency, familiarity, and restraint to a Windows application. Segoe UI, compact controls, and quiet panel boundaries keep attention on the rendered scene and its timeline. This describes the current interface, not a redesign or an accessibility certification.",
+    "keyCharacteristics": ["Dense, practical desktop controls.", "Paired light and dark themes with blue selection.", "A consistently black video stage.", "A stacked library and inspector beside the preview and timeline."],
+    "rules": [],
+    "dos": ["Do retain Segoe UI, compact density, and the established Windows workspace arrangement.", "Do preserve light/dark semantic pairs and the black stage.", "Do use blue for selection and presence, and purple for animation clips.", "Do retain visible focus outlines and the existing reduced-motion press override."],
+    "donts": ["Don't replace this interface with macOS window chrome or a new visual concept.", "Don't promote scene artwork colors into interface brand tokens.", "Don't describe unimplemented motion, materials, or accessibility guarantees as established behavior."]
+  }
+}
