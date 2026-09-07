@@ -86,3 +86,32 @@ The package script is a development payload, not yet a signed installer: clean-m
 - The official demonstration renders successfully with the updated compiler.
 
 The remaining release validation is operational: drag clips in the desktop window, inspect the full demonstration, package the offline payload on a clean Windows machine, measure it, and verify dependency redistribution licenses before signing an installer.
+
+## Part 8 — Catalog breadth, a real expression language, and wider test bases
+
+- Generated `contracts/project.schema.json` from `contracts/schema.mjs`, so shared element properties are declared once. A contract test regenerates the schema and compares it with the committed file.
+- Added `rotationDegrees` and `opacity` to every element; both are emitted only when they change the object.
+- Added `ellipse`, `regularPolygon`, `arc`, `numberLine`, and `areaUnderGraph` elements. The area references a graph that is linked to axes, and the compiler orders axes before graphs before areas.
+- Added `grow`, `drawBorder`, `rotate`, `scaleTo`, `recolor`, `indicate`, and `wiggle` animations. Each clip now carries exactly the extra field its kind declares, replacing the chain of per-field rules in both validators.
+- Replaced the seven-value expression enum with the restricted grammar ADR-012 describes, parsed in Python and TypeScript from the same fixtures in `contracts/expression-cases.json`. A curve undefined anywhere in its plotted range is rejected; a valid curve that leaves the camera warns without blocking.
+- Grouped the element library into Text, Shapes, Coordinates, and Graphs, and disabled kinds whose source element does not exist yet.
+- Replaced the single demonstration button with a picker over the three bundled examples.
+- Scaled the render subprocess timeout with scene duration; the previous fixed 120 s would have failed on longer scenes.
+
+Test bases: 27 frontend unit tests across six files (catalog, clip editing, project, timeline, expression, contract), 42 Python tests across six files, and 11 browser tests across three specs. The browser suite that had been failing since the milliseconds-to-seconds inspector change now passes.
+
+Rendered proof: `examples/calculus-area.json` produced 195 frames at exactly 13.000 s and `examples/shape-motion.json` produced 225 frames at exactly 15.000 s, both 854x480 at 15 fps, inspected frame by frame.
+
+Current limits are unchanged where they matter for release: offline packaging on a clean Windows machine, dependency redistribution licenses, and a signed installer are still open, and drag gestures have not been exercised in the desktop window.
+
+## English interface and portfolio documentation — September 7, 2026
+
+- Reviewed and preserved the existing catalog expansion, generated schema, shared expression grammar, and renderer changes.
+- Translated all application labels, accessible names, helper text, native messages, validation diagnostics, and bundled scene captions to English. Timeline labels use English decimal notation; singular element counts are correct.
+- Updated affected assertions and added regression coverage for English timing labels and theme switching.
+- Rebuilt the README in the supplied PolyRAG reference style, with truthful capability tables, architecture, setup instructions, local verification, and explicit release limitations.
+- Rendered the calculus and motion projects into MP4 and GIF pairs under `docs/media`. They contain 195 and 225 frames respectively, at 854 × 480 / 15 fps, lasting exactly 13 and 15 seconds.
+- Opened and rendered both projects through the real Tauri bridge. Captured dark/light screenshots from WebView2, without mocked media or fabricated UI. Reproduction scripts and provenance are documented in `docs/media/README.md`.
+- Clarified which architecture sections describe targets rather than shipping behavior. The renderer timeout now documented matches the scene-dependent implementation. Expression-domain validation is a finite sample check, not a continuity proof.
+
+Validation: 28 frontend tests, 42 Python tests, 12 browser tests, and 3 Rust integration tests pass. Production frontend and Rust desktop builds pass. The Rust suite includes an actual Manim render. This does not establish clean-machine packaging or complete accessibility conformance.
