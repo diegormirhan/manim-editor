@@ -1,5 +1,8 @@
 # Product
 
+This document includes product requirements and future release commitments. See
+[README.md](README.md) for the implemented feature set and measured local verification.
+
 <!-- impeccable:product-schema 1 -->
 
 ## Platform
@@ -45,10 +48,11 @@ The product combines a familiar video-editor workflow with deterministic Manim c
 - Python is a deterministic, one-way generated output.
 - Adding an element makes it visible without assigning an entrance animation automatically.
 - Users explicitly add animations to elements.
-- The MVP element catalog includes `Text`, `MathTex`, circles, rectangles, lines, arrows, axes, function graphs, and element groups.
-- The MVP animation catalog includes `Create`, `Write`, `FadeIn`, `FadeOut`, `Transform`, and `MoveTo`.
+- The element catalog covers `Text`, `MathTex`, circles, dots, ellipses, rectangles, squares, triangles, regular polygons, arcs, lines, arrows, axes, number planes, number lines, function graphs, and the area under a graph.
+- The animation catalog covers `Create`, `Write`, `FadeIn`, `GrowFromCenter`, `DrawBorderThenFill`, `FadeOut`, `MoveTo`, `Rotate`, `Scale`, `SetColor`, `Indicate`, `Wiggle`, and `Transform`.
+- Every element accepts colour, scale, rotation, and opacity.
 - The MVP supports sequential animations and explicit parallel groups, but not arbitrary partial clip overlaps.
-- Function-graph fields accept restricted mathematical notation such as `x^2`, `sin(x)`, and `sqrt(x)`, never arbitrary Python expressions.
+- Function-graph fields accept restricted mathematical notation such as `x^2`, `sin(2x)/2`, and `0.5x^2 - 1`, never arbitrary Python expressions. A finite sample check rejects detected undefined values before rendering; it cannot prove validity between samples.
 - In the MVP, `Transform` creates and owns a hidden destination definition. When the animation finishes, that destination replaces the source as the editable timeline element.
 - Transforming between two elements that are already visible is outside the MVP.
 - Rendering latency inherent to Manim is accepted; eliminating it is not an MVP goal.
@@ -65,7 +69,7 @@ Apply Apple design principles—clarity, agency, familiarity, responsiveness, re
 
 ## Evidence on Hand
 
-No user interviews, usage measurements, existing prototype, brand assets, or validated time-saving benchmark are available yet. Portfolio claims must not invent these.
+A working development prototype, bundled scenes, native-app screenshots, and rendered videos are available. No user interviews, usage measurements, or validated time-saving benchmark are available yet. Portfolio claims must not invent these.
 
 ## Portfolio Demonstration
 
