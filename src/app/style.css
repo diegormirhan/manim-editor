@@ -223,10 +223,13 @@ select { min-height: 35px; border: 1px solid #cbd0d8; background: #fff; border-r
 }
 .section-heading {
   display: flex;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 18px;
 }
+.section-heading select { min-width: 0; flex: 1; }
+.section-heading h2 { flex-shrink: 0; }
 .hint {
   font-size: 12px;
   color: var(--muted);
@@ -367,6 +370,7 @@ select { min-height: 35px; border: 1px solid #cbd0d8; background: #fff; border-r
 .track {
   display: grid;
   grid-template-columns: 160px minmax(0, 1fr);
+  column-gap: 12px;
 }
 .ruler {
   font-size: 11px;
@@ -443,3 +447,10 @@ select { min-height: 35px; border: 1px solid #cbd0d8; background: #fff; border-r
     transform: none;
   }
 }
+.catalog-group { margin-top: 14px; }
+.catalog-group h3 { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.catalog-group .catalog-grid { margin-top: 6px; }
+.library-item:disabled { opacity: 0.45; cursor: not-allowed; }
+label.checkbox { flex-direction: row; align-items: center; gap: 8px; }
+label.checkbox input { width: auto; min-height: 0; }
+input[aria-invalid="true"] { border-color: #c0392b; }
