@@ -7,7 +7,7 @@
       "axes": { "kind": "axes", "position": [0, 0, 0], "appearsAtMs": 0, "xRange": [-4, 4], "yRange": [-2, 8], "color": "#FFFFFF" },
       "graph": { "kind": "functionGraph", "expression": "x^2", "position": [0, 0, 0], "appearsAtMs": 1000, "xRange": [-2.5, 2.5], "color": "#58C4DD" },
       "equation": { "kind": "mathTex", "latex": "f(x)=x^2", "position": [-4.5, 3, 0], "appearsAtMs": 3000, "color": "#FFFFFF" },
-      "annotation": { "kind": "text", "text": "Vértice na origem", "position": [3, 2.5, 0], "appearsAtMs": 5000, "color": "#FFFF00" },
+      "annotation": { "kind": "text", "text": "Vertex at the origin", "position": [3, 2.5, 0], "appearsAtMs": 5000, "color": "#FFFF00" },
       "target": { "kind": "functionGraph", "expression": "x^2", "position": [2, 1, 0], "appearsAtMs": 1000, "xRange": [-2.5, 2.5], "color": "#FC6255" }
     },
     "animations": [
