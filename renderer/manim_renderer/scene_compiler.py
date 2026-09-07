@@ -1,4 +1,5 @@
 from .elements.catalog import compile_element
+from .elements.graphs import DEPENDENCY_ORDER
 from .project import validate_project
 from .timeline import ENTRANCES, FPS, children_of, compile_animation, frame_at, leaf_clips
 
@@ -12,8 +13,8 @@ def compile_project(project: dict) -> str:
     entrances = {clip["targetId"] for clip in leaves if clip["kind"] in ENTRANCES}
     hidden = {clip["destinationId"] for clip in leaves if clip["kind"] == "transform"}
     statements, events = [], []
-    for identifier, element in sorted(elements, key=lambda item: item[1]["kind"] == "functionGraph"):
-        statements.extend(compile_element(element, variables[identifier], variables))
+    for identifier, element in sorted(elements, key=lambda item: DEPENDENCY_ORDER.get(item[1]["kind"], 0)):
+        statements.extend(compile_element(element, variables[identifier], variables, scene["elements"]))
         if identifier not in entrances and identifier not in hidden:
             events.append((frame_at(element["appearsAtMs"]), 1, identifier, None))
         if "disappearsAtMs" in element and element["disappearsAtMs"] < scene["durationMs"]:
@@ -38,7 +39,10 @@ def compile_project(project: dict) -> str:
     if remaining:
         statements.append(f"self.wait(({remaining} + 1e-6) / {FPS})")
     header = ("import numpy as np\n"
-              "from manim import MathTex, Text, Circle, Rectangle, Line, Arrow, Dot, Square, Triangle, Axes, NumberPlane, FunctionGraph, Scene, Create, Write, FadeIn, FadeOut, ReplacementTransform, AnimationGroup, config\n\n"
+              "from manim import (MathTex, Text, Circle, Ellipse, Rectangle, Line, Arrow, Dot, Square, Triangle,\n"
+              "                   RegularPolygon, Arc, Axes, NumberPlane, NumberLine, FunctionGraph, Scene, Create, Write,\n"
+              "                   FadeIn, FadeOut, GrowFromCenter, DrawBorderThenFill, Indicate, Wiggle, Rotate,\n"
+              "                   ReplacementTransform, AnimationGroup, config)\n\n"
               f"config.frame_rate = {FPS}\nconfig.frame_width = 128 / 9\nconfig.frame_height = 8\n\n"
               "# Frame-aligned intervals avoid cumulative rounding drift.\n"
               "class EditorScene(Scene):\n    def construct(self):\n")
