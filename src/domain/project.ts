@@ -1,6 +1,7 @@
 import validate from "../generated/validate.js";
 import type { ManimEditorProject, MathTex } from "../generated/project";
 import { validateTimeline } from "./timeline";
+import { expressionError } from "./expression";
 import example from "../../examples/equation.json";
 
 export type Project = ManimEditorProject;
@@ -17,48 +18,41 @@ export const initialProject = (): Project => {
 export function validateProject(project: unknown): string | null {
   if (!validate(project))
     return (
-      "Projeto inválido: " +
-      (validate.errors?.[0]?.message ?? "verifique os campos.")
+      "Invalid project: " +
+      (validate.errors?.[0]?.message ?? "check the fields.")
     );
   const scene = (project as Project).scene;
   for (const element of Object.values(scene.elements)) {
-    if (element.position.some((value) => !Number.isFinite(value)))
-      return "A posição precisa ser um número finito.";
+    for (const value of Object.values(element))
+      if ((typeof value === "number" && !Number.isFinite(value)) ||
+        (Array.isArray(value) && value.some((item) => !Number.isFinite(item))))
+        return "All element numbers must be finite.";
     if (element.appearsAtMs >= scene.durationMs)
-      return "O elemento deve aparecer antes do fim da cena.";
+      return "The element must appear before the scene ends.";
     const end = element.disappearsAtMs ?? scene.durationMs;
     if (end > scene.durationMs || Math.round(end * 15 / 1000) <= Math.round(element.appearsAtMs * 15 / 1000))
-      return "O fim do elemento deve ser posterior ao início e estar dentro da cena.";
+      return "The element must end after it starts and within the scene.";
     if ((element.kind === "line" || element.kind === "arrow") && element.position.every((v, i) => v === element.end[i]))
-      return "Linha e seta precisam de pontos distintos.";
+      return "Lines and arrows require distinct endpoints.";
     for (const range of [("xRange" in element ? element.xRange : undefined), ("yRange" in element ? element.yRange : undefined)])
       if (range && (range[0] >= range[1] || range[0] < -100 || range[1] > 100 || range[1] - range[0] < 0.1))
-        return "Intervalo dos eixos inválido: use mínimo menor que máximo, entre −100 e 100.";
+        return "Invalid axis range: the minimum must be less than the maximum, between −100 and 100.";
     if (element.kind === "functionGraph") {
-      if (element.expression === "sqrt(x)" && element.xRange[0] < 0) return "A raiz quadrada exige X inicial maior ou igual a zero.";
+      const invalid = expressionError(element.expression, element.xRange);
+      if (invalid) return invalid;
       if (element.axesId) {
         const axes = scene.elements[element.axesId];
-        if (!axes || !["axes", "numberPlane"].includes(axes.kind)) return "Selecione eixos existentes para o gráfico.";
-        if ((axes.scale ?? 1) !== 1) return "Ajuste largura e altura dos eixos vinculados, mantendo escala em 1.";
+        if (!axes || !["axes", "numberPlane"].includes(axes.kind)) return "Select existing axes for the graph.";
+        if ((axes.scale ?? 1) !== 1) return "Adjust linked axes width and height, keeping their scale at 1.";
       }
+    }
+    if (element.kind === "areaUnderGraph") {
+      const graph = scene.elements[element.graphId];
+      if (!graph || graph.kind !== "functionGraph") return "Select an existing graph for the area.";
+      if (!graph.axesId) return "The area requires a graph linked to axes.";
+      if (element.xRange[0] < graph.xRange[0] || element.xRange[1] > graph.xRange[1])
+        return "The area range must stay within the graph range.";
     }
   }
   return validateTimeline(scene);
-}
-export function addEquation(project: Project): Project {
-  return {
-    ...project,
-    scene: {
-      ...project.scene,
-      elements: {
-        ...project.scene.elements,
-        [crypto.randomUUID()]: {
-          kind: "mathTex",
-          latex: "x^2",
-          position: [0, 0, 0],
-          appearsAtMs: 0,
-        },
-      },
-    },
-  };
 }
