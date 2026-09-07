@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "Shapes and motion",
+  "scene": {
+    "durationMs": 15000,
+    "elements": {
+      "ellipse": { "kind": "ellipse", "position": [-4, 1.5, 0], "appearsAtMs": 0, "width": 3, "height": 1.6, "color": "#58C4DD" },
+      "polygon": { "kind": "regularPolygon", "position": [0, 1.5, 0], "appearsAtMs": 1200, "sides": 6, "size": 2, "rotationDegrees": 15, "color": "#FC6255" },
+      "arc": { "kind": "arc", "position": [4, 1.5, 0], "appearsAtMs": 2400, "radius": 1.2, "angleDegrees": 240, "startDegrees": 30, "color": "#FFFF00" },
+      "ruler": { "kind": "numberLine", "position": [0, -2.5, 0], "appearsAtMs": 3600, "xRange": [-5, 5], "xLength": 10, "includeNumbers": true, "color": "#FFFFFF" },
+      "marker": { "kind": "dot", "position": [-5, -2.5, 0], "appearsAtMs": 4800, "radius": 0.12, "color": "#83C167" }
+    },
+    "animations": [
+      { "kind": "grow", "targetId": "ellipse", "startMs": 0, "durationMs": 1200 },
+      { "kind": "drawBorder", "targetId": "polygon", "startMs": 1200, "durationMs": 1200 },
+      { "kind": "create", "targetId": "arc", "startMs": 2400, "durationMs": 1200 },
+      { "kind": "create", "targetId": "ruler", "startMs": 3600, "durationMs": 1200 },
+      { "kind": "grow", "targetId": "marker", "startMs": 4800, "durationMs": 600 },
+      { "kind": "moveTo", "targetId": "marker", "startMs": 5600, "durationMs": 1400, "destination": [3, -2.5, 0] },
+      { "kind": "rotate", "targetId": "polygon", "startMs": 7000, "durationMs": 1200, "degrees": 180 },
+      { "kind": "scaleTo", "targetId": "ellipse", "startMs": 8400, "durationMs": 1000, "factor": 1.4 },
+      { "kind": "recolor", "targetId": "arc", "startMs": 9600, "durationMs": 1000, "color": "#FF6BD6" },
+      { "kind": "indicate", "targetId": "polygon", "startMs": 10800, "durationMs": 800 },
+      { "kind": "wiggle", "targetId": "ellipse", "startMs": 11800, "durationMs": 800 },
+      { "kind": "fadeOut", "targetId": "marker", "startMs": 12800, "durationMs": 800 }
+    ]
+  }
+}
