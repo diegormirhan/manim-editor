@@ -262,16 +262,11 @@ Python/TeX environment and include a real render.
 
 ## Project notes
 
-- [Product context and release targets](PRODUCT.md)
-- [System architecture](ARCHITECTURE.md)
-- [Domain model](docs/architecture/domain-model.md)
-- [Rendering pipeline](docs/architecture/rendering-pipeline.md)
-- [Interface architecture](docs/architecture/interface-architecture.md)
-- [Current visual design system](DESIGN.md)
-- [Architecture decisions](docs/architecture/decisions.md)
-- [MVP boundaries](docs/architecture/mvp-scope.md)
-- [Progress log](docs/progress.md)
 - [Media and screenshot reproduction](docs/media/README.md)
+
+Product framing, the full architecture writeup, ADRs, the MVP scope, the design system,
+and the implementation progress log are kept as local working notes rather than published
+here; ask if you would like to see any of them.
 
 Built on **Manim Community Edition**. This is an independent project, not an official
 Manim or 3Blue1Brown application.

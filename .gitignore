@@ -9,3 +9,12 @@ test-results/
 playwright-report/
 .session.log
 .session-memory.md
+
+# Internal working docs: kept locally, not published to the public remote.
+# README.md and docs/media/README.md stay tracked.
+/AGENTS.md
+/ARCHITECTURE.md
+/DESIGN.md
+/PRODUCT.md
+/docs/architecture/
+/docs/progress.md
