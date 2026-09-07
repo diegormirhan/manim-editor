@@ -15,15 +15,20 @@ export interface ManimEditorProject {
         | MathTex
         | Text
         | Circle
+        | Dot
+        | Ellipse
         | Rectangle
+        | Square
+        | Triangle
+        | RegularPolygon
+        | Arc
         | Line
         | Arrow
         | Axes
+        | NumberPlane
+        | NumberLine
         | FunctionGraph
-        | Dot
-        | Square
-        | Triangle
-        | NumberPlane;
+        | AreaUnderGraph;
     };
     animations?: Animation[];
   };
@@ -36,10 +41,12 @@ export interface MathTex {
    */
   position: [number, number, number];
   appearsAtMs: number;
-  color?: string;
-  latex: string;
   disappearsAtMs?: number;
+  color?: string;
   scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  latex: string;
   fontSize?: number;
 }
 export interface Text {
@@ -50,10 +57,12 @@ export interface Text {
    */
   position: [number, number, number];
   appearsAtMs: number;
-  color?: string;
-  text: string;
   disappearsAtMs?: number;
+  color?: string;
   scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  text: string;
   fontSize?: number;
 }
 export interface Circle {
@@ -64,101 +73,12 @@ export interface Circle {
    */
   position: [number, number, number];
   appearsAtMs: number;
+  disappearsAtMs?: number;
   color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
   radius: number;
-  disappearsAtMs?: number;
-  scale?: number;
-}
-export interface Rectangle {
-  kind: "rectangle";
-  /**
-   * @minItems 3
-   * @maxItems 3
-   */
-  position: [number, number, number];
-  appearsAtMs: number;
-  color?: string;
-  width: number;
-  height: number;
-  disappearsAtMs?: number;
-  scale?: number;
-}
-export interface Line {
-  kind: "line";
-  /**
-   * @minItems 3
-   * @maxItems 3
-   */
-  position: [number, number, number];
-  appearsAtMs: number;
-  color?: string;
-  /**
-   * @minItems 3
-   * @maxItems 3
-   */
-  end: [number, number, number];
-  disappearsAtMs?: number;
-  scale?: number;
-}
-export interface Arrow {
-  kind: "arrow";
-  /**
-   * @minItems 3
-   * @maxItems 3
-   */
-  position: [number, number, number];
-  appearsAtMs: number;
-  color?: string;
-  /**
-   * @minItems 3
-   * @maxItems 3
-   */
-  end: [number, number, number];
-  disappearsAtMs?: number;
-  scale?: number;
-}
-export interface Axes {
-  kind: "axes";
-  /**
-   * @minItems 3
-   * @maxItems 3
-   */
-  position: [number, number, number];
-  appearsAtMs: number;
-  /**
-   * @minItems 2
-   * @maxItems 2
-   */
-  xRange: [number, number];
-  /**
-   * @minItems 2
-   * @maxItems 2
-   */
-  yRange: [number, number];
-  color?: string;
-  disappearsAtMs?: number;
-  scale?: number;
-  xLength?: number;
-  yLength?: number;
-}
-export interface FunctionGraph {
-  kind: "functionGraph";
-  /**
-   * @minItems 3
-   * @maxItems 3
-   */
-  position: [number, number, number];
-  appearsAtMs: number;
-  expression: "x^2" | "sin(x)" | "sqrt(x)" | "(x - 2)^2 + 1" | "cos(x)" | "x" | "x^3";
-  /**
-   * @minItems 2
-   * @maxItems 2
-   */
-  xRange: [number, number];
-  color?: string;
-  disappearsAtMs?: number;
-  scale?: number;
-  axesId?: string;
 }
 export interface Dot {
   kind: "dot";
@@ -168,10 +88,44 @@ export interface Dot {
    */
   position: [number, number, number];
   appearsAtMs: number;
-  color?: string;
-  radius: number;
   disappearsAtMs?: number;
+  color?: string;
   scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  radius: number;
+}
+export interface Ellipse {
+  kind: "ellipse";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  width: number;
+  height: number;
+}
+export interface Rectangle {
+  kind: "rectangle";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  width: number;
+  height: number;
 }
 export interface Square {
   kind: "square";
@@ -181,9 +135,11 @@ export interface Square {
    */
   position: [number, number, number];
   appearsAtMs: number;
-  color?: string;
   disappearsAtMs?: number;
+  color?: string;
   scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
   size: number;
 }
 export interface Triangle {
@@ -194,19 +150,97 @@ export interface Triangle {
    */
   position: [number, number, number];
   appearsAtMs: number;
-  color?: string;
   disappearsAtMs?: number;
+  color?: string;
   scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
   size: number;
 }
-export interface NumberPlane {
-  kind: "numberPlane";
+export interface RegularPolygon {
+  kind: "regularPolygon";
   /**
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
   appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  sides: number;
+  size: number;
+}
+export interface Arc {
+  kind: "arc";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  radius: number;
+  angleDegrees: number;
+  startDegrees?: number;
+}
+export interface Line {
+  kind: "line";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  end: [number, number, number];
+}
+export interface Arrow {
+  kind: "arrow";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  end: [number, number, number];
+}
+export interface Axes {
+  kind: "axes";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
   /**
    * @minItems 2
    * @maxItems 2
@@ -217,14 +251,113 @@ export interface NumberPlane {
    * @maxItems 2
    */
   yRange: [number, number];
-  color?: string;
-  disappearsAtMs?: number;
-  scale?: number;
   xLength?: number;
   yLength?: number;
 }
+export interface NumberPlane {
+  kind: "numberPlane";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  xRange: [number, number];
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  yRange: [number, number];
+  xLength?: number;
+  yLength?: number;
+}
+export interface NumberLine {
+  kind: "numberLine";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  xRange: [number, number];
+  xLength?: number;
+  includeNumbers?: boolean;
+}
+export interface FunctionGraph {
+  kind: "functionGraph";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  expression: string;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  xRange: [number, number];
+  axesId?: string;
+}
+export interface AreaUnderGraph {
+  kind: "areaUnderGraph";
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  appearsAtMs: number;
+  disappearsAtMs?: number;
+  color?: string;
+  scale?: number;
+  rotationDegrees?: number;
+  opacity?: number;
+  graphId: string;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  xRange: [number, number];
+}
 export interface Animation {
-  kind: "create" | "write" | "fadeIn" | "fadeOut" | "moveTo" | "transform" | "parallel";
+  kind:
+    | "create"
+    | "write"
+    | "fadeIn"
+    | "grow"
+    | "drawBorder"
+    | "fadeOut"
+    | "moveTo"
+    | "transform"
+    | "rotate"
+    | "scaleTo"
+    | "recolor"
+    | "indicate"
+    | "wiggle"
+    | "parallel";
   targetId?: string;
   startMs: number;
   durationMs: number;
@@ -234,6 +367,9 @@ export interface Animation {
    */
   destination?: [number, number, number];
   destinationId?: string;
+  degrees?: number;
+  factor?: number;
+  color?: string;
   /**
    * @minItems 2
    */
