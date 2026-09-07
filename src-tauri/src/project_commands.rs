@@ -18,8 +18,31 @@ impl Drop for BusyGuard {
     fn drop(&mut self) { BUSY.store(false, Ordering::Release); }
 }
 
+/// Locates the runtime payload (`.venv`, `renderer`, `contracts`, `work/runtime`).
+///
+/// An installed build places those next to the executable via Tauri's bundle
+/// resources, so that directory wins first. A `cargo run`/`cargo build` binary
+/// lives under `src-tauri/target/<profile>/`, three directories below the repo
+/// root, so that layout is tried next. `CARGO_MANIFEST_DIR` is a compile-time
+/// constant baked into the binary; it only resolves on the machine that built
+/// it, so it is the last resort rather than the primary lookup.
 fn project_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap().to_path_buf()
+    let fallback = || PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap().to_path_buf();
+    match std::env::current_exe() {
+        Ok(exe) => root_from_exe(&exe).unwrap_or_else(fallback),
+        Err(_) => fallback(),
+    }
+}
+
+/// Pure helper behind `project_root` so the installed-vs-dev layout logic is testable
+/// without depending on the real `current_exe()` of the test binary itself.
+fn root_from_exe(exe: &std::path::Path) -> Option<PathBuf> {
+    let installed = exe.parent()?;
+    if installed.join(".venv").is_dir() {
+        return Some(installed.to_path_buf());
+    }
+    let repo = installed.parent()?.parent()?.parent()?;
+    repo.join(".venv").is_dir().then(|| repo.to_path_buf())
 }
 
 fn execute_bridge(request: Value) -> Result<Value, String> {
@@ -92,6 +115,31 @@ mod tests {
     #[test]
     fn rejects_unknown_command() {
         assert!(perform_action("shell", Value::Null).is_err());
+    }
+    #[test]
+    fn root_from_exe_prefers_an_installed_payload_next_to_the_binary() {
+        let temp = std::env::temp_dir().join(format!("manim-editor-root-test-{}", std::process::id()));
+        let installed = temp.join("installed");
+        std::fs::create_dir_all(installed.join(".venv")).unwrap();
+        assert_eq!(root_from_exe(&installed.join("manim-editor.exe")), Some(installed.clone()));
+        std::fs::remove_dir_all(&temp).unwrap();
+    }
+    #[test]
+    fn root_from_exe_falls_back_to_the_repo_root_of_a_dev_build() {
+        let temp = std::env::temp_dir().join(format!("manim-editor-root-test-dev-{}", std::process::id()));
+        let repo = temp.join("repo");
+        let exe_dir = repo.join("src-tauri/target/debug");
+        std::fs::create_dir_all(&exe_dir).unwrap();
+        std::fs::create_dir_all(repo.join(".venv")).unwrap();
+        assert_eq!(root_from_exe(&exe_dir.join("manim-editor.exe")), Some(repo.clone()));
+        std::fs::remove_dir_all(&temp).unwrap();
+    }
+    #[test]
+    fn root_from_exe_finds_neither_layout_when_no_venv_exists() {
+        let temp = std::env::temp_dir().join(format!("manim-editor-root-test-none-{}", std::process::id()));
+        std::fs::create_dir_all(&temp).unwrap();
+        assert_eq!(root_from_exe(&temp.join("manim-editor.exe")), None);
+        std::fs::remove_dir_all(&temp).unwrap();
     }
     #[test]
     fn bridge_renders_real_video() {
