@@ -42,7 +42,25 @@
                 "$ref": "#/$defs/circle"
               },
               {
+                "$ref": "#/$defs/dot"
+              },
+              {
+                "$ref": "#/$defs/ellipse"
+              },
+              {
                 "$ref": "#/$defs/rectangle"
+              },
+              {
+                "$ref": "#/$defs/square"
+              },
+              {
+                "$ref": "#/$defs/triangle"
+              },
+              {
+                "$ref": "#/$defs/regularPolygon"
+              },
+              {
+                "$ref": "#/$defs/arc"
               },
               {
                 "$ref": "#/$defs/line"
@@ -54,19 +72,16 @@
                 "$ref": "#/$defs/axes"
               },
               {
+                "$ref": "#/$defs/numberPlane"
+              },
+              {
+                "$ref": "#/$defs/numberLine"
+              },
+              {
                 "$ref": "#/$defs/functionGraph"
               },
               {
-                "$ref": "#/$defs/dot"
-              },
-              {
-                "$ref": "#/$defs/square"
-              },
-              {
-                "$ref": "#/$defs/triangle"
-              },
-              {
-                "$ref": "#/$defs/numberPlane"
+                "$ref": "#/$defs/areaUnderGraph"
               }
             ]
           }
@@ -106,22 +121,32 @@
           "type": "integer",
           "minimum": 0
         },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "latex": {
-          "type": "string",
-          "minLength": 1
-        },
         "disappearsAtMs": {
           "type": "integer",
           "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
         },
         "scale": {
           "type": "number",
           "minimum": 0.05,
           "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "latex": {
+          "type": "string",
+          "minLength": 1
         },
         "fontSize": {
           "type": "number",
@@ -155,22 +180,32 @@
           "type": "integer",
           "minimum": 0
         },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "text": {
-          "type": "string",
-          "minLength": 1
-        },
         "disappearsAtMs": {
           "type": "integer",
           "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
         },
         "scale": {
           "type": "number",
           "minimum": 0.05,
           "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
         },
         "fontSize": {
           "type": "number",
@@ -204,22 +239,145 @@
           "type": "integer",
           "minimum": 0
         },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "radius": {
-          "type": "number",
-          "exclusiveMinimum": 0
-        },
         "disappearsAtMs": {
           "type": "integer",
           "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
         },
         "scale": {
           "type": "number",
           "minimum": 0.05,
           "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "dot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "radius"
+      ],
+      "properties": {
+        "kind": {
+          "const": "dot"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "ellipse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "kind": {
+          "const": "ellipse"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
         }
       }
     },
@@ -249,9 +407,28 @@
           "type": "integer",
           "minimum": 0
         },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
         "color": {
           "type": "string",
           "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
         },
         "width": {
           "type": "number",
@@ -260,340 +437,6 @@
         "height": {
           "type": "number",
           "exclusiveMinimum": 0
-        },
-        "disappearsAtMs": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "scale": {
-          "type": "number",
-          "minimum": 0.05,
-          "maximum": 10
-        }
-      }
-    },
-    "line": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "position",
-        "appearsAtMs",
-        "end"
-      ],
-      "properties": {
-        "kind": {
-          "const": "line"
-        },
-        "position": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "appearsAtMs": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "end": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "disappearsAtMs": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "scale": {
-          "type": "number",
-          "minimum": 0.05,
-          "maximum": 10
-        }
-      }
-    },
-    "arrow": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "position",
-        "appearsAtMs",
-        "end"
-      ],
-      "properties": {
-        "kind": {
-          "const": "arrow"
-        },
-        "position": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "appearsAtMs": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "end": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "disappearsAtMs": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "scale": {
-          "type": "number",
-          "minimum": 0.05,
-          "maximum": 10
-        }
-      }
-    },
-    "axes": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "position",
-        "appearsAtMs",
-        "xRange",
-        "yRange"
-      ],
-      "properties": {
-        "kind": {
-          "const": "axes"
-        },
-        "position": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "appearsAtMs": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "xRange": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "yRange": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "disappearsAtMs": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "scale": {
-          "type": "number",
-          "minimum": 0.05,
-          "maximum": 10
-        },
-        "xLength": {
-          "type": "number",
-          "minimum": 0.1,
-          "maximum": 30
-        },
-        "yLength": {
-          "type": "number",
-          "minimum": 0.1,
-          "maximum": 30
-        }
-      }
-    },
-    "functionGraph": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "position",
-        "appearsAtMs",
-        "expression",
-        "xRange"
-      ],
-      "properties": {
-        "kind": {
-          "const": "functionGraph"
-        },
-        "position": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "appearsAtMs": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "expression": {
-          "type": "string",
-          "enum": [
-            "x^2",
-            "sin(x)",
-            "sqrt(x)",
-            "(x - 2)^2 + 1",
-            "cos(x)",
-            "x",
-            "x^3"
-          ]
-        },
-        "xRange": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "disappearsAtMs": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "scale": {
-          "type": "number",
-          "minimum": 0.05,
-          "maximum": 10
-        },
-        "axesId": {
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
-    "animation": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "startMs",
-        "durationMs"
-      ],
-      "properties": {
-        "kind": {
-          "enum": [
-            "create",
-            "write",
-            "fadeIn",
-            "fadeOut",
-            "moveTo",
-            "transform",
-            "parallel"
-          ]
-        },
-        "targetId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "startMs": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "durationMs": {
-          "type": "integer",
-          "minimum": 67
-        },
-        "destination": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "destinationId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "clips": {
-          "type": "array",
-          "minItems": 2,
-          "items": {
-            "$ref": "#/$defs/animation"
-          }
-        }
-      }
-    },
-    "dot": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "position",
-        "appearsAtMs",
-        "radius"
-      ],
-      "properties": {
-        "kind": {
-          "const": "dot"
-        },
-        "position": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "appearsAtMs": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "radius": {
-          "type": "number",
-          "exclusiveMinimum": 0
-        },
-        "disappearsAtMs": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "scale": {
-          "type": "number",
-          "minimum": 0.05,
-          "maximum": 10
         }
       }
     },
@@ -622,18 +465,28 @@
           "type": "integer",
           "minimum": 0
         },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
         "disappearsAtMs": {
           "type": "integer",
           "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
         },
         "scale": {
           "type": "number",
           "minimum": 0.05,
           "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
         },
         "size": {
           "type": "number",
@@ -667,23 +520,352 @@
           "type": "integer",
           "minimum": 0
         },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
         "disappearsAtMs": {
           "type": "integer",
           "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
         },
         "scale": {
           "type": "number",
           "minimum": 0.05,
           "maximum": 10
         },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
         "size": {
           "type": "number",
           "minimum": 0.05,
           "maximum": 20
+        }
+      }
+    },
+    "regularPolygon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "sides",
+        "size"
+      ],
+      "properties": {
+        "kind": {
+          "const": "regularPolygon"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sides": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 12
+        },
+        "size": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 20
+        }
+      }
+    },
+    "arc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "radius",
+        "angleDegrees"
+      ],
+      "properties": {
+        "kind": {
+          "const": "arc"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "angleDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "startDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        }
+      }
+    },
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "end"
+      ],
+      "properties": {
+        "kind": {
+          "const": "line"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "end": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "arrow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "end"
+      ],
+      "properties": {
+        "kind": {
+          "const": "arrow"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "end": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "axes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "xRange",
+        "yRange"
+      ],
+      "properties": {
+        "kind": {
+          "const": "axes"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "xRange": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "yRange": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "xLength": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 30
+        },
+        "yLength": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 30
         }
       }
     },
@@ -713,6 +895,29 @@
           "type": "integer",
           "minimum": 0
         },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
         "xRange": {
           "type": "array",
           "items": {
@@ -729,19 +934,6 @@
           "minItems": 2,
           "maxItems": 2
         },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "disappearsAtMs": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "scale": {
-          "type": "number",
-          "minimum": 0.05,
-          "maximum": 10
-        },
         "xLength": {
           "type": "number",
           "minimum": 0.1,
@@ -751,6 +943,277 @@
           "type": "number",
           "minimum": 0.1,
           "maximum": 30
+        }
+      }
+    },
+    "numberLine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "xRange"
+      ],
+      "properties": {
+        "kind": {
+          "const": "numberLine"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "xRange": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "xLength": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 30
+        },
+        "includeNumbers": {
+          "type": "boolean"
+        }
+      }
+    },
+    "functionGraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "expression",
+        "xRange"
+      ],
+      "properties": {
+        "kind": {
+          "const": "functionGraph"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "xRange": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "axesId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "areaUnderGraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "graphId",
+        "xRange"
+      ],
+      "properties": {
+        "kind": {
+          "const": "areaUnderGraph"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "graphId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "xRange": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "animation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "startMs",
+        "durationMs"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "create",
+            "write",
+            "fadeIn",
+            "grow",
+            "drawBorder",
+            "fadeOut",
+            "moveTo",
+            "transform",
+            "rotate",
+            "scaleTo",
+            "recolor",
+            "indicate",
+            "wiggle",
+            "parallel"
+          ]
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "durationMs": {
+          "type": "integer",
+          "minimum": 67
+        },
+        "destination": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "destinationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "degrees": {
+          "type": "number",
+          "minimum": -1080,
+          "maximum": 1080
+        },
+        "factor": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "clips": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/animation"
+          }
         }
       }
     }
