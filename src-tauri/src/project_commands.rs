@@ -26,7 +26,7 @@ fn execute_bridge(request: Value) -> Result<Value, String> {
     let root = project_root();
     let python = root.join(".venv/Scripts/python.exe");
     if !python.is_file() {
-        return Err("Ambiente Python local ausente. Consulte README.md.".into());
+        return Err("Local Python environment missing. See README.md.".into());
     }
     let mut command = Command::new(python);
     command.args(["-m", "renderer.manim_renderer.desktop_bridge"])
@@ -49,11 +49,11 @@ fn execute_bridge(request: Value) -> Result<Value, String> {
 
 fn perform_action(operation: &str, project: Value) -> Result<Value, String> {
     if !["load", "save", "export", "render"].contains(&operation) {
-        return Err("Operação desconhecida.".into());
+        return Err("Unknown operation.".into());
     }
     let path = match operation {
-        "load" => rfd::FileDialog::new().add_filter("Projeto JSON", &["json"]).pick_file(),
-        "save" => rfd::FileDialog::new().add_filter("Projeto JSON", &["json"]).set_file_name("project.json").save_file(),
+        "load" => rfd::FileDialog::new().add_filter("JSON project", &["json"]).pick_file(),
+        "save" => rfd::FileDialog::new().add_filter("JSON project", &["json"]).set_file_name("project.json").save_file(),
         "export" => rfd::FileDialog::new().add_filter("Python", &["py"]).set_file_name("scene.py").save_file(),
         _ => None,
     };
@@ -64,12 +64,13 @@ fn perform_action(operation: &str, project: Value) -> Result<Value, String> {
 #[tauri::command]
 pub async fn project_action(app: tauri::AppHandle, operation: String, project: Value) -> Result<Value, String> {
     log_session(&format!("operation_start:{}", operation));
-    if BUSY.swap(true, Ordering::AcqRel) { return Err("Outra operação está em andamento.".into()); }
+    if BUSY.swap(true, Ordering::AcqRel) { return Err("Another operation is in progress.".into()); }
     let guard = BusyGuard;
     let is_render = operation == "render";
+    let requested = operation.clone();
     let result = tauri::async_runtime::spawn_blocking(move || {
         let _guard = guard;
-        perform_action(&operation, project)
+        perform_action(&requested, project)
     }).await.map_err(|error| error.to_string())??;
     if is_render {
         if let Some(path) = result.get("path").and_then(Value::as_str) {
