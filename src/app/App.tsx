@@ -25,14 +25,22 @@ import {
   projectAction,
 } from "../infrastructure/desktop";
 
-import { addElement, elementLabels, elementSummary, positionWarning } from "../domain/catalog";
+import { addElement, additionBlocked, elementGroups, elementLabels } from "../domain/catalog";
 import { removeElement, animationLabels } from "../domain/timeline";
 import { ElementInspector } from "./ElementInspector";
 import { AnimationInspector } from "./AnimationInspector";
 import { Timeline } from "./Timeline";
 import { SecondsField } from "./ElementInspector";
 import { useTheme } from "./useTheme";
-import demo from "../../examples/official-demo.json";
+import officialDemo from "../../examples/official-demo.json";
+import calculusArea from "../../examples/calculus-area.json";
+import shapeMotion from "../../examples/shape-motion.json";
+
+const examples: { key: string; label: string; project: unknown }[] = [
+  { key: "official-demo", label: "Parabola · transformation demo", project: officialDemo },
+  { key: "calculus-area", label: "Area under the curve", project: calculusArea },
+  { key: "shape-motion", label: "Shapes and motion", project: shapeMotion },
+];
 
 export function App() {
   const { theme, toggleTheme } = useTheme();
@@ -74,7 +82,7 @@ export function App() {
     if (lock.current) return;
     if (!desktopAvailable()) {
       setMessage(
-        "Abra a versão desktop com npm run desktop para salvar e renderizar.",
+        "Open the desktop app with npm run desktop to save and render.",
       );
       return;
     }
@@ -82,14 +90,14 @@ export function App() {
     setBusy(true);
     setMessage(
       operation === "render"
-        ? "Renderizando com Manim…"
-        : "Aguardando arquivo…",
+        ? "Rendering with Manim…"
+        : "Waiting for a file…",
     );
     const snapshot = serialized;
     try {
       const result = await projectAction(operation, project);
       if (result.cancelled) {
-        setMessage("Operação cancelada.");
+        setMessage("Operation cancelled.");
         return;
       }
       if (result.project) {
@@ -105,7 +113,7 @@ export function App() {
       }
       if (operation === "save") setSaved(snapshot);
       setMessage(
-        operation === "render" ? "Preview atualizado." : "Arquivo pronto.",
+        operation === "render" ? "Preview updated." : "File ready.",
       );
     } catch (error) {
       setMessage(String(error));
@@ -127,36 +135,36 @@ export function App() {
         </div>
         <input
           className="project-name"
-          aria-label="Nome do projeto"
+          aria-label="Project name"
           value={project.name}
           onChange={(e) => change({ ...project, name: e.target.value })}
         />
         <span className="save-state">
-          {saved === serialized ? "Salvo" : "Não salvo"}
+          {saved === serialized ? "Saved" : "Unsaved"}
         </span>
-        <nav aria-label="Arquivo">
-          <button aria-label={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"} title={theme === "dark" ? "Modo claro" : "Modo escuro"} onClick={toggleTheme}>
+        <nav aria-label="File">
+          <button aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"} title={theme === "dark" ? "Light mode" : "Dark mode"} onClick={toggleTheme}>
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <button
-            title="Abrir projeto"
-            aria-label="Abrir projeto"
+            title="Open project"
+            aria-label="Open project"
             disabled={busy}
             onClick={() => action("load")}
           >
             <FolderOpen size={18} />
           </button>
           <button
-            title="Salvar projeto"
-            aria-label="Salvar projeto"
+            title="Save project"
+            aria-label="Save project"
             disabled={busy || !!validation}
             onClick={() => action("save")}
           >
             <Save size={18} />
           </button>
           <button
-            title="Exportar Python"
-            aria-label="Exportar Python"
+            title="Export Python"
+            aria-label="Export Python"
             disabled={busy || !!validation}
             onClick={() => action("export")}
           >
@@ -168,51 +176,66 @@ export function App() {
             onClick={() => action("render")}
           >
             <Play size={15} />
-            {busy ? "Processando…" : "Renderizar"}
+            {busy ? "Processing…" : "Render"}
           </button>
         </nav>
       </header>
       <aside className="sidebar">
         <section className="library">
-          <div className="section-heading"><h2>Biblioteca</h2><button title="Abrir demonstração" aria-label="Abrir demonstração" onClick={() => {
-            if (!window.confirm("Abrir a demonstração? Salve seu projeto antes. Você também pode desfazer esta ação.")) return;
-            const error = validateProject(demo); if (error) { setMessage(error); return; }
-            change(structuredClone(demo) as unknown as Project); setMessage("Demonstração aberta. Clique em Renderizar.");
-          }}><Film size={17} /></button></div>
-          <div className="catalog-grid">{(Object.keys(elementLabels) as Element["kind"][]).map(kind => <button
-            key={kind} className="library-item" aria-label={"Adicionar " + elementLabels[kind]}
-            onClick={() => { const next = addElement(project, kind); change(next); select(Object.keys(next.scene.elements).at(-1)!); }}>
-            <Plus size={16} /><span>{elementLabels[kind]}</span>
-          </button>)}</div>
+          <div className="section-heading"><h2>Library</h2>
+            <select aria-label="Open example" value="" onChange={event => {
+              const example = examples.find(item => item.key === event.target.value);
+              if (!example) return;
+              if (!window.confirm("Open this example? Save your project first. You can also undo this action.")) return;
+              const error = validateProject(example.project);
+              if (error) { setMessage(error); return; }
+              change(structuredClone(example.project) as Project);
+              setMessage(example.label + " opened. Click Render.");
+            }}>
+              <option value="">Open example…</option>
+              {examples.map(item => <option key={item.key} value={item.key}>{item.label}</option>)}
+            </select>
+          </div>
+          {elementGroups.map(group => <div key={group.label} className="catalog-group">
+            <h3>{group.label}</h3>
+            <div className="catalog-grid">{group.kinds.map(kind => {
+              const blocked = additionBlocked(project, kind);
+              return <button key={kind} className="library-item" disabled={!!blocked}
+                aria-label={"Add " + elementLabels[kind]} title={blocked ?? elementLabels[kind]}
+                onClick={() => { const next = addElement(project, kind); change(next); select(Object.keys(next.scene.elements).at(-1)!); }}>
+                <Plus size={16} /><span>{elementLabels[kind]}</span>
+              </button>;
+            })}</div>
+          </div>)}
         </section>
         <section className="inspector">
-          <div className="section-heading"><h2>Propriedades</h2>{element && <button aria-label="Remover elemento" onClick={remove}><Trash2 size={16} /></button>}</div>
+          <div className="section-heading"><h2>Properties</h2>{element && <button aria-label="Remove element" onClick={remove}><Trash2 size={16} /></button>}</div>
           {element ? <>
             <ElementInspector project={project} element={element} onChange={next => change({ ...project, scene: { ...project.scene, elements: { ...project.scene.elements, [selection]: next } } })} />
             <AnimationInspector project={project} targetId={selection} onChange={change} />
-          </> : <p className="hint">Adicione ou selecione um elemento para editar.</p>}
+          </> : <p className="hint">Add or select an element to edit.</p>}
         </section>
-        <div className="local-note">Renderização local · Manim CE</div>
+        <div className="local-note">Local rendering · Manim CE</div>
       </aside>
-      <section className="preview-panel" aria-label="Pré-visualização">
+      <section className="preview-panel" aria-label="Preview">
         <div className="preview-heading">
-          <h2>Pré-visualização</h2>
+          <h2>Preview</h2>
           <span>
             {video
               ? rendered === serialized
-                ? "Atualizado"
-                : "Alterações não renderizadas"
-              : "Nenhum render"}
+                ? "Up to date"
+                : "Unrendered changes"
+              : "Not rendered yet"}
           </span>
         </div>
         <div className="stage">
           {video ? (
-            <video controls src={video} aria-label="Vídeo renderizado" />
+            <video controls src={video} aria-label="Rendered video" />
           ) : (
             <div className="empty-preview">
               <Film size={36} strokeWidth={1} />
-              <h2>Sua cena começa aqui</h2>
-              <p>Adicione elementos e clique em Renderizar.</p>
+              <h2>Your scene starts here</h2>
+              <p>Add elements and click Render.</p>
             </div>
           )}
         </div>
@@ -221,31 +244,31 @@ export function App() {
           <span>{(project.scene.durationMs / 1000).toFixed(1)} s</span>
         </div>
         <p className={validation ? "status error" : "status"} role="status">
-          {validation || message || "Pronto para criar."}
+          {validation || message || "Ready to create."}
         </p>
       </section>
       <section className="timeline" aria-label="Timeline">
         <div className="timeline-heading">
           <h2>
             Timeline{" "}
-            <span>{Object.keys(project.scene.elements).length} elementos</span>
+            <span>{Object.keys(project.scene.elements).length} {Object.keys(project.scene.elements).length === 1 ? "element" : "elements"}</span>
           </h2>
           <div className="history">
             <button
-              aria-label="Desfazer"
+              aria-label="Undo"
               disabled={!past.length}
               onClick={undo}
             >
               <Undo2 size={17} />
             </button>
             <button
-              aria-label="Refazer"
+              aria-label="Redo"
               disabled={!future.length}
               onClick={redo}
             >
               <Redo2 size={17} />
             </button>
-            <SecondsField label="Duração da cena" min={100} value={project.scene.durationMs} onChange={durationMs =>
+            <SecondsField label="Scene duration" min={100} value={project.scene.durationMs} onChange={durationMs =>
               change({ ...project, scene: { ...project.scene, durationMs } })} />
           </div>
         </div>
