@@ -1,7 +1,7 @@
 {
   "name": "manim-editor",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -9,7 +9,10 @@
     "test": "node scripts/generate-schema.mjs && node scripts/generate-contract.mjs && vitest run src",
     "tauri": "tauri",
     "desktop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 dev",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "build:installers": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 build",
+    "build:portable": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-portable.ps1",
+    "build:offline-runtime": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-offline.ps1"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
