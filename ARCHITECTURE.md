@@ -1,5 +1,14 @@
 # System Architecture
 
+## Implementation status
+
+This document describes the architectural direction, including release targets.
+The current implementation has a React editor, shared generated contract, Rust
+command bridge, deterministic Python compiler, and local Manim rendering. Python
+creates the isolated render directory. Streaming progress, cancellation, source
+maps, bundled-runtime relocation, and clean-machine installation remain targets,
+not completed capabilities. See [README.md](README.md) for verified current behavior.
+
 ## Goal
 
 Build a Windows desktop editor that converts a visual, timeline-based project into deterministic and readable Manim Community Edition code, renders it locally, and displays the latest successful video.
@@ -50,7 +59,7 @@ Rust desktop shell -------------> render job
 
 ### Shared contracts
 
-- A versioned JSON Schema describes persisted project data.
+- A versioned JSON Schema describes persisted project data, generated from one element specification so shared properties are declared once.
 - TypeScript types and validators should be generated from, or checked against, this schema.
 - Python validates the same schema before compilation.
 - Schema migrations are explicit and tested when a saved format changes.
@@ -117,7 +126,9 @@ renderer/
   tests/
 
 contracts/
-  project.schema.json
+  schema.mjs              Element and animation specification
+  project.schema.json     Generated from schema.mjs, committed because Python reads it
+  expression-cases.json   Fixtures the two expression layers must agree on
 ```
 
 These folders are an initial boundary map, not permission to create empty abstractions. A module should exist only when behavior requires it.
