@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "Area under a curve",
+  "scene": {
+    "durationMs": 13000,
+    "elements": {
+      "axes": { "kind": "axes", "position": [-2, -1.5, 0], "appearsAtMs": 0, "xRange": [-1, 4], "yRange": [-1, 5], "xLength": 9, "yLength": 5, "color": "#FFFFFF" },
+      "graph": { "kind": "functionGraph", "expression": "0.5x^2", "position": [0, 0, 0], "appearsAtMs": 1000, "xRange": [0, 3], "axesId": "axes", "color": "#58C4DD" },
+      "area": { "kind": "areaUnderGraph", "position": [0, 0, 0], "appearsAtMs": 3000, "graphId": "graph", "xRange": [0, 2], "color": "#83C167", "opacity": 0.45 },
+      "equation": { "kind": "mathTex", "latex": "\\int_0^2 \\frac{x^2}{2}\\,dx = \\frac{4}{3}", "position": [3.4, 3, 0], "appearsAtMs": 5000, "fontSize": 40, "color": "#FFFFFF" },
+      "label": { "kind": "text", "text": "Area under the curve", "position": [4.7, 0.6, 0], "appearsAtMs": 7000, "fontSize": 28, "color": "#FFFF00" }
+    },
+    "animations": [
+      { "kind": "create", "targetId": "axes", "startMs": 0, "durationMs": 1000 },
+      { "kind": "create", "targetId": "graph", "startMs": 1000, "durationMs": 1500 },
+      { "kind": "fadeIn", "targetId": "area", "startMs": 3000, "durationMs": 1000 },
+      { "kind": "write", "targetId": "equation", "startMs": 5000, "durationMs": 1500 },
+      { "kind": "fadeIn", "targetId": "label", "startMs": 7000, "durationMs": 1000 },
+      { "kind": "indicate", "targetId": "area", "startMs": 8000, "durationMs": 1000 },
+      { "kind": "recolor", "targetId": "graph", "startMs": 9000, "durationMs": 1000, "color": "#FFFF00" },
+      { "kind": "fadeOut", "targetId": "label", "startMs": 10500, "durationMs": 1000 }
+    ]
+  }
+}
