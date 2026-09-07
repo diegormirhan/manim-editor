@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 from renderer.manim_renderer.project import load_project
-from renderer.manim_renderer.render_job import render_project, RenderError
+from renderer.manim_renderer.render_job import render_project, render_timeout, RenderError
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -48,6 +48,12 @@ class RenderJobTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(RenderError, 'render.log'):
                 render_project(self.project, Path(directory))
+
+    def test_timeout_grows_with_the_scene(self):
+        short = render_timeout(self.project)
+        long_scene = {'scene': {'durationMs': 120_000}}
+        self.assertGreater(short, self.project['scene']['durationMs'] / 1000)
+        self.assertGreater(render_timeout(long_scene), short * 4)
 
     @patch('renderer.manim_renderer.render_job.subprocess.run')
     def test_render_uses_argument_list_and_isolated_directory(self, run):
