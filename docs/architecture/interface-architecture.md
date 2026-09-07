@@ -1,5 +1,16 @@
 # Interface Architecture
 
+## Current implementation versus target
+
+The sections below retain the interaction design targets. Today the library and
+inspector are stacked in a scrollable left sidebar, not switched through a search
+or back control. The app supports English copy, dark/light themes, explicit rendering,
+undo/redo, seconds-based fields, and clip drag/resize with keyboard nudging. Elements
+are added at time zero, not a playhead. Preview/playhead synchronization, cancellation,
+library search, and the more advanced layout controls remain future work. The minimum
+window is 800 × 650. Current screenshots and verified capabilities live in the
+[README](../../README.md).
+
 ## Mode
 
 This is an **Operate** interface: users arrive to construct, render, inspect, and revise an animation. Task clarity and predictable controls outrank visual spectacle.
@@ -150,4 +161,3 @@ The schema describes data validity and defaults. Purpose-built inspector compone
 - Light mode, dark mode, or both in the first release.
 - Exact keyboard shortcut map.
 - Visual treatment for invalid and overlapping timeline clips.
-
