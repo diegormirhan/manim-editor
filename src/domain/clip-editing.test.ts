@@ -26,5 +26,5 @@ test("parallel resize keeps children in sync; conflict stays invalid", () => {
   expect(next.scene.animations?.[0].clips?.map(c => c.durationMs)).toEqual([1500, 1500]);
   expect(validateProject(next)).toBeNull();
   next.scene.animations!.push({ kind: "fadeOut", targetId: "b", startMs: 1500, durationMs: 1000 });
-  expect(validateProject(next)).toContain("sequenciais");
+  expect(validateProject(next)).toContain("sequential");
 });
