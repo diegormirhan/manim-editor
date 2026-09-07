@@ -1,5 +1,11 @@
 # MVP Scope
 
+This is the release acceptance scope, not a list of completed features. The current
+development build and its limitations are documented in the [README](../../README.md).
+In particular, the 30–45 second scenario, element grouping, a dedicated MP4 export
+dialog, and self-contained offline installation are not yet complete. The bundled
+13-second calculus and 15-second motion examples are current demonstrators.
+
 ## Proof workflow
 
 A user creates a project, adds mathematical elements without writing Python, configures them, places explicit animations on a timeline, renders locally through Manim, watches the resulting preview, revises the project, renders again, and exports the video and readable Python.
@@ -10,12 +16,12 @@ The official demonstration is a 30–45 second transformation of `f(x) = x^2` in
 
 - Plain text
 - LaTeX mathematics
-- Circle
-- Rectangle
-- Line
-- Arrow
-- Cartesian axes
-- Function graph
+- Circle, dot, ellipse
+- Rectangle, square, triangle, regular polygon
+- Arc
+- Line, arrow
+- Cartesian axes, number plane, number line
+- Function graph and the area under a graph
 - Element group
 
 ## Included product capabilities
@@ -35,12 +41,13 @@ The official demonstration is a 30–45 second transformation of `f(x) = x^2` in
 
 ## Included animations
 
-- `Create`
-- `Write`
-- `FadeIn`
-- `FadeOut`
-- `Transform`
-- `MoveTo`
+Entrances: `Create`, `Write`, `FadeIn`, `GrowFromCenter`, `DrawBorderThenFill`.
+
+Motion and appearance: `MoveTo`, `Rotate`, `Scale`, `SetColor`.
+
+Emphasis: `Indicate`, `Wiggle`.
+
+Exit and identity: `FadeOut`, `Transform`.
 
 `Transform` creates a hidden destination inside its inspector. The destination replaces the source when the clip ends. Transforming between two elements already visible on the timeline is excluded from the MVP.
 
