@@ -1,5 +1,15 @@
 # Rendering Pipeline
 
+## Current implementation versus target
+
+The event protocol, source maps, and cancellation flow below are design targets.
+Today Rust dispatches a blocking Python bridge on a background task. Python validates
+the snapshot, creates the isolated job directory, generates `scene.py`, and invokes
+Manim CE with Cairo at 480p / 15 fps. Logs remain in the job directory; there is no
+streamed progress or user cancellation yet. The subprocess timeout is
+`60 + scene duration in seconds * 20`. A successful path updates the preview, and
+a failed render preserves the previous successful preview.
+
 ## Contract
 
 Rendering consumes an immutable snapshot of a valid project and produces either a successful artifact or a structured terminal failure. Editing the project during rendering does not mutate the running job.
@@ -68,7 +78,10 @@ Graph expressions are untrusted input. The expression field accepts a restricted
 - generate safe Python expressions or a controlled callable;
 - reject imports, attribute access, statements, and arbitrary function calls.
 
-Choosing the parser library is deferred until implementation and requires checking its current official documentation.
+The implemented parser uses a closed node vocabulary in TypeScript and Python,
+checked against `contracts/expression-cases.json`. It accepts mathematical notation,
+not Python. A 65-point finite-value check detects many invalid domains but does not
+prove that the function is defined everywhere between samples.
 
 ## Caching
 
