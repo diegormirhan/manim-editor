@@ -13,6 +13,11 @@ class RenderError(RuntimeError):
     pass
 
 
+def render_timeout(project: dict) -> float:
+    """Manim needs several seconds of work per second of output, so scale with the scene."""
+    return 60 + project["scene"]["durationMs"] / 1000 * 20
+
+
 def render_project(project: dict, output_root: Path, *, tex_bin: Path | None = None) -> Path:
     source = compile_project(project)
     environment = os.environ.copy()
@@ -37,7 +42,7 @@ def render_project(project: dict, output_root: Path, *, tex_bin: Path | None = N
         with log_path.open("w", encoding="utf-8") as log:
             result = subprocess.run(
                 command, cwd=job, env=environment, stdout=log,
-                stderr=subprocess.STDOUT, timeout=120,
+                stderr=subprocess.STDOUT, timeout=render_timeout(project),
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
             )
     except (OSError, subprocess.TimeoutExpired) as error:
