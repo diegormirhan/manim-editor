@@ -198,8 +198,20 @@ machine, `npm run desktop` selects the repo-local Rust installation under
 Inside the app, choose **Open example → Area under the curve**, then **Render**.
 To build your own scene, add an element, edit its properties, and add animations explicitly.
 
-`npm run dev` alone runs the editor in a browser. Native save/open dialogs, Python export,
-and rendering require the Tauri app.
+### Work on the interface without launching the app
+
+```powershell
+npm run dev
+```
+
+This serves the editor at `http://127.0.0.1:1420` in any Chromium or Edge window, with no
+Rust build and no Tauri window. The whole interface is real — library, search, inspector,
+timeline dragging, the playhead, undo/redo, themes — because the domain layer is plain
+TypeScript and never imports Tauri. Only the four operations that need the operating
+system (open, save, export Python, render) are unavailable; they say so instead of
+pretending. `.claude/launch.json` points editor tooling at the same server.
+
+Use this loop for UI work, and the Tauri window when a change touches rendering or files.
 
 ### Render without the interface
 

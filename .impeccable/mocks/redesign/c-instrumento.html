@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en-US" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>C · Instrument bench</title>
+<script src="shared.js"></script>
+<style>
+:root {
+  --panel: #c9ced5; --panel-hi: #d6dadf; --bezel: #262a30; --silk: #1c2026; --silk-soft: #4a515b; --rule: #8d949e;
+  --lcd: #dfe6d6; --lcd-ink: #1e2a1a; --key: #e7e9ec; --key-edge: #9aa1ab; --run: #2fa35a; --run-ink: #fff; --warn: #c2412d;
+  --ch1: #e0b500; --ch2: #1fa9c4; --ch3: #c8409d; --ch4: #36a85e; --ch5: #d9622b; --bus: #5b6370;
+  --screen: #07090a; --font: "Bahnschrift", "DIN Alternate", "Segoe UI", sans-serif;
+}
+:root[data-theme="dark"] {
+  --panel: #1c1f24; --panel-hi: #23272d; --bezel: #0c0d0f; --silk: #c7ccd3; --silk-soft: #8a929d; --rule: #3b414a;
+  --lcd: #142016; --lcd-ink: #9fe3a3; --key: #2a2e35; --key-edge: #3e444d; --run: #43c06f; --run-ink: #06150b; --warn: #ff7a5c;
+  --ch1: #f5d33a; --ch2: #43d3ef; --ch3: #ee62c3; --ch4: #5fe08c; --ch5: #ff8a4c; --bus: #8a93a1;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font: 12.5px/1.35 var(--font); color: var(--silk); background: var(--panel); display: grid; grid-template-rows: 44px minmax(0, 1fr) 300px; overflow: hidden; font-variant-numeric: tabular-nums; }
+::selection { background: var(--ch2); color: #000; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.silk { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--silk-soft); }
+
+header { display: flex; align-items: center; gap: 18px; padding: 0 16px; border-bottom: 1px solid var(--rule); background: var(--panel-hi); }
+.model { font-weight: 700; font-size: 15px; letter-spacing: .04em; }
+.model small { font-weight: 400; color: var(--silk-soft); margin-left: 6px; letter-spacing: .1em; text-transform: uppercase; font-size: 10.5px; }
+.readout { background: var(--lcd); color: var(--lcd-ink); border-radius: 2px; padding: 4px 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,.35); font-size: 13px; min-width: 210px; }
+.led { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 2px color-mix(in srgb, var(--warn) 25%, transparent); margin-right: 7px; }
+.keys { display: flex; gap: 6px; margin-left: auto; }
+.key { background: var(--key); border: 1px solid var(--key-edge); border-bottom-width: 3px; border-radius: 3px; padding: 4px 11px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.key:active { border-bottom-width: 1px; transform: translateY(2px); }
+.key.run { background: var(--run); color: var(--run-ink); border-color: color-mix(in srgb, var(--run) 60%, #000); font-weight: 700; padding: 4px 18px; }
+
+.bench { display: grid; grid-template-columns: 210px minmax(0, 1fr) 286px; gap: 14px; padding: 14px 16px; min-height: 0; }
+.box { border: 1px solid var(--rule); border-radius: 4px; position: relative; padding: 16px 10px 10px; }
+.box > .silk:first-child { position: absolute; top: -7px; left: 9px; background: var(--panel); padding: 0 6px; }
+.inputs { overflow: auto; display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
+.keypad { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.keypad .key { padding: 6px 4px; text-transform: none; letter-spacing: .02em; font-size: 12px; display: flex; gap: 6px; align-items: center; justify-content: flex-start; }
+.keypad .key svg { flex: none; color: var(--silk-soft); }
+
+.scope { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; background: var(--bezel); border-radius: 10px; padding: 10px 14px 12px; min-height: 0; box-shadow: inset 0 2px 0 rgba(255,255,255,.06), 0 14px 28px -18px rgba(0,0,0,.6); }
+.scope .osd { display: flex; justify-content: space-between; color: #b9c2cc; font-size: 12px; padding: 0 4px 6px; }
+.scope .osd b { color: var(--ch2); font-weight: 600; }
+.scope .osd .run { color: var(--run); }
+.crt { display: grid; place-items: center; min-height: 0; }
+.crt > div { height: 100%; aspect-ratio: 16/9; max-width: 100%; border-radius: 6px; overflow: hidden; }
+.crt svg { display: block; width: 100%; height: 100%; }
+.softkeys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding-top: 10px; }
+.softkeys button { background: #1a1d21; color: #c9d0d8; border: 1px solid #343a42; border-radius: 3px; padding: 5px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.softkeys button:hover { border-color: #5b6470; }
+
+.controls { display: flex; flex-direction: column; gap: 16px; overflow: auto; padding-top: 8px; }
+.ch-title { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+.ch-badge { color: #000; background: var(--ch2); border-radius: 2px; padding: 1px 6px; font-size: 11px; letter-spacing: .06em; }
+.knobrow { display: grid; grid-template-columns: 74px 1fr auto; align-items: center; gap: 6px; margin-bottom: 7px; }
+.knobrow input { background: var(--lcd); color: var(--lcd-ink); border: 0; border-radius: 2px; padding: 4px 7px; box-shadow: inset 0 1px 3px rgba(0,0,0,.35); width: 100%; outline: none; }
+.knobrow input:focus { box-shadow: inset 0 1px 3px rgba(0,0,0,.35), 0 0 0 2px var(--ch2); }
+.step { display: flex; }
+.step button { width: 22px; height: 23px; background: var(--key); border: 1px solid var(--key-edge); padding: 0; font-size: 13px; line-height: 1; }
+.step button:first-child { border-radius: 3px 0 0 3px; }
+.step button:last-child { border-radius: 0 3px 3px 0; border-left: 0; }
+
+/* Logic analyzer timeline */
+.analyzer { border-top: 1px solid var(--rule); background: var(--panel-hi); display: grid; grid-template-rows: 30px minmax(0, 1fr); min-height: 0; }
+.an-head { display: flex; align-items: center; gap: 16px; padding: 0 16px; border-bottom: 1px solid var(--rule); }
+.cursor-ro { background: var(--lcd); color: var(--lcd-ink); padding: 2px 9px; border-radius: 2px; box-shadow: inset 0 1px 3px rgba(0,0,0,.35); }
+.an-body { display: grid; grid-template-columns: 196px 1fr; overflow: auto; position: relative; background: var(--screen); color: #c9d0d8; }
+.lbl { height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-bottom: 1px solid #15181b; background: #0e1012; white-space: nowrap; overflow: hidden; }
+.lbl .tag { font-size: 10.5px; font-weight: 700; color: #000; border-radius: 2px; padding: 0 5px; }
+.lbl.sel { background: #17202a; }
+.wave { height: 30px; border-bottom: 1px solid #15181b; position: relative; }
+.wave svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.scale { height: 22px; position: relative; border-bottom: 1px solid #2a2f35; }
+.scale span { position: absolute; top: 4px; font-size: 10.5px; color: #8d97a3; transform: translateX(-50%); }
+.scale i { position: absolute; bottom: 0; height: 5px; border-left: 1px solid #4a525c; }
+.vgrid { position: absolute; top: 0; bottom: 0; border-left: 1px dashed #1f252b; }
+.cur { position: absolute; top: 0; bottom: 0; border-left: 1.5px solid #ffffff; pointer-events: none; }
+.cur span { position: absolute; top: 3px; left: 4px; background: #fff; color: #000; font-size: 10.5px; font-weight: 700; padding: 0 4px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="model">manim-editor<small>Scene bench · MS-1</small></div>
+  <div class="readout"><span class="led"></span>Parabola transformation · UNSAVED</div>
+  <div class="keys">
+    <button class="key">Undo</button><button class="key">Redo</button><button class="key">Open</button><button class="key">Save</button><button class="key">Export .py</button>
+    <button class="key" data-toggle-theme>Theme</button>
+    <button class="key run">Render</button>
+  </div>
+</header>
+
+<main class="bench">
+  <div class="inputs" id="inputs"></div>
+  <section class="scope">
+    <div class="osd"><span class="run">■ LAST RENDER</span><span><b>T</b> 7.220 s / 12.000 s</span><span>480p · 15 fps</span><span style="color:var(--warn)">1 CHANGE NOT RENDERED</span></div>
+    <div class="crt"><div id="stage"></div></div>
+    <div class="softkeys"><button>Start</button><button>− Frame</button><button>Play</button><button>+ Frame</button><button>End</button></div>
+  </section>
+  <aside class="controls">
+    <div class="box"><span class="silk">Selected channel</span>
+      <div class="ch-title"><span class="ch-badge">CH2</span>Graph f(x) = x²</div>
+      <div class="knobrow"><span class="silk">f(x)</span><input value="x^2"><span></span></div>
+      <div class="knobrow"><span class="silk">x min</span><input value="-2.50"><div class="step"><button>−</button><button>+</button></div></div>
+      <div class="knobrow"><span class="silk">x max</span><input value="2.50"><div class="step"><button>−</button><button>+</button></div></div>
+      <div class="knobrow"><span class="silk">On axes</span><input value="CH1 · Axes"><span></span></div>
+    </div>
+    <div class="box"><span class="silk">Position · scale</span>
+      <div class="knobrow"><span class="silk">X</span><input value="0.00"><div class="step"><button>−</button><button>+</button></div></div>
+      <div class="knobrow"><span class="silk">Y</span><input value="0.00"><div class="step"><button>−</button><button>+</button></div></div>
+      <div class="knobrow"><span class="silk">Scale</span><input value="1.00"><div class="step"><button>−</button><button>+</button></div></div>
+      <div class="knobrow"><span class="silk">Rotate °</span><input value="0.0"><div class="step"><button>−</button><button>+</button></div></div>
+    </div>
+    <div class="box"><span class="silk">Signal</span>
+      <div class="knobrow"><span class="silk">Colour</span><input value="#58C4DD"><span></span></div>
+      <div class="knobrow"><span class="silk">Opacity</span><input value="1.00"><div class="step"><button>−</button><button>+</button></div></div>
+      <div class="knobrow"><span class="silk">High</span><input value="1.000 → 7.800 s"><span></span></div>
+    </div>
+  </aside>
+</main>
+
+<section class="analyzer">
+  <div class="an-head"><span class="silk">Timeline · logic view</span><span class="cursor-ro">C1 = 7.220 s</span><span class="cursor-ro">Δ CH2 high = 6.800 s</span><span class="silk" style="margin-left:auto">Drag an edge to retime · drag a bus segment to move</span></div>
+  <div class="an-body" id="an"></div>
+</section>
+
+<script>
+const M = MOCK; M.themeSwitch();
+document.getElementById("stage").innerHTML = M.stage({ graticule: true });
+document.getElementById("inputs").innerHTML = M.catalog.map(g => `<div class="box"><span class="silk">${g.group}</span><div class="keypad">${g.items.map(i => {
+  return `<button class="key">${M.icon(i,14)}<span>${i}</span></button>`; }).join("")}</div></div>`).join("");
+const chan = ["--ch1","--ch2","--ch3","--ch4","--ch5"];
+const an = document.getElementById("an");
+let h = `<div class="lbl" style="height:22px;background:#0b0c0e"><span class="silk" style="color:#8d97a3">Channel</span></div><div class="scale" id="scale"></div>`;
+for (const e of M.elements) {
+  const c = `var(${chan[e.n-1]})`, x0 = M.pct(e.start), x1 = M.pct(e.end);
+  h += `<div class="lbl ${e.id==="graph"?"sel":""}"><span class="tag" style="background:${c}">CH${e.n}</span><span>${e.kind}</span><span style="color:#8d97a3">${e.label}</span></div>
+  <div class="wave"><svg preserveAspectRatio="none" viewBox="0 0 100 30"><path vector-effect="non-scaling-stroke" d="M0 23 H${x0} V7 H${x1} V23 H100" fill="none" stroke="${c}" stroke-width="2"/>
+  <rect x="${x0}" y="7" width="${x1-x0}" height="16" fill="${c}" opacity=".12"/></svg></div>`;
+}
+h += `<div class="lbl" style="background:#0b0c0e"><span class="tag" style="background:var(--bus)">BUS</span><span>Animations</span></div><div class="wave" id="bus"></div>`;
+an.innerHTML = h;
+const scale = document.getElementById("scale");
+for (let s = 0; s <= 12; s++) scale.insertAdjacentHTML("beforeend", `${s%12?`<span style="left:${M.pct(s*1000)}%">${s}.0</span>`:""}<i style="left:${M.pct(s*1000)}%"></i>`);
+const bus = document.getElementById("bus");
+const segs = M.animations.map(a => {
+  const x0 = M.pct(a.start), x1 = M.pct(a.end), k = 0.45;
+  return `<polygon points="${x0},15 ${x0+k},5 ${x1-k},5 ${x1},15 ${x1-k},25 ${x0+k},25" fill="rgba(138,147,161,.18)" stroke="var(--bus)" vector-effect="non-scaling-stroke" stroke-width="1.5"/>`;
+}).join("");
+bus.innerHTML = `<svg preserveAspectRatio="none" viewBox="0 0 100 30"><line x1="0" y1="15" x2="100" y2="15" stroke="var(--bus)" vector-effect="non-scaling-stroke" stroke-width="1"/>${segs}</svg>`
+  + M.animations.map(a => `<span style="position:absolute;top:8px;left:${M.pct(a.start)}%;width:${M.pct(a.end-a.start)}%;text-align:center;font-size:10.5px;color:#d5dbe2;white-space:nowrap;overflow:hidden">${a.kind}</span>`).join("");
+const wrap = document.createElement("div");
+wrap.style.cssText = "position:absolute;top:0;bottom:0;left:196px;right:0;pointer-events:none";
+for (let s = 1; s < 12; s++) wrap.insertAdjacentHTML("beforeend", `<div class="vgrid" style="left:${M.pct(s*1000)}%"></div>`);
+wrap.insertAdjacentHTML("beforeend", `<div class="cur" style="left:${M.pct(M.PLAYHEAD)}%"><span>C1</span></div>`);
+an.appendChild(wrap);
+</script>
+</body>
+</html>

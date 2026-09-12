@@ -106,7 +106,8 @@ export function ElementInspector({ element, onChange, project, timing = true }: 
         } else onChange({ ...element, position: [0, 0, 0] });
       }}>Center element</button>
     </>}
-    <label>Color<input type="color" value={element.color ?? "#FFFFFF"} onChange={event => onChange({ ...element, color: event.target.value })} /></label>
+    <label>Color<span className="color-field"><input type="color" value={element.color ?? "#FFFFFF"} onChange={event => onChange({ ...element, color: event.target.value })} />
+      <code>{(element.color ?? "#FFFFFF").toUpperCase()}</code></span></label>
     <div className="coordinates">
       <NumberField label="Scale" min={0.05} max={10} step={0.1} value={element.scale ?? 1} onChange={scale => onChange({ ...element, scale })} />
       <NumberField label="Opacity" min={0} max={1} step={0.05} value={element.opacity ?? 1} onChange={opacity => onChange({ ...element, opacity })} />

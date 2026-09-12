@@ -61,6 +61,15 @@ export function addElement(project: Project, kind: Element["kind"]): Project {
   } } };
 }
 
+/** Copies an element only. Animations stay with the original, so the copy is inert. */
+export function duplicateElement(project: Project, identifier: string): Project {
+  const source = project.scene.elements[identifier];
+  if (!source) return project;
+  return { ...project, scene: { ...project.scene, elements: {
+    ...project.scene.elements, [crypto.randomUUID()]: structuredClone(source),
+  } } };
+}
+
 export function elementSummary(element: Element): string {
   if (element.kind === "mathTex") return element.latex || "Empty equation";
   if (element.kind === "text") return element.text || "Empty text";
