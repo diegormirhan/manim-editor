@@ -1,10 +1,26 @@
 import json
+import os
 from pathlib import Path
 import sys
 
 from .project import load_project, save_project, validate_project
 from .render_job import render_project
 from .scene_compiler import compile_project
+
+
+def render_root(root: Path) -> Path:
+    """Where render jobs may write.
+
+    An installed build sits under Program Files, which is read-only for a normal
+    user, so renders go to the per-user application data directory instead. A
+    source checkout keeps them beside the project, where the examples expect them.
+    """
+    if (root / ".git").is_dir():
+        return root / "work/renders"
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    if local_app_data:
+        return Path(local_app_data) / "manim-editor" / "renders"
+    return Path.home() / ".manim-editor" / "renders"
 
 
 def dispatch(request: dict, root: Path) -> dict:
@@ -21,7 +37,7 @@ def dispatch(request: dict, root: Path) -> dict:
         return {"path": request["path"]}
     if operation == "render":
         artifact = render_project(
-            project, root / "work/renders",
+            project, render_root(root),
             tex_bin=root / "work/runtime/tex/TinyTeX/bin/windows",
         )
         return {"path": str(artifact)}

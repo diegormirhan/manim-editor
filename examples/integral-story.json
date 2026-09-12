@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "name": "Integral story",
+  "scene": {
+    "durationMs": 20000,
+    "elements": {
+      "axes": {
+        "kind": "axes",
+        "position": [
+          -2,
+          -1.5,
+          0
+        ],
+        "appearsAtMs": 0,
+        "xRange": [
+          -1,
+          4
+        ],
+        "yRange": [
+          -1,
+          5
+        ],
+        "xLength": 9,
+        "yLength": 5,
+        "color": "#FFFFFF"
+      },
+      "curve": {
+        "kind": "functionGraph",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "appearsAtMs": 1600,
+        "expression": "0.5x^2",
+        "xRange": [
+          0,
+          3
+        ],
+        "axesId": "axes",
+        "color": "#58C4DD"
+      },
+      "equation": {
+        "kind": "mathTex",
+        "position": [
+          3.6,
+          3,
+          0
+        ],
+        "appearsAtMs": 3400,
+        "latex": "\\int_0^2 \\frac{x^2}{2}\\,dx",
+        "fontSize": 38,
+        "color": "#FFFFFF"
+      },
+      "answer": {
+        "kind": "mathTex",
+        "position": [
+          3.4,
+          3,
+          0
+        ],
+        "appearsAtMs": 0,
+        "latex": "\\int_0^2 \\frac{x^2}{2}\\,dx = \\frac{4}{3}",
+        "fontSize": 38,
+        "color": "#FFFF00"
+      },
+      "area": {
+        "kind": "areaUnderGraph",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "appearsAtMs": 5200,
+        "graphId": "curve",
+        "xRange": [
+          0,
+          2
+        ],
+        "color": "#83C167",
+        "opacity": 0.45
+      },
+      "label": {
+        "kind": "text",
+        "position": [
+          4.7,
+          0.6,
+          0
+        ],
+        "appearsAtMs": 8000,
+        "text": "Area under the curve",
+        "fontSize": 26,
+        "color": "#FFFF00"
+      },
+      "dot": {
+        "kind": "dot",
+        "position": [
+          -2,
+          -1.5,
+          0
+        ],
+        "appearsAtMs": 11000,
+        "radius": 0.1,
+        "color": "#FC6255"
+      }
+    },
+    "animations": [
+      {
+        "kind": "create",
+        "targetId": "axes",
+        "startMs": 0,
+        "durationMs": 1600
+      },
+      {
+        "kind": "create",
+        "targetId": "curve",
+        "startMs": 1600,
+        "durationMs": 1700
+      },
+      {
+        "kind": "write",
+        "targetId": "equation",
+        "startMs": 3400,
+        "durationMs": 1700
+      },
+      {
+        "kind": "fadeIn",
+        "targetId": "area",
+        "startMs": 5200,
+        "durationMs": 1400
+      },
+      {
+        "kind": "indicate",
+        "targetId": "area",
+        "startMs": 6800,
+        "durationMs": 1000
+      },
+      {
+        "kind": "fadeIn",
+        "targetId": "label",
+        "startMs": 8000,
+        "durationMs": 1200
+      },
+      {
+        "kind": "transform",
+        "targetId": "equation",
+        "destinationId": "answer",
+        "startMs": 9400,
+        "durationMs": 1600
+      },
+      {
+        "kind": "grow",
+        "targetId": "dot",
+        "startMs": 11000,
+        "durationMs": 1400
+      },
+      {
+        "kind": "moveTo",
+        "targetId": "dot",
+        "startMs": 12600,
+        "durationMs": 1800,
+        "destination": [
+          1.6,
+          0.167,
+          0
+        ]
+      },
+      {
+        "kind": "parallel",
+        "startMs": 14600,
+        "durationMs": 1400,
+        "clips": [
+          {
+            "kind": "recolor",
+            "targetId": "curve",
+            "startMs": 14600,
+            "durationMs": 1400,
+            "color": "#FFFF00"
+          },
+          {
+            "kind": "indicate",
+            "targetId": "label",
+            "startMs": 14600,
+            "durationMs": 1400
+          }
+        ]
+      },
+      {
+        "kind": "wiggle",
+        "targetId": "answer",
+        "startMs": 16200,
+        "durationMs": 1400
+      },
+      {
+        "kind": "parallel",
+        "startMs": 17800,
+        "durationMs": 1400,
+        "clips": [
+          {
+            "kind": "fadeOut",
+            "targetId": "label",
+            "startMs": 17800,
+            "durationMs": 1400
+          },
+          {
+            "kind": "fadeOut",
+            "targetId": "dot",
+            "startMs": 17800,
+            "durationMs": 1400
+          }
+        ]
+      }
+    ]
+  }
+}
