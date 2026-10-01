@@ -65,7 +65,8 @@ export function AnimationInspector({ project, targetId, onChange }: {
         {clip.kind === "moveTo" && <VectorFields label="Destination" value={clip.destination ?? [0, 0, 0]} onChange={destination => updateChild(index, childIndex, { destination })} />}
         {clip.kind === "rotate" && <NumberField label="Turn (degrees)" min={-1080} max={1080} step={15} value={clip.degrees ?? 90} onChange={degrees => updateChild(index, childIndex, { degrees })} />}
         {clip.kind === "scaleTo" && <NumberField label="Scale factor" min={0.05} max={10} step={0.1} value={clip.factor ?? 1.5} onChange={factor => updateChild(index, childIndex, { factor })} />}
-        {clip.kind === "recolor" && <label>Final color<input type="color" value={clip.color ?? "#FC6255"} onChange={event => updateChild(index, childIndex, { color: event.target.value })} /></label>}
+        {clip.kind === "recolor" && <label>Final color<span className="color-field"><input type="color" value={clip.color ?? "#FC6255"} onChange={event => updateChild(index, childIndex, { color: event.target.value })} />
+          <code>{(clip.color ?? "#FC6255").toUpperCase()}</code></span></label>}
         {clip.kind === "transform" && clip.destinationId && project.scene.elements[clip.destinationId] && <details open>
           <summary>Transform destination</summary>
           <label>Destination type<select value={project.scene.elements[clip.destinationId].kind} onChange={event => {
