@@ -1,69 +1,182 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-07T13:57:29.5545049Z",
+  "generatedAt": "2026-10-01T12:10:00.000Z",
   "title": "Design System: manim-editor",
   "extensions": {
     "colorMeta": {
-      "accent-light": { "role": "primary", "displayName": "Selection blue, light theme" },
-      "accent-dark": { "role": "primary", "displayName": "Selection blue, dark theme" },
-      "animation-light": { "role": "secondary", "displayName": "Animation purple, light theme" },
-      "animation-dark": { "role": "secondary", "displayName": "Animation purple, dark theme" },
-      "stage": { "role": "neutral", "displayName": "Video stage" }
+      "hot": { "role": "primary", "displayName": "Render Vermilion", "canonical": "oklch(52% 0.17 32)", "tonalRamp": ["#f6ded9", "#e08a76", "#c43a26", "#9c2e1e", "#5e1c12"] },
+      "hot-dark": { "role": "primary", "displayName": "Render Vermilion, dark theme", "canonical": "oklch(68% 0.19 34)", "tonalRamp": ["#ffd9d1", "#ff9681", "#ff5a3c", "#c94530", "#7a2a1d"] },
+      "gutter": { "role": "neutral", "displayName": "Gutter", "canonical": "oklch(86% 0.002 280)" },
+      "gutter-dark": { "role": "neutral", "displayName": "Gutter, dark theme", "canonical": "oklch(16% 0.003 280)" },
+      "panel": { "role": "neutral", "displayName": "Panel", "canonical": "oklch(94% 0.002 280)" },
+      "panel-dark": { "role": "neutral", "displayName": "Panel, dark theme", "canonical": "oklch(23% 0.003 280)" },
+      "panel-head": { "role": "neutral", "displayName": "Panel Head", "canonical": "oklch(91% 0.002 280)" },
+      "panel-head-dark": { "role": "neutral", "displayName": "Panel Head, dark theme", "canonical": "oklch(26% 0.003 280)" },
+      "well": { "role": "neutral", "displayName": "Well", "canonical": "oklch(98% 0.001 280)" },
+      "well-dark": { "role": "neutral", "displayName": "Well, dark theme", "canonical": "oklch(18% 0.003 280)" },
+      "line": { "role": "neutral", "displayName": "Hairline", "canonical": "oklch(82% 0.004 280)" },
+      "line-dark": { "role": "neutral", "displayName": "Hairline, dark theme", "canonical": "oklch(30% 0.005 280)" },
+      "text": { "role": "neutral", "displayName": "Ink", "canonical": "oklch(23% 0.004 280)" },
+      "text-dark": { "role": "neutral", "displayName": "Ink, dark theme", "canonical": "oklch(89% 0.003 280)" },
+      "muted": { "role": "neutral", "displayName": "Muted Ink", "canonical": "oklch(47% 0.006 280)" },
+      "muted-dark": { "role": "neutral", "displayName": "Muted Ink, dark theme", "canonical": "oklch(66% 0.006 280)" },
+      "hover": { "role": "neutral", "displayName": "Hover Fill", "canonical": "oklch(88% 0.004 280)" },
+      "hover-dark": { "role": "neutral", "displayName": "Hover Fill, dark theme", "canonical": "oklch(28% 0.005 280)" },
+      "sel": { "role": "secondary", "displayName": "Selection Wash", "canonical": "oklch(87% 0.03 255)" },
+      "sel-dark": { "role": "secondary", "displayName": "Selection Wash, dark theme", "canonical": "oklch(33% 0.04 255)" },
+      "track": { "role": "neutral", "displayName": "Lane", "canonical": "oklch(88% 0.002 280)" },
+      "track-dark": { "role": "neutral", "displayName": "Lane, dark theme", "canonical": "oklch(21% 0.003 280)" },
+      "track-alt": { "role": "neutral", "displayName": "Lane Stripe", "canonical": "oklch(86% 0.003 280)" },
+      "track-alt-dark": { "role": "neutral", "displayName": "Lane Stripe, dark theme", "canonical": "oklch(22% 0.003 280)" },
+      "danger": { "role": "semantic", "displayName": "Danger", "canonical": "oklch(48% 0.17 25)" },
+      "danger-dark": { "role": "semantic", "displayName": "Danger, dark theme", "canonical": "oklch(72% 0.15 25)" },
+      "stage": { "role": "neutral", "displayName": "Manim Stage", "canonical": "oklch(0% 0 0)" },
+      "tone-coords": { "role": "tertiary", "displayName": "Instrument Slate", "canonical": "oklch(55% 0.02 255)" },
+      "tone-coords-dark": { "role": "tertiary", "displayName": "Instrument Slate, dark theme", "canonical": "oklch(42% 0.02 255)" },
+      "tone-graph": { "role": "tertiary", "displayName": "Plotter Teal", "canonical": "oklch(52% 0.08 215)" },
+      "tone-graph-dark": { "role": "tertiary", "displayName": "Plotter Teal, dark theme", "canonical": "oklch(45% 0.08 215)" },
+      "tone-tex": { "role": "tertiary", "displayName": "Formula Violet", "canonical": "oklch(50% 0.11 295)" },
+      "tone-tex-dark": { "role": "tertiary", "displayName": "Formula Violet, dark theme", "canonical": "oklch(42% 0.11 295)" },
+      "tone-text": { "role": "tertiary", "displayName": "Caption Ochre", "canonical": "oklch(50% 0.09 85)" },
+      "tone-text-dark": { "role": "tertiary", "displayName": "Caption Ochre, dark theme", "canonical": "oklch(46% 0.08 85)" },
+      "tone-shape": { "role": "tertiary", "displayName": "Shape Green", "canonical": "oklch(50% 0.07 155)" },
+      "tone-shape-dark": { "role": "tertiary", "displayName": "Shape Green, dark theme", "canonical": "oklch(42% 0.07 155)" },
+      "tone-fx": { "role": "tertiary", "displayName": "Effect Graphite", "canonical": "oklch(38% 0.005 285)" },
+      "tone-fx-dark": { "role": "tertiary", "displayName": "Effect Graphite, dark theme", "canonical": "oklch(29% 0.005 285)" }
     },
-    "shadows": [],
-    "motion": [
-      { "name": "button-press", "value": "translateY(1px)", "purpose": "Immediate active-button displacement; removed by prefers-reduced-motion: reduce. No transition duration is defined." }
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The empty-viewer heading only. The one place type is allowed to be large." },
+      "title": { "displayName": "Title", "purpose": "Panel headings, inspector title, timeline heading, clip labels." },
+      "body": { "displayName": "Body", "purpose": "Controls, field values and labels. The default voice." },
+      "label": { "displayName": "Label", "purpose": "Catalog group headings, inspector section headings, track-section bands." },
+      "timecode": { "displayName": "Timecode", "purpose": "Transport and timeline readouts. Tabular figures, never prose." },
+      "mono-small": { "displayName": "Mono Small", "purpose": "Ruler labels, clip durations, track IDs and targets, hex values." }
+    },
+    "shadows": [
+      { "name": "clip-edge-presence", "value": "inset 0 0 0 1px rgb(255 255 255 / .16)", "purpose": "Describes a presence clip's edge against its tone. Not lift." },
+      { "name": "clip-edge-animation", "value": "inset 0 0 0 1px #2f2f36", "purpose": "Edge on animation pills; uses tone-fx-line." },
+      { "name": "selection-ring", "value": "0 0 0 2px #c43a26", "purpose": "The only outer shadow in the system: the selected clip's hot ring." }
     ],
-    "breakpoints": [{ "name": "compact-desktop", "value": "850px" }]
+    "motion": [
+      { "name": "state", "value": "120ms ease", "purpose": "Background, border and colour changes on buttons and fields. The only duration in the system." },
+      { "name": "press", "value": "translateY(1px)", "purpose": "Active-state nudge on buttons. Removed under prefers-reduced-motion." },
+      { "name": "reduced", "value": "transition: none", "purpose": "prefers-reduced-motion disables every transition and the press nudge." }
+    ],
+    "breakpoints": [
+      { "name": "dense", "value": "1100px" },
+      { "name": "compact", "value": "850px" },
+      { "name": "short", "value": "760px (max-height)" },
+      { "name": "minimum-window", "value": "800x650px" }
+    ]
   },
   "components": [
     {
-      "name": "Render button",
+      "name": "Render Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The filled toolbar action; specimen uses the light theme and inherits the live accent when available.",
-      "html": "<button class=\"ds-render\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><polygon points=\"6 3 20 12 6 21 6 3\"/></svg>Render</button>",
-      "css": ".ds-render{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 14px/1.5 'Segoe UI',system-ui,sans-serif;background:var(--accent,#1465ce);color:white;border:0;border-radius:6px;padding:9px 16px;cursor:pointer}.ds-render:hover{background:#0c53ae}.ds-render:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-render:active{transform:translateY(1px)}.ds-render:disabled{opacity:.45;cursor:default}@media(prefers-reduced-motion:reduce){.ds-render:active{transform:none}}"
+      "description": "The single commit action. Exactly one per window, always at the far right of the project bar.",
+      "html": "<button class=\"ds-render\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M7 4v16l13-8z\"/></svg>Render</button>",
+      "css": ".ds-render { display: inline-flex; align-items: center; gap: 6px; background: #c43a26; color: #fff; font: 700 12px/1.4 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; letter-spacing: .02em; border: 0; border-radius: 3px; padding: 6px 14px; cursor: pointer; transition: background-color .12s ease; } .ds-render:hover { background: color-mix(in srgb, #c43a26 86%, #1d1d20); } .ds-render:active { transform: translateY(1px); }"
     },
     {
-      "name": "File action",
+      "name": "Text Button",
       "kind": "button",
-      "refersTo": "button-ghost",
-      "description": "Transparent compact toolbar button, shown in light theme.",
-      "html": "<button class=\"ds-file\" aria-label=\"Save project\" title=\"Save project\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z\"/><path d=\"M17 21v-8H7v8M7 3v5h8\"/></svg></button>",
-      "css": ".ds-file{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:14px/1.5 'Segoe UI',system-ui,sans-serif;background:transparent;color:#24272d;border:0;border-radius:6px;padding:8px;cursor:pointer}.ds-file:hover{background:#e0e5ed}.ds-file:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-file:active{transform:translateY(1px)}.ds-file:disabled{opacity:.45;cursor:default}@media(prefers-reduced-motion:reduce){.ds-file:active{transform:none}}"
+      "refersTo": "button-text",
+      "description": "Every secondary command in the project bar. Label collapses to icon-only at 1100px.",
+      "html": "<button class=\"ds-text-btn\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\"><path d=\"M3 7h14a4 4 0 010 8h-9M8 12l-4 4 4 4\"/></svg><span>Undo</span></button>",
+      "css": ".ds-text-btn { display: inline-flex; align-items: center; gap: 6px; background: transparent; color: #5a5a62; font: 400 12px/1.4 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; border: 0; border-radius: 3px; padding: 5px 8px; cursor: pointer; transition: background-color .12s ease, color .12s ease; } .ds-text-btn:hover { background: #d9d9de; color: #1d1d20; } .ds-text-btn:active { transform: translateY(1px); } .ds-text-btn:disabled { opacity: .4; cursor: default; }"
     },
     {
-      "name": "Library entry",
-      "kind": "button",
-      "refersTo": "library-button",
-      "description": "A catalog addition button in the light-theme two-column library.",
-      "html": "<button class=\"ds-library\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg><span>Equation</span></button>",
-      "css": ".ds-library{display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;font:12px/1.5 'Segoe UI',system-ui,sans-serif;background:#eaf0fa;color:#24272d;border:0;border-radius:6px;padding:8px;cursor:pointer}.ds-library svg{color:var(--accent,#1465ce)}.ds-library span{text-align:left}.ds-library:hover{background:#eaf0fa}.ds-library:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-library:active{transform:translateY(1px)}.ds-library:disabled{opacity:.45;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-library:active{transform:none}}"
-    },
-    {
-      "name": "Numeric field",
+      "name": "Field",
       "kind": "input",
       "refersTo": "input",
-      "description": "A labeled inspector input in the light theme.",
-      "html": "<label class=\"ds-label\">X minimum<input class=\"ds-input\" type=\"number\" value=\"-1\" /></label>",
-      "css": ".ds-label{display:grid;gap:7px;font:12px/1.5 'Segoe UI',system-ui,sans-serif;color:#444d59}.ds-input{font:14px/1.5 'Segoe UI',system-ui,sans-serif;font-variant-numeric:tabular-nums;border:1px solid #cbd0d8;background:#fff;border-radius:6px;padding:8px;width:100%;color:#24272d}.ds-input:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-input[aria-invalid=true]{border-color:#c0392b}"
+      "description": "Every inspector value. Label left at 92px, field right; numbers tabular.",
+      "html": "<label class=\"ds-field\"><span>X minimum</span><input value=\"-4\"></label>",
+      "css": ".ds-field { display: grid; grid-template-columns: 92px minmax(0,1fr); align-items: center; gap: 8px; color: #5a5a62; font: 400 12px/1.4 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-field input { width: 100%; color: #1d1d20; background: #f8f8f9; border: 1px solid #c4c4ca; border-radius: 3px; padding: 4px 7px; font: inherit; font-variant-numeric: tabular-nums; transition: border-color .12s ease; } .ds-field input:hover { border-color: #5a5a62; } .ds-field input:focus { border-color: #c43a26; outline: none; }"
     },
     {
-      "name": "Presence clip",
+      "name": "Panel Heading",
+      "kind": "nav",
+      "refersTo": "panel-heading",
+      "description": "The 30px bar that titles every panel; secondary controls align right.",
+      "html": "<div class=\"ds-head\"><h2>Objects</h2><select><option>Examples…</option></select></div>",
+      "css": ".ds-head { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; background: #e2e2e5; border-bottom: 1px solid #c4c4ca; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-head h2 { margin: 0; font-size: 12px; font-weight: 600; color: #1d1d20; } .ds-head select { margin-left: auto; max-width: 150px; min-height: 22px; padding: 1px 6px; background: #f8f8f9; color: #1d1d20; border: 1px solid #c4c4ca; border-radius: 3px; font: inherit; font-size: 12px; }"
+    },
+    {
+      "name": "Object Pool Tile",
+      "kind": "card",
+      "refersTo": "library-item",
+      "description": "Catalog entry: a drawn glyph on a black 16:10 thumbnail over its name. Echoes the Manim stage.",
+      "html": "<button class=\"ds-tile\"><span class=\"ds-thumb\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 4c3 10 6 15 9 15s6-5 9-15\"/></svg></span><span class=\"ds-name\">Graph</span></button>",
+      "css": ".ds-tile { display: flex; flex-direction: column; width: 84px; padding: 0; overflow: hidden; background: #f8f8f9; border: 1px solid #c4c4ca; border-radius: 3px; cursor: pointer; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-tile:hover { border-color: #5a5a62; } .ds-thumb { display: grid; place-items: center; aspect-ratio: 16/10; background: #000; color: #fff; } .ds-name { padding: 3px 6px 4px; font-size: 11px; color: #1d1d20; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }"
+    },
+    {
+      "name": "Presence Clip",
       "kind": "custom",
-      "refersTo": "presence-clip",
-      "description": "Visual specimen of an editable element span; application gesture logic is not included.",
-      "html": "<div class=\"ds-clip\"><button class=\"ds-grip ds-start\" aria-label=\"Adjust start of Axes 1\"></button><button class=\"ds-body\" aria-label=\"Select axes 1\"><span>Axes</span></button><button class=\"ds-grip ds-end\" aria-label=\"Adjust end of Axes 1\"></button></div>",
-      "css": ".ds-clip{display:flex;align-items:stretch;height:30px;min-width:8px;border-radius:5px;background:#c8ddfa;border:1px solid var(--accent,#1465ce);color:#204575}.ds-clip button{display:inline-flex;align-items:center;font:11px/1.5 'Segoe UI',system-ui,sans-serif;background:transparent;color:inherit;border:0;cursor:pointer}.ds-body{flex:1;min-width:0;overflow:hidden;justify-content:flex-start;padding:3px 7px;border-radius:4px;cursor:grab!important}.ds-body span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ds-body:hover{background:#e0e5ed}.ds-body:active{cursor:grabbing!important;transform:translateY(1px)}.ds-grip{width:8px;flex:0 0 8px;padding:0;cursor:ew-resize!important;border-radius:0}.ds-start{border-radius:4px 0 0 4px}.ds-end{border-radius:0 4px 4px 0}.ds-grip:hover{background:rgba(20,101,206,.28)}.ds-grip:active{transform:translateY(1px)}.ds-clip button:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-clip button:active{transform:none}}"
+      "refersTo": "clip-presence",
+      "description": "An object's span on the timeline. Tone encodes kind; duration sits right in mono; grips resize.",
+      "html": "<div class=\"ds-clip\"><span class=\"ds-grip\"></span><span class=\"ds-label\">f(x)=x^2</span><span class=\"ds-dur\">9 s</span><span class=\"ds-grip\"></span></div>",
+      "css": ".ds-clip { display: flex; align-items: stretch; width: 260px; height: 28px; background: #6b5aa6; color: #fff; border-radius: 3px; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16); font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-grip { width: 7px; flex: none; cursor: ew-resize; } .ds-grip:hover { background: rgb(255 255 255 / .3); } .ds-label { flex: 1; display: flex; align-items: center; padding: 0 7px; font-size: 11px; font-weight: 600; cursor: grab; overflow: hidden; white-space: nowrap; } .ds-dur { display: flex; align-items: center; padding-right: 7px; font-family: 'Cascadia Mono', Consolas, monospace; font-size: 10px; opacity: .85; }"
+    },
+    {
+      "name": "Animation Clip",
+      "kind": "chip",
+      "refersTo": "clip-animation",
+      "description": "A motion block. Neutral pill with a drawn AnimationIcon, so motion reads differently from presence.",
+      "html": "<div class=\"ds-fx\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 19l2.5-5.5L16 5l3 3-8.5 8.5zM14 7l3 3\"/></svg><span>Write · 1 s</span></div>",
+      "css": ".ds-fx { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 20px; padding: 0 9px; background: #4b4b55; color: #fff; border-radius: 10px; box-shadow: inset 0 0 0 1px #2f2f36; font: 600 11px/1 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }"
+    },
+    {
+      "name": "Selected Track Label",
+      "kind": "nav",
+      "refersTo": "track-label-selected",
+      "description": "Track header in the 176px label column; the selection wash marks the active row.",
+      "html": "<button class=\"ds-track\"><span class=\"ds-id\">V3</span><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\"><path d=\"M5 7h6M8 7v10M14 9l5 8M19 9l-5 8\"/></svg><span>Equation</span></button>",
+      "css": ".ds-track { display: flex; align-items: center; justify-content: flex-start; gap: 7px; width: 176px; height: 34px; padding: 0 10px; background: #cdd9ec; color: #1d1d20; border: 0; border-right: 1px solid #c4c4ca; cursor: pointer; font: 400 12px/1.4 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-track svg { color: #5a5a62; flex: none; } .ds-id { width: 22px; flex: none; font-family: 'Cascadia Mono', Consolas, monospace; font-size: 10.5px; color: #5a5a62; }"
+    },
+    {
+      "name": "Playhead",
+      "kind": "custom",
+      "refersTo": "playhead",
+      "description": "A 1px vermilion line with a 13px pentagon head, spanning ruler and every track.",
+      "html": "<div class=\"ds-ph-wrap\"><div class=\"ds-ph\"></div></div>",
+      "css": ".ds-ph-wrap { position: relative; width: 160px; height: 72px; background: #dcdce0; } .ds-ph { position: absolute; top: 0; bottom: 0; left: 60px; width: 1px; background: #c43a26; } .ds-ph::before { content: ''; position: absolute; top: 0; left: -6px; width: 13px; height: 13px; background: #c43a26; clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%); }"
     }
   ],
   "narrative": {
-    "northStar": "Clarity and restraint",
-    "overview": "The established direction applies Apple principles of clarity, agency, familiarity, and restraint to a Windows application. Segoe UI, compact controls, and quiet panel boundaries keep attention on the rendered scene and its timeline. This describes the current interface, not a redesign or an accessibility certification.",
-    "keyCharacteristics": ["Dense, practical desktop controls.", "Paired light and dark themes with blue selection.", "A consistently black video stage.", "A stacked library and inspector beside the preview and timeline."],
-    "rules": [],
-    "dos": ["Do retain Segoe UI, compact density, and the established Windows workspace arrangement.", "Do preserve light/dark semantic pairs and the black stage.", "Do use blue for selection and presence, and purple for animation clips.", "Do retain visible focus outlines and the existing reduced-motion press override."],
-    "donts": ["Don't replace this interface with macOS window chrome or a new visual concept.", "Don't promote scene artwork colors into interface brand tokens.", "Don't describe unimplemented motion, materials, or accessibility guarantees as established behavior."]
+    "northStar": "The Edit Suite for Mathematics",
+    "overview": "manim-editor looks and behaves like a compact non-linear editor, not a form with a footer. Matte graphite panels sit on a darker gutter and are separated by 2px seams, so the window reads as one machined console rather than a stack of cards. The timeline is the instrument: it owns the lower ~42% of the window, its V and A tracks carry colour by object kind, and a single hot vermilion marks the things that are live right now (Render, the playhead, the selection).\n\nDensity is high and calm: 12px Segoe UI Variable Text for the interface, Cascadia Mono wherever a value is data (timecode, ruler, track IDs, durations, hex colours, LaTeX). Objects are shown through drawn glyphs on black thumbnails, which echo the black Manim stage the user is composing for. The story the layout tells, left to right and top to bottom: pick an object from the pool, shape it in the inspector, place it in time, render, scrub the result.\n\nBoth themes are first-class. Light is cool grey graphite on a mid-grey gutter; dark is near-black graphite on a darker gutter. The stage is black in both.",
+    "keyCharacteristics": [
+      "Panels on 2px gutters; no cards, no floating surfaces, no drop shadows.",
+      "One hot colour (vermilion) reserved for live state and the single commit action.",
+      "Clip colour encodes object kind; animation clips are neutral pills with a motion glyph.",
+      "Timecode and measurement are monospaced, tabular data.",
+      "Drawn, authored glyphs for every element and animation kind."
+    ],
+    "rules": [
+      { "name": "The One Hot Colour Rule", "body": "Vermilion is reserved for Render, the playhead, selection rings, focus rings, the unsaved dot, the stale-preview dot and the timeline timecode. Nothing else may be hot, and no second accent hue may be introduced.", "section": "colors" },
+      { "name": "The Tone Means Kind Rule", "body": "A clip's colour is decided by what the object is (toneOf in Timeline.tsx), never by state or by user choice. State is shown with the hot ring, hatching and the lock, not by recolouring.", "section": "colors" },
+      { "name": "The Data Is Mono Rule", "body": "Anything the user reads as a measurement (time, duration, track ID, hex colour, LaTeX source) is set in Cascadia Mono with tabular figures. Prose and labels never are.", "section": "typography" },
+      { "name": "The Sentence Case Rule", "body": "Headings and labels are sentence case at 11-12px. No uppercase kickers or eyebrows; weight and the muted colour carry hierarchy.", "section": "typography" },
+      { "name": "The Seams Not Shadows Rule", "body": "Panels are separated by 2px gutters and hairlines. Nothing floats; nothing casts a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do separate surfaces with the 2px gutter and 1px hairlines, and keep new panels on panel with a 30px panel-head heading.",
+      "Do keep vermilion to Render, the playhead, selection rings, focus rings, the unsaved dot, the stale-preview dot and the timeline timecode.",
+      "Do colour new element kinds with an existing tone by family (coordinates, graph, tex, text, shape), and give new animation kinds a pill with a drawn AnimationIcon.",
+      "Do set times, durations, IDs, hex values and LaTeX in Cascadia Mono with tabular figures.",
+      "Do draw a 24-unit line glyph (round caps, 1.75 stroke) for any new element kind and show it on a black thumbnail.",
+      "Do keep the ruler, lane and playhead insets (10px start, 16px end) in sync whenever the timeline geometry changes.",
+      "Do respect prefers-reduced-motion: transitions off and no press nudge."
+    ],
+    "donts": [
+      "Don't introduce cards, floating panels, drop shadows or translucent blur.",
+      "Don't add a second accent colour, or use vermilion for decoration, links, badges or hover states.",
+      "Don't recolour clips to show state; use the ring, hatching and lock.",
+      "Don't use stock \"AI\" iconography (sparkles, magic wands, robot heads) or emoji; command icons stay plain line icons at 13-15px.",
+      "Don't put the timeline back under a stacked sidebar of forms; it keeps its own full-width band.",
+      "Don't use uppercase kickers, eyebrows or display type outside the empty viewer.",
+      "Don't let the stage be anything but black."
+    ]
   }
 }
