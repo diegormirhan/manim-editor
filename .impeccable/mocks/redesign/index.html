@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<title>manim-editor · redesign directions</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font: 13px/1.4 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; background: #111214; color: #e8e9ec; display: grid; grid-template-rows: auto 1fr; }
+nav { display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid #26282c; }
+nav b { margin-right: 14px; }
+nav button { background: none; border: 1px solid transparent; color: #a8acb4; padding: 6px 12px; border-radius: 6px; font: inherit; cursor: pointer; }
+nav button:hover { color: #fff; }
+nav button[aria-pressed="true"] { color: #fff; border-color: #3a3d43; background: #1c1e21; }
+nav .sp { flex: 1; }
+nav p { margin: 0 12px 0 0; color: #8a8f98; max-width: 520px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+iframe { width: 100%; height: 100%; border: 0; display: block; }
+</style>
+</head>
+<body>
+<nav>
+  <b>Redesign</b>
+  <button data-src="a-caderno.html" aria-pressed="true">A · Computation pad</button>
+  <button data-src="b-edicao.html">B · Edit suite</button>
+  <button data-src="c-instrumento.html">C · Instrument bench</button>
+  <button data-src="d-macos.html">D · macOS</button>
+  <span class="sp"></span>
+  <p id="note"></p>
+  <button id="theme">Light</button>
+</nav>
+<iframe id="view" title="Mockup"></iframe>
+<script>
+const notes = {
+  "a-caderno.html": "The project as an engineering computation sheet; clips are intervals on the real line.",
+  "b-edicao.html": "Post-production density; timeline leads, timecode, object pool with drawn thumbnails.",
+  "c-instrumento.html": "Oscilloscope front panel; each object is a logic channel, animations decode on a bus.",
+  "d-macos.html": "Final Cut / Keynote grammar: unified toolbar, translucent sidebar, connected clips.",
+};
+let src = "a-caderno.html", theme = "dark";
+const view = document.getElementById("view");
+const load = () => { view.src = `${src}?theme=${theme}`; document.getElementById("note").textContent = notes[src]; };
+document.querySelectorAll("[data-src]").forEach(b => b.onclick = () => {
+  document.querySelectorAll("[data-src]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  src = b.dataset.src; load();
+});
+document.getElementById("theme").onclick = e => { theme = theme === "dark" ? "light" : "dark"; e.target.textContent = theme === "dark" ? "Light" : "Dark"; load(); };
+load();
+</script>
+</body>
+</html>

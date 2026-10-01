@@ -18,3 +18,6 @@ playwright-report/
 /PRODUCT.md
 /docs/architecture/
 /docs/progress.md
+
+# Agent skill packs: local tooling, not published.
+/.agents/

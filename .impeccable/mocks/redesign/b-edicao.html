@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en-US" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>B · Edit suite</title>
+<script src="shared.js"></script>
+<style>
+:root {
+  --bg: #d4d4d6; --panel: #e8e8ea; --panel-2: #dedee1; --well: #f4f4f5; --line: #bdbdc2; --text: #1d1d20; --muted: #5c5c63;
+  --hot: #d9452f; --hot-ink: #fff; --sel: #c9d6ea; --track: #d0d0d4; --track-alt: #c8c8cd; --ruler: #e1e1e4;
+  --c-axes: #8a8f99; --c-graph: #2f8fa8; --c-tex: #7a6bb0; --c-text: #b8962a; --c-target: #c2554a; --c-anim: #4b4b55;
+  --ui: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --tc: "Cascadia Mono", "Consolas", monospace;
+}
+:root[data-theme="dark"] {
+  --bg: #131315; --panel: #1d1d20; --panel-2: #232327; --well: #0d0d0e; --line: #2c2c31; --text: #dadade; --muted: #8b8b93;
+  --hot: #ff5a3c; --hot-ink: #160806; --sel: #2c3a52; --track: #19191c; --track-alt: #1c1c20; --ruler: #222226;
+  --c-axes: #5d636e; --c-graph: #1f6f86; --c-tex: #5b4d8f; --c-text: #8a6f1c; --c-target: #93403a; --c-anim: #3b3b44;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font: 12px/1.4 var(--ui); background: var(--bg); color: var(--text); display: grid; grid-template-rows: 38px minmax(0, 1fr) 46% 34px; gap: 2px; overflow: hidden; }
+::selection { background: var(--sel); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.bar, .panel { background: var(--panel); }
+.bar { display: flex; align-items: center; gap: 2px; padding: 0 8px; }
+.bar .title { font-weight: 600; margin-right: 10px; }
+.bar .project { color: var(--muted); margin-right: auto; }
+.bar .project b { color: var(--text); font-weight: 600; }
+.bar .dirty { color: var(--hot); margin-left: 8px; }
+.btn { background: none; border: 1px solid transparent; border-radius: 3px; padding: 4px 9px; color: var(--muted); }
+.btn:hover { color: var(--text); background: var(--panel-2); }
+.render { background: var(--hot); color: var(--hot-ink); border: 0; border-radius: 3px; padding: 6px 14px; font-weight: 700; margin-left: 8px; letter-spacing: .02em; }
+
+.upper { display: grid; grid-template-columns: 270px minmax(0, 1fr) 290px; gap: 2px; min-height: 0; }
+.panel { display: flex; flex-direction: column; min-height: 0; }
+.ph { height: 28px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-bottom: 1px solid var(--line); background: var(--panel-2); flex: none; }
+.ph b { font-weight: 600; }
+.ph .tabs { display: flex; gap: 2px; margin-left: auto; }
+.ph .tabs span { padding: 2px 8px; border-radius: 3px; color: var(--muted); }
+.ph .tabs span.on { background: var(--well); color: var(--text); }
+.pb { overflow: auto; padding: 8px; min-height: 0; }
+
+.pool { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.thumb { border: 1px solid var(--line); border-radius: 3px; background: var(--well); padding: 0; text-align: left; overflow: hidden; }
+.thumb:hover { border-color: var(--muted); }
+.thumb .img { aspect-ratio: 16/10; background: #000; display: grid; place-items: center; color: #fff; }
+.thumb .img svg { width: 46%; height: 46%; }
+.thumb .name { padding: 3px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pool-h { color: var(--muted); margin: 10px 2px 5px; font-size: 11px; }
+.pool-h:first-child { margin-top: 0; }
+
+.viewer .screen { flex: 1; display: grid; place-items: center; background: var(--well); min-height: 0; padding: 10px; }
+.viewer .screen > div { height: 100%; aspect-ratio: 16/9; max-width: 100%; }
+.viewer svg { display: block; width: 100%; height: 100%; }
+.transport { height: 40px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 12px; border-top: 1px solid var(--line); flex: none; }
+.transport .tc { font-family: var(--tc); font-size: 15px; letter-spacing: .02em; }
+.transport .tc.dim { color: var(--muted); justify-self: end; font-size: 12px; }
+.keys { display: flex; gap: 4px; }
+.keys button { width: 30px; height: 26px; display: grid; place-items: center; background: none; border: 0; border-radius: 3px; color: var(--text); }
+.keys button:hover { background: var(--panel-2); }
+.keys svg { width: 15px; height: 15px; }
+.stale { margin-left: 10px; color: var(--hot); }
+
+.insp .grp { border-bottom: 1px solid var(--line); padding: 8px 10px 10px; }
+.insp h4 { margin: 0 0 8px; font-size: 11px; font-weight: 600; color: var(--muted); }
+.kv { display: grid; grid-template-columns: 82px 1fr; align-items: center; gap: 6px 8px; }
+.kv label { color: var(--muted); }
+.kv input { background: var(--well); border: 1px solid var(--line); border-radius: 3px; padding: 3px 6px; width: 100%; font-variant-numeric: tabular-nums; outline: none; }
+.kv input:focus { border-color: var(--hot); }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; }
+.chip i { width: 11px; height: 11px; border-radius: 2px; background: #58C4DD; display: inline-block; }
+
+/* Timeline */
+.edit { display: grid; grid-template-rows: 30px 24px minmax(0, 1fr); min-height: 0; }
+.tl-tools { display: flex; align-items: center; gap: 2px; padding: 0 8px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+.tl-tools .tc { font-family: var(--tc); font-size: 14px; color: var(--hot); margin-right: 14px; }
+.tl-tools .sep { width: 1px; height: 16px; background: var(--line); margin: 0 6px; }
+.tl-tools .hint { margin-left: auto; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: 180px 1fr; }
+.ruler { background: var(--ruler); border-bottom: 1px solid var(--line); position: relative; }
+.ruler .lane { position: relative; height: 24px; }
+.ruler .tk { position: absolute; bottom: 0; height: 7px; border-left: 1px solid var(--muted); }
+.ruler .tk.maj { height: 12px; }
+.ruler .tk span { position: absolute; left: 4px; bottom: 9px; font-family: var(--tc); font-size: 10px; color: var(--muted); white-space: nowrap; }
+.tracks { overflow: auto; position: relative; background: var(--track); }
+.trk { height: 34px; border-bottom: 1px solid var(--line); }
+.trk:nth-child(even) .lane { background: var(--track-alt); }
+.hdr { display: flex; align-items: center; gap: 7px; padding: 0 9px; background: var(--panel); border-right: 1px solid var(--line); white-space: nowrap; overflow: hidden; }
+.hdr .id { font-family: var(--tc); color: var(--muted); font-size: 11px; width: 22px; }
+.hdr .lock { margin-left: auto; color: var(--muted); }
+.trk.sel .hdr { background: var(--sel); }
+.trk .lane { position: relative; }
+.clip { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; color: #fff; padding: 3px 7px; overflow: hidden; white-space: nowrap; border: 1px solid rgba(255,255,255,.18); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.clip .nm { font-weight: 600; font-size: 11px; text-overflow: ellipsis; overflow: hidden; }
+.clip .dur { font-family: var(--tc); font-size: 10px; opacity: .8; }
+.trk.sel .clip { outline: 2px solid var(--hot); outline-offset: -1px; }
+.clip.owned { background-image: repeating-linear-gradient(135deg, transparent 0 9px, rgba(0,0,0,.09) 9px 10px); }
+.clip.fx { top: 4px; bottom: 4px; border-radius: 9px; background: var(--c-anim); border-color: var(--muted); flex-direction: row; align-items: center; gap: 6px; justify-content: center; }
+.clip.fx svg { width: 11px; height: 11px; flex: none; }
+.sect { height: 22px; display: grid; grid-template-columns: 180px 1fr; background: var(--panel-2); border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+.sect div:first-child { padding: 4px 9px; }
+.ph-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--hot); pointer-events: none; }
+.ph-head { position: absolute; top: 0; width: 13px; height: 13px; margin-left: -6px; background: var(--hot); clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%); }
+
+.pages { display: flex; justify-content: center; gap: 4px; align-items: center; background: var(--panel); }
+.pages button { display: flex; align-items: center; gap: 7px; background: none; border: 0; padding: 5px 16px; border-radius: 3px; color: var(--muted); }
+.pages button.on { color: var(--text); background: var(--panel-2); box-shadow: inset 0 -2px 0 var(--hot); }
+.pages svg { width: 15px; height: 15px; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <span class="title">manim-editor</span>
+  <span class="project">Project <b>Parabola transformation</b> <span class="dirty">● Unsaved</span></span>
+  <button class="btn">Undo</button><button class="btn">Redo</button>
+  <button class="btn">Open</button><button class="btn">Save</button><button class="btn">Export Python</button>
+  <button class="btn" data-toggle-theme>Theme</button>
+  <button class="render">RENDER</button>
+</header>
+
+<section class="upper">
+  <div class="panel">
+    <div class="ph"><b>Object pool</b><div class="tabs"><span class="on">Library</span><span>Scene · 5</span></div></div>
+    <div class="pb" id="pool"></div>
+  </div>
+  <div class="panel viewer">
+    <div class="ph"><b>Viewer</b><span style="color:var(--muted)">Last render · 854×480 · 15 fps</span><span class="stale">● 1 change not rendered</span></div>
+    <div class="screen"><div id="stage"></div></div>
+    <div class="transport">
+      <span class="tc">00:00:07:03</span>
+      <div class="keys">
+        <button title="Start"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+        <button title="Back one frame"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 5v14L8 12z"/></svg></button>
+        <button title="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></button>
+        <button title="Forward one frame"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5v14l10-7z"/></svg></button>
+        <button title="End"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      </div>
+      <span class="tc dim">DUR 00:00:12:00</span>
+    </div>
+  </div>
+  <div class="panel insp">
+    <div class="ph"><b>Inspector</b><div class="tabs"><span class="on">Object</span><span>Animation</span></div></div>
+    <div class="pb" style="padding:0">
+      <div class="grp"><h4>Graph · V2</h4>
+        <div class="kv"><label>f(x)</label><input value="x^2"><label>x range</label><div class="trio" style="grid-template-columns:1fr 1fr"><input value="-2.5"><input value="2.5"></div><label>Plotted on</label><input value="V1 · Axes"></div></div>
+      <div class="grp"><h4>Transform</h4>
+        <div class="kv"><label>Position</label><div class="trio"><input value="0"><input value="0"><input value="0"></div><label>Scale</label><input value="1.00"><label>Rotation</label><input value="0.0°"></div></div>
+      <div class="grp"><h4>Appearance</h4>
+        <div class="kv"><label>Colour</label><span class="chip"><i></i>#58C4DD</span><label>Opacity</label><input value="100 %"></div></div>
+      <div class="grp"><h4>Timing</h4>
+        <div class="kv"><label>In</label><input value="00:00:01:00"><label>Out</label><input value="00:00:07:12 · by Transform"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel edit">
+  <div class="tl-tools">
+    <span class="tc">00:00:07:03</span>
+    <button class="btn">Select</button><button class="btn">Trim</button><button class="btn">Snap</button>
+    <span class="sep"></span><button class="btn">+ Animation</button><button class="btn">Group parallel</button>
+    <span class="hint">Drag clips to move · drag edges to trim · Esc cancels</span>
+  </div>
+  <div class="grid2 ruler"><div style="background:var(--panel-2);border-right:1px solid var(--line)"></div><div class="lane" id="ruler"></div></div>
+  <div class="tracks" id="tracks"></div>
+</section>
+
+<nav class="pages" aria-label="Pages">
+  <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>Build</button>
+  <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18M3 12h12M3 17h16"/></svg>Edit</button>
+  <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 4v16l13-8z"/></svg>Render</button>
+  <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Export</button>
+</nav>
+
+<script>
+const M = MOCK; M.themeSwitch();
+document.getElementById("stage").innerHTML = M.stage();
+const cls = { axes: "--c-axes", graph: "--c-graph", equation: "--c-tex", annotation: "--c-text", target: "--c-target" };
+document.getElementById("pool").innerHTML = M.catalog.map(g => `<div class="pool-h">${g.group}</div><div class="pool">${g.items.map(i => {
+  return `<button class="thumb"><div class="img">${M.icon(i, 24)}</div><div class="name">${i}</div></button>`;}).join("")}</div>`).join("");
+const ruler = document.getElementById("ruler");
+for (let s = 0; s <= 12; s++) {
+  ruler.insertAdjacentHTML("beforeend", `<div class="tk maj" style="left:${M.pct(s*1000)}%"><span>${M.timecode(s*1000).slice(3)}</span></div>`);
+  if (s < 12) for (let f = 1; f < 4; f++) ruler.insertAdjacentHTML("beforeend", `<div class="tk" style="left:${M.pct(s*1000+f*250)}%"></div>`);
+}
+const dur = ms => (ms/1000).toFixed(1)+" s";
+const fxIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18L18 4M14 4h4v4"/></svg>';
+let html = `<div class="sect"><div>Objects</div><div></div></div>`;
+for (const e of M.elements.slice().reverse()) html += `<div class="grid2 trk ${e.id==="graph"?"sel":""}"><div class="hdr"><span class="id">V${e.n}</span>${M.icon(e.glyph,14)}<span>${e.kind}</span>${e.owned?'<span class="lock" title="Span set by an animation"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span>':""}</div>
+  <div class="lane"><div class="clip ${e.owned?"owned":""}" style="left:${M.pct(e.start)}%;width:${M.pct(e.end-e.start)}%;background-color:var(${cls[e.id]})"><span class="nm">${e.label}</span><span class="dur">${dur(e.end-e.start)}</span></div></div></div>`;
+html += `<div class="sect"><div>Animations</div><div></div></div>`;
+for (const a of M.animations) html += `<div class="grid2 trk ${a.target==="graph"?"sel":""}" style="height:28px"><div class="hdr"><span class="id">A${a.n}</span><span>${a.kind}</span><span style="color:var(--muted)">→ V${M.byId[a.target].n}</span></div>
+  <div class="lane"><div class="clip fx" style="left:${M.pct(a.start)}%;width:${M.pct(a.end-a.start)}%">${fxIcon}<span class="nm">${a.kind}</span></div></div></div>`;
+const tr = document.getElementById("tracks");
+tr.innerHTML = html + `<div class="grid2" style="position:absolute;inset:0;pointer-events:none"><div></div><div style="position:relative"><div class="ph-line" style="left:${M.pct(M.PLAYHEAD)}%"></div></div></div>`;
+ruler.insertAdjacentHTML("beforeend", `<div class="ph-head" style="left:${M.pct(M.PLAYHEAD)}%"></div><div class="ph-line" style="left:${M.pct(M.PLAYHEAD)}%"></div>`);
+</script>
+</body>
+</html>

@@ -19,6 +19,25 @@ export const frameAt = (milliseconds: number) => Math.floor(milliseconds * 15 / 
 export const childrenOf = (clip: Animation): Animation[] => clip.kind === "parallel" ? clip.clips ?? [] : [clip];
 export const leafClips = (scene: Project["scene"]) => (scene.animations ?? []).flatMap(childrenOf);
 export const seconds = (ms: number) => (ms / 1000).toLocaleString("en-US", { maximumFractionDigits: 2 }) + " s";
+export function timecode(ms: number): string {
+  const frames = frameAt(ms), two = (value: number) => String(value).padStart(2, "0");
+  const total = Math.floor(frames / 15);
+  return [Math.floor(total / 3600), Math.floor(total / 60) % 60, total % 60, frames % 15].map(two).join(":");
+}
+
+const RULER_STEPS = [100, 200, 500, 1000, 2000, 5000, 10000, 15000, 30000, 60000];
+
+/** Ruler marks on round times: the smallest step that keeps twelve labelled intervals or fewer. */
+export function rulerTicks(durationMs: number): { majors: number[]; minors: number[] } {
+  const step = RULER_STEPS.find(candidate => durationMs / candidate <= 12) ?? RULER_STEPS.at(-1)!;
+  const minorStep = step / (step === 200 || step === 2000 ? 4 : 5);
+  const majors: number[] = [], minors: number[] = [];
+  for (let ms = 0; ms <= durationMs + 1e-6; ms += minorStep) {
+    const time = Math.round(ms);
+    (time % step === 0 ? majors : minors).push(time);
+  }
+  return { majors, minors };
+}
 
 export function lifetimes(scene: Project["scene"]): Record<string, [number, number]> {
   const spans = Object.fromEntries(Object.entries(scene.elements).map(([id, element]) =>
