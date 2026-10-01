@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("English labels and singular counts survive theme changes", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "en-US");
   await expect(page.getByRole("heading", { name: "Timeline" })).toContainText("1 element");
@@ -11,6 +12,18 @@ test("English labels and singular counts survive theme changes", async ({ page }
   await page.getByLabel("Switch to dark mode").click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.getByLabel("LaTeX expression")).toHaveValue("a^2 + b^2 = c^2");
+});
+
+test("the theme follows the system until the user picks one", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByLabel("Switch to light mode").click();
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 
 test("edits, validates, adds and undoes without pretending to render in browser", async ({
