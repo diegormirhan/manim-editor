@@ -4,7 +4,7 @@ test("English labels and singular counts survive theme changes", async ({ page }
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "en-US");
   await expect(page.getByRole("heading", { name: "Timeline" })).toContainText("1 element");
-  await expect(page.locator(".ruler")).toContainText("0.75 s");
+  await expect(page.locator(".ruler")).toContainText("1.5 s");
   await page.getByLabel("Switch to light mode").click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(page.getByLabel("Open example")).toBeVisible();
