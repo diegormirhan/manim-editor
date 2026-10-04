@@ -1,0 +1,18 @@
+{
+  "gridFps": 15,
+  "resolutions": {
+    "480p": { "width": 854, "height": 480 },
+    "720p": { "width": 1280, "height": 720 },
+    "1080p": { "width": 1920, "height": 1080 },
+    "1440p": { "width": 2560, "height": 1440 },
+    "2160p": { "width": 3840, "height": 2160 }
+  },
+  "previewResolutions": ["480p", "720p", "1080p"],
+  "frameRates": [15, 30, 60],
+  "formats": {
+    "mp4": { "label": "MP4", "codec": "H.264", "transparency": false },
+    "webm": { "label": "WebM", "codec": "VP9", "transparency": true },
+    "gif": { "label": "GIF", "codec": "Animated GIF", "transparency": false },
+    "mov": { "label": "MOV", "codec": "QuickTime", "transparency": true }
+  }
+}
