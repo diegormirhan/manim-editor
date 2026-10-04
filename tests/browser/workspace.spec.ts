@@ -121,3 +121,25 @@ test("booleans are switches that report their state", async ({ page }) => {
   await page.keyboard.press("Control+z");
   await expect(numbers).toHaveAttribute("aria-checked", "true");
 });
+
+test("a short animation clip keeps its duration and lets its name go", async ({ page }) => {
+  await openEditor(page, "Shapes and motion");
+  const clips = page.locator(".editable-clip.animation");
+  for (const clip of await clips.all()) await expect(clip.locator(".clip-duration")).toBeVisible();
+  const widths = await clips.evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().width));
+  const narrow = clips.nth(widths.indexOf(Math.min(...widths)));
+  expect(Math.min(...widths)).toBeLessThan(112);
+  await expect(narrow.locator(".clip-body span")).toBeHidden();
+  // The name is still on the track label and in the clip's tooltip.
+  await expect(narrow).toHaveAttribute("title", /^[A-Za-z]+ · /);
+});
+
+test("the object pool fades at its foot while more lies below", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await openEditor(page);
+  const library = page.locator(".library");
+  const hint = () => library.evaluate(node => getComputedStyle(node, "::after").opacity);
+  expect(await hint()).toBe("1");
+  await library.evaluate(node => { node.scrollTop = node.scrollHeight; });
+  await expect.poll(hint).toBe("0");
+});
