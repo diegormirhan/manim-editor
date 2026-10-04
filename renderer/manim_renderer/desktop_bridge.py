@@ -1,10 +1,12 @@
 import json
 import os
 from pathlib import Path
+import shutil
 import sys
 
 from .project import load_project, save_project, validate_project
 from .render_job import render_project
+from .render_options import resolve_options
 from .scene_compiler import compile_project
 
 
@@ -23,7 +25,22 @@ def render_root(root: Path) -> Path:
     return Path.home() / ".manim-editor" / "renders"
 
 
-def dispatch(request: dict, root: Path) -> dict:
+def emit_progress(phase: str, fraction: float) -> None:
+    """Progress travels as newline-delimited JSON on stderr; the result stays alone on stdout."""
+    print(json.dumps({"event": "progress", "phase": phase, "fraction": round(fraction, 4)}), file=sys.stderr, flush=True)
+
+
+def publish(artifact: Path, destination: Path) -> None:
+    """Copies beside the destination first, so a failed copy never leaves half a video under its name."""
+    partial = destination.with_name(destination.name + ".partial")
+    try:
+        shutil.copyfile(artifact, partial)
+        partial.replace(destination)
+    finally:
+        partial.unlink(missing_ok=True)
+
+
+def dispatch(request: dict, root: Path, emit=emit_progress) -> dict:
     operation = request["operation"]
     if operation == "load":
         return {"project": load_project(Path(request["path"]))}
@@ -33,14 +50,19 @@ def dispatch(request: dict, root: Path) -> dict:
         save_project(project, Path(request["path"]))
         return {"path": request["path"]}
     if operation == "export":
-        Path(request["path"]).write_text(compile_project(project), encoding="utf-8")
+        options = resolve_options(request.get("options"))
+        Path(request["path"]).write_text(compile_project(project, fps=options["fps"]), encoding="utf-8")
         return {"path": request["path"]}
-    if operation == "render":
+    if operation in ("render", "exportVideo"):
+        options = resolve_options(request.get("options"), preview=operation == "render")
         artifact = render_project(
-            project, render_root(root),
+            project, render_root(root), options=options, on_progress=emit,
             tex_bin=root / "work/runtime/tex/TinyTeX/bin/windows",
         )
-        return {"path": str(artifact)}
+        if operation == "render":
+            return {"path": str(artifact)}
+        publish(artifact, Path(request["path"]))
+        return {"path": request["path"]}
     raise ValueError("Unsupported operation")
 
 
@@ -57,4 +79,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
