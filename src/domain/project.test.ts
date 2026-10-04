@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { initialProject, validateProject } from "./project";
+import { emptyProject, initialProject, isProject, validateProject } from "./project";
 import { addElement } from "./catalog";
 
 test("adding an element preserves the original and adds no animation", () => {
@@ -26,4 +26,17 @@ test("rejects non-finite numbers the bounded schema cannot catch", () => {
     p.scene.elements["equation-1"].position[1] = value;
     expect(validateProject(p), String(value)).toContain("finite");
   }
+});
+
+test("a blank document is valid and recognisable as a project", () => {
+  const blank = emptyProject();
+  expect(validateProject(blank)).toBeNull();
+  expect(Object.keys(blank.scene.elements)).toHaveLength(0);
+  expect(isProject(blank)).toBe(true);
+  // A session with a timing mistake is still a project worth recovering.
+  const halfEdited = initialProject();
+  halfEdited.scene.elements["equation-1"].appearsAtMs = 9000;
+  expect(validateProject(halfEdited)).not.toBeNull();
+  expect(isProject(halfEdited)).toBe(true);
+  expect(isProject({ name: "x" })).toBe(false);
 });
