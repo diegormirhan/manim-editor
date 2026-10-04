@@ -28,3 +28,17 @@ test("parallel resize keeps children in sync; conflict stays invalid", () => {
   next.scene.animations!.push({ kind: "fadeOut", targetId: "b", startMs: 1500, durationMs: 1000 });
   expect(validateProject(next)).toContain("sequential");
 });
+test("an edge near a magnet lands on it exactly; farther away the grid wins", () => {
+  const p = initialProject(), target = { type: "animation", index: 0 } as const;
+  p.scene.durationMs = 6000;
+  p.scene.animations = [{ kind: "indicate", targetId: "equation-1", startMs: 1000, durationMs: 1000 }];
+  const moved = (delta: number, gesture: "move" | "start" | "end" = "move") =>
+    editClip(p, target, gesture, delta, [2437], 80).scene.animations![0];
+  // The start reaches 2437 ± 80: it locks on.
+  expect(moved(1400).startMs).toBe(2437);
+  // The end (2000) reaches 2437 first when the clip moves by about 437.
+  expect(moved(460)).toMatchObject({ startMs: 1437, durationMs: 1000 });
+  expect(moved(700).startMs).toBe(1700);
+  expect(moved(420, "end")).toMatchObject({ startMs: 1000, durationMs: 1437 });
+  expect(editClip(p, target, "move", 1400).scene.animations![0].startMs).toBe(2400);
+});
