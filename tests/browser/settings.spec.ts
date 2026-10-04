@@ -161,14 +161,19 @@ test("unsaved work is forgotten on reload when restoring is turned off", async (
   await expect(page.getByLabel("LaTeX expression")).toHaveValue("a^2 + b^2 = c^2");
 });
 
-test("the theme can follow the system", async ({ page }) => {
+test("the theme follows the system until the user picks one, and Settings can hand it back", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
-  await openEditor(page);
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.emulateMedia({ colorScheme: "dark" });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByRole("button", { name: "Switch to light mode" }).click();
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+  await page.getByRole("button", { name: "Open example First equation" }).click();
   await openSettings(page);
   await settings(page).getByRole("tab", { name: "Editor" }).click();
   await choice(page, "Theme", "System").click();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await page.emulateMedia({ colorScheme: "dark" });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
