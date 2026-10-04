@@ -28,6 +28,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "background": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
         "elements": {
           "type": "object",
           "additionalProperties": {

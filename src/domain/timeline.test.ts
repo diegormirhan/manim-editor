@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { animationLabels, clipFields, isEntrance, lifetimes, rulerTicks, seconds, timecode } from "./timeline";
+import { animationLabels, appearanceTime, clipFields, isEntrance, lifetimes, removeAnimation, rulerTicks, seconds, timecode } from "./timeline";
 import { createElement } from "./catalog";
 import { initialProject, validateProject, type Animation, type Project } from "./project";
 
@@ -88,4 +88,42 @@ test("ruler steps land on round seconds and keep at most twelve labelled marks",
   expect(rulerTicks(10000).majors).toEqual([0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]);
   expect(rulerTicks(45000).majors.every((ms) => ms % 5000 === 0)).toBe(true);
   for (const ms of rulerTicks(12000).minors) expect(demo.majors).not.toContain(ms);
+});
+
+test("a new element appears at the playhead but never inside a running animation", () => {
+  const p = twoCircles();
+  p.scene.animations = [{ kind: "indicate", targetId: "a", startMs: 1000, durationMs: 1000 }];
+  expect(appearanceTime(p.scene, 437)).toBe(400);
+  expect(appearanceTime(p.scene, 1500)).toBe(2000);
+  expect(appearanceTime(p.scene, 1000)).toBe(1000);
+  expect(appearanceTime(p.scene, -50)).toBe(0);
+  // The scene must still show the element for at least one frame.
+  expect(appearanceTime(p.scene, 6000)).toBe(5900);
+  p.scene.animations = [{ kind: "indicate", targetId: "a", startMs: 5000, durationMs: 1000 }];
+  expect(appearanceTime(p.scene, 5600)).toBe(5000);
+});
+
+test("removing a transform also removes the destination it created", () => {
+  const p = twoCircles();
+  p.scene.elements.c = createElement("circle");
+  p.scene.animations = [
+    { kind: "fadeIn", targetId: "c", startMs: 0, durationMs: 500 },
+    { kind: "transform", targetId: "a", destinationId: "b", startMs: 1000, durationMs: 1000 },
+    { kind: "indicate", targetId: "b", startMs: 3000, durationMs: 1000 },
+  ];
+  const next = removeAnimation(p, 1);
+  expect(Object.keys(next.scene.elements)).toEqual(["a", "c"]);
+  expect(next.scene.animations).toEqual([p.scene.animations[0]]);
+  expect(validateProject(next)).toBeNull();
+  expect(p.scene.animations).toHaveLength(3);
+  expect(removeAnimation(p, 0).scene.elements).toEqual(p.scene.elements);
+});
+
+test("zoomed rulers label the visible span, not the whole scene", () => {
+  const whole = rulerTicks(45_000);
+  expect(whole.majors.every((ms) => ms % 5000 === 0)).toBe(true);
+  // A tenth of the scene in view: marks every 0.5 s across the full scene.
+  const zoomed = rulerTicks(45_000, 4500);
+  expect(zoomed.majors.slice(0, 3)).toEqual([0, 500, 1000]);
+  expect(zoomed.majors.at(-1)).toBe(45_000);
 });

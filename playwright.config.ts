@@ -4,6 +4,8 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:1420",
     viewport: { width: 1280, height: 860 },
+    // The launch animation only fades with reduced motion, so tests reach the app quickly.
+    reducedMotion: "reduce",
     launchOptions: {
       executablePath:
         "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",

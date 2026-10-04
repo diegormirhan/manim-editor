@@ -10,4 +10,5 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = ["protocol-asset"] }
 serde_json = "1"
 rfd = "0.15"
+tauri-plugin-updater = "2"
 

@@ -127,6 +127,7 @@ export function buildSchema() {
         required: ["durationMs", "elements"],
         properties: {
           durationMs: integerFrom(1),
+          background: hexColor,
           elements: {
             type: "object",
             additionalProperties: {

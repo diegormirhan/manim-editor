@@ -2,7 +2,8 @@
 
 ## Provenance
 
-All media here was generated locally on September 7, 2026. No stock images, copied
+The videos and GIFs were generated locally on September 7, 2026; the screenshots were
+captured again on October 4, 2026, after the interface redesign. No stock images, copied
 3Blue1Brown footage, AI-generated screenshots, or mocked rendering responses are used.
 The original scene definitions are included in this repository.
 
@@ -15,12 +16,16 @@ The original scene definitions are included in this repository.
 | [calculus-area-dark.png](../screenshots/calculus-area-dark.png) | Tauri app displaying calculus-area.json | WebView2 content capture, 1440 × 1000, dark theme, paused near 9.9 s |
 | [calculus-area-light.png](../screenshots/calculus-area-light.png) | Same app and render | WebView2 content capture, 1440 × 1000, light theme, paused near 9.9 s |
 | [shape-motion-dark.png](../screenshots/shape-motion-dark.png) | Tauri app displaying shape-motion.json | WebView2 content capture, 1440 × 1000, dark theme, paused near 10.8 s |
+| [projects-dark.png](../screenshots/projects-dark.png) | Tauri app's Projects screen after both renders | WebView2 content capture, 1440 × 1000, dark theme |
 
-Screenshots show the application content, excluding the operating-system title bar.
+Screenshots show the application content. The app draws its own title bar, so the one
+in the screenshots is the app's; the window frame and its shadow are not included.
 Viewport dimensions are set through the debugging protocol; the screenshot script
-does not replace UI markup, change styles, or inject a pretend preview. It opens a
-bundled example through the UI, accepts its confirmation, clicks Render, waits for
-the actual native bridge to complete, and seeks the resulting video.
+does not replace UI markup, change styles, or inject a pretend preview. Before it starts,
+it lists the three bundled example files (their real paths in `examples/`) as recent
+projects, so the Projects screen opens them without a native file dialog; each one is
+still read by the Rust and Python bridge. It then clicks Render, waits for the actual
+native bridge to complete, seeks the resulting video, and finally returns to Projects.
 
 ## Rebuild videos and GIFs
 
@@ -37,23 +42,27 @@ remain under the ignored `work/renders` directory.
 
 ## Capture the desktop application
 
-Use a disposable development window: the capture opens examples and replaces its
+Use a disposable development window: the capture opens the examples and replaces its
 current project. Save any work and close existing debug windows first.
 
-In one terminal, run `npm run dev`. In a second terminal, with Rust available:
+In one terminal, with Rust available:
 
 ```powershell
-cargo build --manifest-path src-tauri/Cargo.toml
 $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=9223'
-Start-Process -FilePath './src-tauri/target/debug/manim-editor.exe' -WindowStyle Hidden
-Remove-Item Env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS
+npm run desktop
+```
+
+When the Projects screen is showing, in a second terminal:
+
+```powershell
 node scripts/capture-readme.mjs
 ```
 
-The script requires Node 24, connects to the local page target, enables both themes,
-and replaces the three named screenshots. Wait until the application is loaded before
-running it. Close the debugging window afterward; do not leave remote debugging
-enabled for normal use. The script restores the original viewport before disconnecting.
+The script requires Node 24, connects to the local page target, renders both examples,
+captures both themes, and replaces the four named screenshots. Close the debugging window
+afterward and run `Remove-Item Env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` in the first
+terminal; do not leave remote debugging enabled for normal use. The script restores the
+original viewport and the recent-project, session and theme entries it changed.
 
 ## Inspect the encoded output
 

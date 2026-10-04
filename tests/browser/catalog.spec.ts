@@ -1,19 +1,20 @@
 import { test, expect, type Page } from "@playwright/test";
+import { openEditor } from "./desktop-mock";
 
 const renderButton = (page: Page) => page.getByRole("button", { name: "Render", exact: true });
 
 test("adds each new library element and keeps the project renderable", async ({ page }) => {
-  await page.goto("/");
+  await openEditor(page);
   for (const label of ["Ellipse", "Polygon", "Arc", "Number line", "Number plane"]) {
     await page.getByLabel(`Add ${label}`).click();
     await expect(renderButton(page), label).toBeEnabled();
   }
-  await expect(page.getByRole("status")).toContainText("Ready to create.");
+  await expect(page.getByRole("status")).toHaveText("Number plane added at 0 s.");
   await expect(page.getByRole("heading", { name: "Timeline" })).toContainText("6 elements");
 });
 
 test("the library groups its kinds and keeps derived kinds behind their source", async ({ page }) => {
-  await page.goto("/");
+  await openEditor(page);
   for (const group of ["Text", "Shapes", "Coordinates", "Graphs"])
     await expect(page.getByRole("heading", { name: group, exact: true })).toBeVisible();
 
@@ -30,7 +31,7 @@ test("the library groups its kinds and keeps derived kinds behind their source",
 });
 
 test("rotation and opacity are editable on any element", async ({ page }) => {
-  await page.goto("/");
+  await openEditor(page);
   await page.getByLabel("Add Polygon").click();
   await page.getByLabel("Number of sides").fill("8");
   await page.getByLabel("Rotation (degrees)").fill("45");
@@ -43,7 +44,7 @@ test("rotation and opacity are editable on any element", async ({ page }) => {
 
 test("every bundled example opens and stays renderable", async ({ page }) => {
   page.on("dialog", (dialog) => dialog.accept());
-  await page.goto("/");
+  await openEditor(page);
   for (const label of ["Parabola · transformation demo", "Area under the curve", "Shapes and motion"]) {
     await page.getByLabel("Open example").selectOption({ label });
     await expect(page.getByRole("status"), label).toContainText("Click Render");

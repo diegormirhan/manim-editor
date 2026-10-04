@@ -1,38 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { flushSync } from "react-dom";
 
-type Theme = "dark" | "light";
-const storageKey = "manim-editor-theme";
-const systemQuery = "(prefers-color-scheme: light)";
+export type ThemePreference = "system" | "light" | "dark";
+const KEY = "manim-editor-theme";
+const darkScheme = () => window.matchMedia?.("(prefers-color-scheme: dark)");
 
-function systemTheme(): Theme {
-  try { return window.matchMedia(systemQuery).matches ? "light" : "dark"; } catch { return "dark"; }
-}
-
-function savedTheme(): Theme | null {
-  try { const saved = localStorage.getItem(storageKey); if (saved === "dark" || saved === "light") return saved; } catch {}
-  return null;
-}
-
-// Follows the operating system until the user picks a theme; the toggle's choice then sticks.
+/** Follows the operating system until the user picks a theme; that choice then sticks. */
 export function useTheme() {
-  const [chosen, setChosen] = useState<Theme | null>(savedTheme);
-  const [system, setSystem] = useState<Theme>(systemTheme);
-  const theme = chosen ?? system;
-
+  const [preference, setPreference] = useState<ThemePreference>(() => {
+    try { const saved = localStorage.getItem(KEY); if (saved === "dark" || saved === "light" || saved === "system") return saved; } catch {}
+    return "system";
+  });
+  const [systemDark, setSystemDark] = useState(() => darkScheme()?.matches ?? true);
   useEffect(() => {
-    let query: MediaQueryList;
-    try { query = window.matchMedia(systemQuery); } catch { return; }
-    const update = () => setSystem(query.matches ? "light" : "dark");
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
+    const query = darkScheme();
+    const follow = (event: MediaQueryListEvent) => setSystemDark(event.matches);
+    query?.addEventListener("change", follow);
+    return () => query?.removeEventListener("change", follow);
   }, []);
-
-  useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
-
-  const toggleTheme = () => {
-    const next: Theme = theme === "dark" ? "light" : "dark";
-    setChosen(next);
-    try { localStorage.setItem(storageKey, next); } catch {}
+  const theme = preference === "system" ? (systemDark ? "dark" : "light") : preference;
+  // Applied during the commit, so the view transition below captures the new theme.
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem(KEY, preference); } catch {}
+  }, [theme, preference]);
+  /** A chosen theme cross-fades in (style.css), sparing the eyes a whole-window brightness jump. */
+  const choose = (next: ThemePreference) => {
+    const apply = () => flushSync(() => setPreference(next));
+    if (document.startViewTransition) document.startViewTransition(apply); else apply();
   };
-  return { theme, toggleTheme };
+  return { theme, preference, setPreference: choose, toggleTheme: () => choose(theme === "dark" ? "light" : "dark") };
 }

@@ -19,5 +19,8 @@ playwright-report/
 /docs/architecture/
 /docs/progress.md
 
+# Updater signing keys never belong in the repository.
+*.key
+
 # Agent skill packs: local tooling, not published.
 /.agents/

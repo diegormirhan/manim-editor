@@ -15,6 +15,12 @@ export const initialProject = (): Project => {
   return candidate as Project;
 };
 
+/** A blank document: nothing on stage, five seconds to fill. */
+export const emptyProject = (): Project => ({ schemaVersion: 1, name: "Untitled", scene: { durationMs: 5000, elements: {} } });
+
+/** Only the shape of the data, so a half-edited session can still be recovered. */
+export const isProject = (value: unknown): value is Project => validate(value) as boolean;
+
 export function validateProject(project: unknown): string | null {
   if (!validate(project))
     return (

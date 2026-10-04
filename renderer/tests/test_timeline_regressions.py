@@ -1,6 +1,6 @@
 import unittest
 from renderer.manim_renderer.project import validate_project
-from renderer.manim_renderer.scene_compiler import compile_project
+from renderer.manim_renderer.scene_compiler import compile_project, segment_frames
 
 
 def scene():
@@ -21,6 +21,29 @@ class TimelineRegressions(unittest.TestCase):
         with self.assertRaises(ValueError): validate_project(p)
         p["scene"]["animations"][-1]["targetId"] = "b"
         validate_project(p)
+
+    def test_simultaneous_elements_are_layered_in_track_order(self):
+        p = scene()
+        p["scene"]["elements"] = {"z": p["scene"]["elements"]["a"], "a": p["scene"]["elements"]["b"]}
+        source = compile_project(p)
+        # Later tracks are drawn over earlier ones, whatever their identifiers.
+        self.assertLess(source.index("radius=1"), source.index("radius=2"))
+        self.assertIn("self.add(element_0)\n        self.add(element_1)", source)
+
+    def test_the_output_rate_is_configurable_while_timing_stays_on_the_grid(self):
+        p = scene()
+        p["scene"]["animations"] = [dict(kind="fadeIn", targetId="a", startMs=0, durationMs=1000)]
+        source = compile_project(p, fps=60)
+        self.assertIn("config.frame_rate = 60", source)
+        # Waits and run times still count 15 fps grid frames, which 60 fps divides exactly.
+        self.assertIn("run_time=(15 - 1e-6) / 15", source)
+        self.assertEqual(segment_frames(p), [15, 75])
+
+    def test_the_scene_background_is_written_only_when_chosen(self):
+        p = scene()
+        self.assertNotIn("background_color", compile_project(p))
+        p["scene"]["background"] = "#FFFFFF"
+        self.assertIn('config.background_color = "#FFFFFF"', compile_project(p))
 
     def test_parallel_entrances_are_not_added_before_play(self):
         p = scene()

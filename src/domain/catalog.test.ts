@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import {
-  additionBlocked, createElement, derivedKinds, duplicateElement, elementLabels, positionWarning,
+  addElement, additionBlocked, createElement, derivedKinds, duplicateElement, elementLabels, positionWarning,
 } from "./catalog";
 import { initialProject, validateProject, type Element, type Project } from "./project";
 import { removeElement } from "./timeline";
@@ -82,4 +82,12 @@ test("duplicating an element copies it without inheriting its animations", () =>
 test("duplicating an unknown element changes nothing", () => {
   const project = initialProject();
   expect(duplicateElement(project, "missing")).toBe(project);
+});
+
+test("a new element starts at the requested time", () => {
+  const project = initialProject();
+  const next = addElement(project, "circle", 1200);
+  const id = Object.keys(next.scene.elements).at(-1)!;
+  expect(next.scene.elements[id].appearsAtMs).toBe(1200);
+  expect(validateProject(next)).toBeNull();
 });

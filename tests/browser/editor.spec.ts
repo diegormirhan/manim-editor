@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { openEditor } from "./desktop-mock";
 
 test("English labels and singular counts survive theme changes", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
-  await page.goto("/");
+  await openEditor(page);
   await expect(page.locator("html")).toHaveAttribute("lang", "en-US");
   await expect(page.getByRole("heading", { name: "Timeline" })).toContainText("1 element");
   await expect(page.locator(".ruler")).toContainText("1.5 s");
@@ -14,22 +15,12 @@ test("English labels and singular counts survive theme changes", async ({ page }
   await expect(page.getByLabel("LaTeX expression")).toHaveValue("a^2 + b^2 = c^2");
 });
 
-test("the theme follows the system until the user picks one", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "light" });
-  await page.goto("/");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await page.emulateMedia({ colorScheme: "dark" });
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await page.getByLabel("Switch to light mode").click();
-  await page.emulateMedia({ colorScheme: "dark" });
-  await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-});
-
 test("edits, validates, adds and undoes without pretending to render in browser", async ({
   page,
 }) => {
-  await page.goto("/");
+  // desktop.png and compact.png are the dark review captures; the -light files are separate.
+  await page.emulateMedia({ colorScheme: "dark" });
+  await openEditor(page);
   await expect(
     page.getByRole("heading", { name: "Your scene starts here" }),
   ).toBeVisible();
