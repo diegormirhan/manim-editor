@@ -18,3 +18,6 @@ playwright-report/
 /PRODUCT.md
 /docs/architecture/
 /docs/progress.md
+
+# Updater signing keys never belong in the repository.
+*.key
