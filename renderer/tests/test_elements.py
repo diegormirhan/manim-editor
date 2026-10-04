@@ -75,7 +75,7 @@ class ElementTests(unittest.TestCase):
 
     def test_area_compiles_after_its_graph_and_axes(self):
         source = compile_project(graph_scene())
-        names = {"axes": "element_1", "graph": "element_2", "area": "element_0"}
+        names = {"axes": "element_0", "graph": "element_1", "area": "element_2"}
         self.assertIn(f"{names['area']} = {names['axes']}.get_area({names['graph']}, x_range=[0, 2])", source)
         self.assertLess(source.index(f"{names['graph']} = "), source.index(".get_area("))
 
