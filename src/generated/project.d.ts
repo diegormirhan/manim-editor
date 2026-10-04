@@ -10,6 +10,7 @@ export interface ManimEditorProject {
   name: string;
   scene: {
     durationMs: number;
+    background?: string;
     elements: {
       [k: string]:
         | MathTex
