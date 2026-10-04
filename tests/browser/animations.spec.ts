@@ -1,9 +1,10 @@
 import { test, expect, type Page } from "@playwright/test";
+import { openEditor } from "./desktop-mock";
 
 const renderButton = (page: Page) => page.getByRole("button", { name: "Render", exact: true });
 
 test("an unparseable expression names its column and blocks rendering", async ({ page }) => {
-  await page.goto("/");
+  await openEditor(page);
   await page.getByLabel("Add Graph").click();
   const field = page.getByLabel("f(x) expression");
   await field.fill("2 +");
@@ -16,7 +17,7 @@ test("an unparseable expression names its column and blocks rendering", async ({
 });
 
 test("a curve undefined inside its range is rejected, not silently plotted", async ({ page }) => {
-  await page.goto("/");
+  await openEditor(page);
   await page.getByLabel("Add Graph").click();
   await page.getByLabel("f(x) expression").fill("sqrt(x)");
   await expect(page.getByRole("status")).toContainText("is not defined");
@@ -32,7 +33,7 @@ const motionClips = [
 
 for (const { kind, field, value } of motionClips) {
   test(`${kind} adds its own field and a timeline clip`, async ({ page }) => {
-    await page.goto("/");
+    await openEditor(page);
     await page.getByLabel("Add Circle").click();
     await page.getByLabel("Animation type").selectOption(kind);
     await page.getByRole("button", { name: "Add animation" }).click();
@@ -43,7 +44,7 @@ for (const { kind, field, value } of motionClips) {
 }
 
 test("new entrances replace the instantaneous appearance", async ({ page }) => {
-  await page.goto("/");
+  await openEditor(page);
   await page.getByLabel("Add Circle").click();
   await page.getByLabel("Animation type").selectOption("grow");
   await page.getByRole("button", { name: "Add animation" }).click();
