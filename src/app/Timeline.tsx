@@ -54,7 +54,7 @@ function Clip({ start, end, duration, label, name, animation, readOnly, tone, ic
       onKeyDown={event => !readOnly && onKey(event, event.shiftKey ? "end" : "move")}>
       {icon}<span>{label}</span>
     </button>
-    {!animation && <span className="clip-duration" aria-hidden="true">{readOnly && <Lock size={10} />}{seconds(end - start)}</span>}
+    <span className="clip-duration" aria-hidden="true">{readOnly && <Lock size={10} />}{seconds(end - start)}</span>
     {!readOnly && <button className="clip-grip end" data-gesture="end" aria-label={"Adjust end of " + name} onKeyDown={event => onKey(event, "end")} />}
   </div>;
 }
@@ -257,7 +257,7 @@ export function Timeline({ project, selection, onSelect, selectedAnimation, onSe
           <button className="track-label" onClick={() => onSelectAnimation(index, target)} title={targets}>
             <span className="track-id">A{index + 1}</span><span className="track-name">{manimName}</span><span className="track-target">→ {targetTracks}</span></button>
           <div className="clip-lane"><Clip start={block.startMs} end={block.startMs + block.durationMs} duration={active.scene.durationMs}
-            name={name} label={manimName + " · " + seconds(block.durationMs)} animation icon={<AnimationIcon kind={block.kind} />}
+            name={name} label={manimName} animation icon={<AnimationIcon kind={block.kind} />}
             {...propsFor({ type: "animation", index }, () => onSelectAnimation(index, target))} /></div>
         </div>;
       })}
