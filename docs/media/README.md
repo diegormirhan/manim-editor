@@ -17,6 +17,8 @@ The original scene definitions are included in this repository.
 | [calculus-area-light.png](../screenshots/calculus-area-light.png) | Same app and render | WebView2 content capture, 1440 × 1000, light theme, paused near 9.9 s |
 | [shape-motion-dark.png](../screenshots/shape-motion-dark.png) | Tauri app displaying shape-motion.json | WebView2 content capture, 1440 × 1000, dark theme, paused near 10.8 s |
 | [projects-dark.png](../screenshots/projects-dark.png) | Tauri app's Projects screen after both renders | WebView2 content capture, 1440 × 1000, dark theme |
+| [settings-dark.png](../screenshots/settings-dark.png) | Settings on its Export page, over calculus-area.json | WebView2 content capture, 1440 × 1000, dark theme |
+| [banner.png](banner.png) | [banner.html](banner.html): the app icon and calculus-area-dark.png | Edge render at 2×, 2560 × 1280; the README header and GitHub social preview |
 
 Screenshots show the application content. The app draws its own title bar, so the one
 in the screenshots is the app's; the window frame and its shadow are not included.
@@ -59,10 +61,21 @@ node scripts/capture-readme.mjs
 ```
 
 The script requires Node 24, connects to the local page target, renders both examples,
-captures both themes, and replaces the four named screenshots. Close the debugging window
+captures both themes and the Settings dialog, and replaces the five named screenshots. Close the debugging window
 afterward and run `Remove-Item Env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` in the first
 terminal; do not leave remote debugging enabled for normal use. The script restores the
 original viewport and the recent-project, session and theme entries it changed.
+
+## Render the banner
+
+After recapturing the screenshots, rebuild the banner from them:
+
+```powershell
+node scripts/render-banner.mjs
+```
+
+GitHub does not read the social preview from the repository; upload `docs/media/banner.png`
+under the repository's **Settings → General → Social preview**.
 
 ## Inspect the encoded output
 
