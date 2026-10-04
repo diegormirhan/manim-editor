@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import {
-  additionBlocked, createElement, derivedKinds, elementLabels, positionWarning,
+  addElement, additionBlocked, createElement, derivedKinds, duplicateElement, elementLabels, positionWarning,
 } from "./catalog";
 import { initialProject, validateProject, type Element, type Project } from "./project";
 import { removeElement } from "./timeline";
@@ -65,4 +65,29 @@ test("overlap and duplicate entrance are rejected", () => {
   expect(validateProject(p)).toBeNull();
   p.scene.animations.push({ kind: "fadeOut", targetId: "equation-1", startMs: 500, durationMs: 1000 });
   expect(validateProject(p)).toContain("sequential");
+});
+
+test("duplicating an element copies it without inheriting its animations", () => {
+  const project = initialProject();
+  const [id] = Object.keys(project.scene.elements);
+  const animations = project.scene.animations?.length ?? 0;
+  const next = duplicateElement(project, id);
+  const added = Object.keys(next.scene.elements).filter((key) => !(key in project.scene.elements));
+  expect(added).toHaveLength(1);
+  expect(next.scene.elements[added[0]]).toEqual(project.scene.elements[id]);
+  expect(next.scene.animations?.length ?? 0).toBe(animations);
+  expect(validateProject(next)).toBe(null);
+});
+
+test("duplicating an unknown element changes nothing", () => {
+  const project = initialProject();
+  expect(duplicateElement(project, "missing")).toBe(project);
+});
+
+test("a new element starts at the requested time", () => {
+  const project = initialProject();
+  const next = addElement(project, "circle", 1200);
+  const id = Object.keys(next.scene.elements).at(-1)!;
+  expect(next.scene.elements[id].appearsAtMs).toBe(1200);
+  expect(validateProject(next)).toBeNull();
 });
