@@ -18,7 +18,9 @@ export function retimeAnimation(project: Project, index: number, startMs: number
   return next;
 }
 
-export function editClip(project: Project, target: ClipTarget, gesture: ClipGesture, deltaMs: number): Project {
+/** `magnets` are times an edge within `toleranceMs` locks onto exactly; otherwise edges move on the grid. */
+export function editClip(project: Project, target: ClipTarget, gesture: ClipGesture, deltaMs: number,
+  magnets: number[] = [], toleranceMs = 0): Project {
   if (!Number.isFinite(deltaMs)) return project;
   const next = structuredClone(project), scene = next.scene;
   const block = target.type === "animation" ? scene.animations?.[target.index] : undefined;
@@ -26,11 +28,16 @@ export function editClip(project: Project, target: ClipTarget, gesture: ClipGest
   if (!block && !element) return project;
   const start = block?.startMs ?? element!.appearsAtMs;
   const end = block ? start + block.durationMs : element!.disappearsAtMs ?? scene.durationMs;
-  const snapped = Math.round(deltaMs / SNAP_MS) * SNAP_MS;
+  // Scene-ending presence clips can slide by trimming their open end.
+  const openEnd = !!element && element.disappearsAtMs === undefined;
+  const edges = gesture === "start" ? [start] : gesture === "end" ? [end] : openEnd ? [start] : [start, end];
+  let snapped = Math.round(deltaMs / SNAP_MS) * SNAP_MS, nearest = toleranceMs;
+  for (const edge of edges) for (const magnet of magnets) {
+    const distance = Math.abs(edge + deltaMs - magnet);
+    if (distance <= nearest) { nearest = distance; snapped = magnet - edge; }
+  }
   let newStart = start, newEnd = end;
   if (gesture === "move") {
-    // Scene-ending presence clips can slide by trimming their open end.
-    const openEnd = element && element.disappearsAtMs === undefined;
     const delta = Math.min(Math.max(snapped, -start), openEnd ? scene.durationMs - MIN_CLIP_MS - start : scene.durationMs - end);
     newStart += delta;
     if (!openEnd) newEnd += delta;
