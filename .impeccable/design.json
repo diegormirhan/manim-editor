@@ -1,69 +1,541 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-07T13:57:29.5545049Z",
-  "title": "Design System: manim-editor",
+  "generatedAt": "2026-10-04T17:24:24+00:00",
+  "title": "manim-editor",
   "extensions": {
     "colorMeta": {
-      "accent-light": { "role": "primary", "displayName": "Selection blue, light theme" },
-      "accent-dark": { "role": "primary", "displayName": "Selection blue, dark theme" },
-      "animation-light": { "role": "secondary", "displayName": "Animation purple, light theme" },
-      "animation-dark": { "role": "secondary", "displayName": "Animation purple, dark theme" },
-      "stage": { "role": "neutral", "displayName": "Video stage" }
+      "primary": {
+        "role": "primary",
+        "displayName": "Render Vermilion",
+        "canonical": "oklch(52% 0.17 32)",
+        "tonalRamp": [
+          "#f6ded9",
+          "#e08a76",
+          "#b6341f",
+          "#8f2818",
+          "#5e1c12"
+        ]
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Render Vermilion, dark theme",
+        "canonical": "oklch(68% 0.19 34)",
+        "tonalRamp": [
+          "#ffd9d1",
+          "#ff9681",
+          "#f66140",
+          "#c94530",
+          "#7a2a1d"
+        ]
+      },
+      "primary-foreground": {
+        "role": "neutral",
+        "displayName": "On Vermilion",
+        "canonical": "oklch(98.5% 0 0)"
+      },
+      "primary-foreground-dark": {
+        "role": "neutral",
+        "displayName": "On Vermilion, dark theme",
+        "canonical": "oklch(17% 0.03 34)"
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Background",
+        "canonical": "oklch(100% 0 0)"
+      },
+      "background-dark": {
+        "role": "neutral",
+        "displayName": "Background, dark theme",
+        "canonical": "oklch(14.1% 0.005 285.8)"
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Foreground",
+        "canonical": "oklch(14.1% 0.005 285.8)"
+      },
+      "foreground-dark": {
+        "role": "neutral",
+        "displayName": "Foreground, dark theme",
+        "canonical": "oklch(98.5% 0 0)"
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card / Panel",
+        "canonical": "oklch(100% 0 0)"
+      },
+      "card-dark": {
+        "role": "neutral",
+        "displayName": "Card / Panel, dark theme",
+        "canonical": "oklch(21% 0.006 285.9)"
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Secondary",
+        "canonical": "oklch(96.7% 0.001 286.4)"
+      },
+      "secondary-dark": {
+        "role": "neutral",
+        "displayName": "Secondary, dark theme",
+        "canonical": "oklch(27.4% 0.006 286)"
+      },
+      "secondary-foreground": {
+        "role": "neutral",
+        "displayName": "On Secondary",
+        "canonical": "oklch(21% 0.006 285.9)"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "oklch(96.7% 0.001 286.4)"
+      },
+      "muted-dark": {
+        "role": "neutral",
+        "displayName": "Muted, dark theme",
+        "canonical": "oklch(27.4% 0.006 286)"
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Muted Foreground",
+        "canonical": "oklch(50% 0.016 285.9)"
+      },
+      "muted-foreground-dark": {
+        "role": "neutral",
+        "displayName": "Muted Foreground, dark theme",
+        "canonical": "oklch(70.5% 0.015 286.1)"
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Accent / Selection Wash",
+        "canonical": "oklch(94.5% 0.003 286.4)"
+      },
+      "accent-dark": {
+        "role": "neutral",
+        "displayName": "Accent / Selection Wash, dark theme",
+        "canonical": "oklch(27.4% 0.006 286)"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "canonical": "oklch(92% 0.004 286.3)"
+      },
+      "border-dark": {
+        "role": "neutral",
+        "displayName": "Border, dark theme",
+        "canonical": "oklch(100% 0 0 / 10%)"
+      },
+      "input": {
+        "role": "neutral",
+        "displayName": "Input",
+        "canonical": "oklch(92% 0.004 286.3)"
+      },
+      "input-dark": {
+        "role": "neutral",
+        "displayName": "Input, dark theme",
+        "canonical": "oklch(100% 0 0 / 15%)"
+      },
+      "ring": {
+        "role": "neutral",
+        "displayName": "Ring",
+        "canonical": "oklch(70.5% 0.015 286.1)"
+      },
+      "ring-dark": {
+        "role": "neutral",
+        "displayName": "Ring, dark theme",
+        "canonical": "oklch(55.2% 0.016 285.9)"
+      },
+      "gutter": {
+        "role": "neutral",
+        "displayName": "Seam",
+        "canonical": "oklch(92% 0.004 286.3)"
+      },
+      "gutter-dark": {
+        "role": "neutral",
+        "displayName": "Seam, dark theme",
+        "canonical": "oklch(14.1% 0.005 285.8)"
+      },
+      "panel-head": {
+        "role": "neutral",
+        "displayName": "Panel Head",
+        "canonical": "oklch(98.5% 0 0)"
+      },
+      "panel-head-dark": {
+        "role": "neutral",
+        "displayName": "Panel Head, dark theme",
+        "canonical": "oklch(23.5% 0.006 285.9)"
+      },
+      "well": {
+        "role": "neutral",
+        "displayName": "Well",
+        "canonical": "oklch(96.7% 0.001 286.4)"
+      },
+      "well-dark": {
+        "role": "neutral",
+        "displayName": "Well, dark theme",
+        "canonical": "oklch(17% 0.005 285.9)"
+      },
+      "track": {
+        "role": "neutral",
+        "displayName": "Track",
+        "canonical": "oklch(96.7% 0.001 286.4)"
+      },
+      "track-dark": {
+        "role": "neutral",
+        "displayName": "Track, dark theme",
+        "canonical": "oklch(17.5% 0.005 285.9)"
+      },
+      "track-alt": {
+        "role": "neutral",
+        "displayName": "Track Alt",
+        "canonical": "oklch(94.5% 0.003 286.4)"
+      },
+      "track-alt-dark": {
+        "role": "neutral",
+        "displayName": "Track Alt, dark theme",
+        "canonical": "oklch(19% 0.005 285.9)"
+      },
+      "stage": {
+        "role": "neutral",
+        "displayName": "Stage",
+        "canonical": "oklch(0% 0 0)"
+      },
+      "stage-ink": {
+        "role": "neutral",
+        "displayName": "Stage Ink",
+        "canonical": "oklch(98.5% 0 0)"
+      },
+      "stage-muted": {
+        "role": "neutral",
+        "displayName": "Stage Muted",
+        "canonical": "oklch(71.2% 0.013 286.1)"
+      },
+      "stage-media": {
+        "role": "neutral",
+        "displayName": "Stage Media",
+        "canonical": "oklch(27.4% 0.006 286)"
+      },
+      "stage-media-ink": {
+        "role": "neutral",
+        "displayName": "Stage Media Ink",
+        "canonical": "oklch(92% 0.004 286.3)"
+      },
+      "manim-red": {
+        "role": "neutral",
+        "displayName": "Manim Red (data default)",
+        "canonical": "oklch(68% 0.18 27)"
+      },
+      "destructive": {
+        "role": "error",
+        "displayName": "Destructive",
+        "canonical": "oklch(57.7% 0.245 27.3)"
+      },
+      "destructive-dark": {
+        "role": "error",
+        "displayName": "Destructive, dark theme",
+        "canonical": "oklch(70.4% 0.191 22.2)"
+      },
+      "tone-coords": {
+        "role": "tertiary",
+        "displayName": "Instrument Slate",
+        "canonical": "oklch(55% 0.02 255)"
+      },
+      "tone-coords-dark": {
+        "role": "tertiary",
+        "displayName": "Instrument Slate, dark theme",
+        "canonical": "oklch(42% 0.02 255)"
+      },
+      "tone-graph": {
+        "role": "tertiary",
+        "displayName": "Plotter Teal",
+        "canonical": "oklch(52% 0.08 215)"
+      },
+      "tone-graph-dark": {
+        "role": "tertiary",
+        "displayName": "Plotter Teal, dark theme",
+        "canonical": "oklch(45% 0.08 215)"
+      },
+      "tone-tex": {
+        "role": "tertiary",
+        "displayName": "Formula Violet",
+        "canonical": "oklch(50% 0.11 295)"
+      },
+      "tone-tex-dark": {
+        "role": "tertiary",
+        "displayName": "Formula Violet, dark theme",
+        "canonical": "oklch(42% 0.11 295)"
+      },
+      "tone-text": {
+        "role": "tertiary",
+        "displayName": "Caption Ochre",
+        "canonical": "oklch(50% 0.09 85)"
+      },
+      "tone-text-dark": {
+        "role": "tertiary",
+        "displayName": "Caption Ochre, dark theme",
+        "canonical": "oklch(46% 0.08 85)"
+      },
+      "tone-shape": {
+        "role": "tertiary",
+        "displayName": "Shape Green",
+        "canonical": "oklch(50% 0.07 155)"
+      },
+      "tone-shape-dark": {
+        "role": "tertiary",
+        "displayName": "Shape Green, dark theme",
+        "canonical": "oklch(42% 0.07 155)"
+      },
+      "tone-fx": {
+        "role": "tertiary",
+        "displayName": "Effect Zinc",
+        "canonical": "oklch(38% 0.005 285)"
+      },
+      "tone-fx-dark": {
+        "role": "tertiary",
+        "displayName": "Effect Zinc, dark theme",
+        "canonical": "oklch(29% 0.005 285)"
+      },
+      "tone-fx-line": {
+        "role": "tertiary",
+        "displayName": "Effect Zinc Edge",
+        "canonical": "oklch(40% 0.02 286)"
+      },
+      "tone-fx-line-dark": {
+        "role": "tertiary",
+        "displayName": "Effect Zinc Edge, dark theme",
+        "canonical": "oklch(35% 0.02 286)"
+      },
+      "tone-fx-ink": {
+        "role": "tertiary",
+        "displayName": "Effect Zinc Ink",
+        "canonical": "oklch(40% 0.02 286)"
+      },
+      "tone-fx-ink-dark": {
+        "role": "tertiary",
+        "displayName": "Effect Zinc Ink, dark theme",
+        "canonical": "oklch(35% 0.02 286)"
+      }
     },
-    "shadows": [],
-    "motion": [
-      { "name": "button-press", "value": "translateY(1px)", "purpose": "Immediate active-button displacement; removed by prefers-reduced-motion: reduce. No transition duration is defined." }
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The empty-viewer heading only. The one place type is allowed to be large."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel headings, inspector title, timeline heading, clip labels."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Controls, field values and labels. The default voice."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Catalog group headings, inspector section headings, track-section bands."
+      },
+      "timecode": {
+        "displayName": "Timecode",
+        "purpose": "Transport and timeline readouts. Tabular figures, never prose."
+      },
+      "mono-small": {
+        "displayName": "Mono Small",
+        "purpose": "Ruler labels, clip durations, track IDs and targets, hex values."
+      }
+    },
+    "shadows": [
+      {
+        "name": "clip-edge-presence",
+        "value": "inset 0 0 0 1px rgb(255 255 255 / .16)",
+        "purpose": "Describes a presence clip's edge against its tone. Not lift."
+      },
+      {
+        "name": "clip-edge-animation",
+        "value": "inset 0 0 0 1px #2f2f36",
+        "purpose": "Edge on animation pills; uses tone-fx-line."
+      },
+      {
+        "name": "selection-ring",
+        "value": "0 0 0 2px #c43a26",
+        "purpose": "The only outer shadow in the system: the selected clip's hot ring."
+      }
     ],
-    "breakpoints": [{ "name": "compact-desktop", "value": "850px" }]
+    "motion": [
+      {
+        "name": "state",
+        "value": "120ms ease",
+        "purpose": "Background, border and colour changes on buttons and fields. The only duration in the system."
+      },
+      {
+        "name": "press",
+        "value": "translateY(1px)",
+        "purpose": "Active-state nudge on buttons. Removed under prefers-reduced-motion."
+      },
+      {
+        "name": "reduced",
+        "value": "transition: none",
+        "purpose": "prefers-reduced-motion disables every transition and the press nudge."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "dense",
+        "value": "1100px"
+      },
+      {
+        "name": "compact",
+        "value": "850px"
+      },
+      {
+        "name": "short",
+        "value": "760px (max-height)"
+      },
+      {
+        "name": "minimum-window",
+        "value": "800x650px"
+      }
+    ]
   },
   "components": [
     {
-      "name": "Render button",
+      "name": "Render Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The filled toolbar action; specimen uses the light theme and inherits the live accent when available.",
-      "html": "<button class=\"ds-render\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><polygon points=\"6 3 20 12 6 21 6 3\"/></svg>Render</button>",
-      "css": ".ds-render{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 14px/1.5 'Segoe UI',system-ui,sans-serif;background:var(--accent,#1465ce);color:white;border:0;border-radius:6px;padding:9px 16px;cursor:pointer}.ds-render:hover{background:#0c53ae}.ds-render:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-render:active{transform:translateY(1px)}.ds-render:disabled{opacity:.45;cursor:default}@media(prefers-reduced-motion:reduce){.ds-render:active{transform:none}}"
+      "description": "shadcn Button, default variant, size sm: the one vermilion control in the window.",
+      "html": "<button class=\"ds-render\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M7 4v16l13-8z\"/></svg>Render</button>",
+      "css": ".ds-render { display: inline-flex; align-items: center; gap: 6px; height: 32px; min-width: 96px; justify-content: center; padding: 0 12px; border: 0; border-radius: 8px; background: #b6341f; color: #fafafa; font: 600 13px/1 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; cursor: default; } .ds-render:hover { background: color-mix(in oklab, #b6341f 90%, transparent); }"
     },
     {
-      "name": "File action",
+      "name": "Toolbar Ghost Button",
       "kind": "button",
       "refersTo": "button-ghost",
-      "description": "Transparent compact toolbar button, shown in light theme.",
-      "html": "<button class=\"ds-file\" aria-label=\"Save project\" title=\"Save project\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z\"/><path d=\"M17 21v-8H7v8M7 3v5h8\"/></svg></button>",
-      "css": ".ds-file{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:14px/1.5 'Segoe UI',system-ui,sans-serif;background:transparent;color:#24272d;border:0;border-radius:6px;padding:8px;cursor:pointer}.ds-file:hover{background:#e0e5ed}.ds-file:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-file:active{transform:translateY(1px)}.ds-file:disabled{opacity:.45;cursor:default}@media(prefers-reduced-motion:reduce){.ds-file:active{transform:none}}"
+      "description": "shadcn Button, ghost variant in muted-foreground, lifting to foreground with the accent fill on hover.",
+      "html": "<button class=\"ds-ghost\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z\"/></svg>Save</button>",
+      "css": ".ds-ghost { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: #62626c; font: 500 13px/1 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; } .ds-ghost:hover { background: #ececef; color: #09090b; }"
     },
     {
-      "name": "Library entry",
-      "kind": "button",
-      "refersTo": "library-button",
-      "description": "A catalog addition button in the light-theme two-column library.",
-      "html": "<button class=\"ds-library\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg><span>Equation</span></button>",
-      "css": ".ds-library{display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;font:12px/1.5 'Segoe UI',system-ui,sans-serif;background:#eaf0fa;color:#24272d;border:0;border-radius:6px;padding:8px;cursor:pointer}.ds-library svg{color:var(--accent,#1465ce)}.ds-library span{text-align:left}.ds-library:hover{background:#eaf0fa}.ds-library:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-library:active{transform:translateY(1px)}.ds-library:disabled{opacity:.45;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-library:active{transform:none}}"
-    },
-    {
-      "name": "Numeric field",
+      "name": "Field",
       "kind": "input",
       "refersTo": "input",
-      "description": "A labeled inspector input in the light theme.",
-      "html": "<label class=\"ds-label\">X minimum<input class=\"ds-input\" type=\"number\" value=\"-1\" /></label>",
-      "css": ".ds-label{display:grid;gap:7px;font:12px/1.5 'Segoe UI',system-ui,sans-serif;color:#444d59}.ds-input{font:14px/1.5 'Segoe UI',system-ui,sans-serif;font-variant-numeric:tabular-nums;border:1px solid #cbd0d8;background:#fff;border-radius:6px;padding:8px;width:100%;color:#24272d}.ds-input:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}.ds-input[aria-invalid=true]{border-color:#c0392b}"
+      "description": "shadcn Input at 32px inside the inspector's label grid; the label is muted, the value is foreground.",
+      "html": "<label class=\"ds-row\">Font size<input class=\"ds-input\" value=\"48\"></label>",
+      "css": ".ds-row { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 10px; color: #62626c; font: 500 13px/1.45 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; } .ds-input { height: 32px; padding: 0 10px; border: 1px solid #e4e4e7; border-radius: 8px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / .05); color: #09090b; font: inherit; font-weight: 400; outline: none; } .ds-input:focus { border-color: #9f9fa9; box-shadow: 0 0 0 3px color-mix(in oklab, #9f9fa9 50%, transparent); }"
     },
     {
-      "name": "Presence clip",
-      "kind": "custom",
-      "refersTo": "presence-clip",
-      "description": "Visual specimen of an editable element span; application gesture logic is not included.",
-      "html": "<div class=\"ds-clip\"><button class=\"ds-grip ds-start\" aria-label=\"Adjust start of Axes 1\"></button><button class=\"ds-body\" aria-label=\"Select axes 1\"><span>Axes</span></button><button class=\"ds-grip ds-end\" aria-label=\"Adjust end of Axes 1\"></button></div>",
-      "css": ".ds-clip{display:flex;align-items:stretch;height:30px;min-width:8px;border-radius:5px;background:#c8ddfa;border:1px solid var(--accent,#1465ce);color:#204575}.ds-clip button{display:inline-flex;align-items:center;font:11px/1.5 'Segoe UI',system-ui,sans-serif;background:transparent;color:inherit;border:0;cursor:pointer}.ds-body{flex:1;min-width:0;overflow:hidden;justify-content:flex-start;padding:3px 7px;border-radius:4px;cursor:grab!important}.ds-body span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ds-body:hover{background:#e0e5ed}.ds-body:active{cursor:grabbing!important;transform:translateY(1px)}.ds-grip{width:8px;flex:0 0 8px;padding:0;cursor:ew-resize!important;border-radius:0}.ds-start{border-radius:4px 0 0 4px}.ds-end{border-radius:0 4px 4px 0}.ds-grip:hover{background:rgba(20,101,206,.28)}.ds-grip:active{transform:translateY(1px)}.ds-clip button:focus-visible{outline:2px solid var(--accent,#1465ce);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-clip button:active{transform:none}}"
+      "name": "State Badge",
+      "kind": "badge",
+      "refersTo": "badge",
+      "description": "shadcn Badge, outline; a vermilion dot marks unsaved work or a stale preview.",
+      "html": "<span class=\"ds-badge\"><span class=\"ds-dot\"></span>Unsaved</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid #e4e4e7; border-radius: 999px; color: #09090b; font: 500 12px/1.4 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; } .ds-dot { width: 6px; height: 6px; border-radius: 50%; background: #b6341f; }"
+    },
+    {
+      "name": "Shortcut Tooltip",
+      "kind": "overlay",
+      "refersTo": "tooltip",
+      "description": "shadcn Tooltip: an inverted chip naming the action, with its shortcut in Kbd.",
+      "html": "<span class=\"ds-tip\">Render <kbd>Ctrl</kbd><kbd>Enter</kbd></span>",
+      "css": ".ds-tip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: #09090b; color: #fafafa; font: 400 12px/1 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; } .ds-tip kbd { display: inline-flex; align-items: center; height: 20px; padding: 0 4px; border-radius: 4px; background: rgb(255 255 255 / .2); font: 500 12px/1 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; }"
+    },
+    {
+      "name": "Object Pool Tile",
+      "kind": "card",
+      "refersTo": "library-item",
+      "description": "Outline tile on card with shadow-xs: a black 16:10 thumbnail holding a drawn glyph over the name.",
+      "html": "<button class=\"ds-tile\"><span class=\"ds-thumb\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"1.75\"><circle cx=\"12\" cy=\"12\" r=\"7\"/></svg></span><span>Circle</span></button>",
+      "css": ".ds-tile { display: flex; flex-direction: column; gap: 5px; width: 84px; padding: 4px 4px 5px; border: 1px solid #e4e4e7; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / .05); color: #09090b; font: 500 12px/1.4 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; text-align: left; } .ds-tile:hover { background: #ececef; } .ds-thumb { display: grid; place-items: center; aspect-ratio: 16 / 10; border-radius: 6px; background: #000; }"
+    },
+    {
+      "name": "Presence Clip",
+      "kind": "data",
+      "refersTo": "clip-presence",
+      "description": "Timeline clip tinted by object kind, 6px radius, mono duration; the 2px vermilion ring marks the target of Delete.",
+      "html": "<div class=\"ds-clip\"><span>a^2 + b^2 = c^2</span><span class=\"ds-dur\">3 s</span></div>",
+      "css": ".ds-clip { display: flex; align-items: center; justify-content: space-between; width: 320px; height: 28px; padding: 0 8px; border-radius: 6px; background: #6b5aa6; color: #fff; box-shadow: 0 0 0 2px #b6341f; font: 500 12px/1 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; } .ds-dur { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 10.5px; opacity: .85; }"
+    },
+    {
+      "name": "Animation Clip",
+      "kind": "data",
+      "refersTo": "clip-animation",
+      "description": "Neutral zinc pill with a drawn motion glyph and 'Name · duration'.",
+      "html": "<div class=\"ds-pill\">Write · 1 s</div>",
+      "css": ".ds-pill { display: grid; place-items: center; width: 120px; height: 20px; border-radius: 999px; background: #3f3f45; box-shadow: inset 0 0 0 1px #26262b; color: #fff; font: 500 12px/1 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; }"
+    },
+    {
+      "name": "Selected Track Label",
+      "kind": "nav",
+      "refersTo": "track-label-selected",
+      "description": "Track header in the sticky 176px label column; the accent wash marks the selection and what belongs to it.",
+      "html": "<button class=\"ds-track\"><span class=\"ds-id\">V3</span><span>Equation</span></button>",
+      "css": ".ds-track { display: flex; align-items: center; gap: 8px; width: 176px; height: 36px; padding: 0 12px; border: 0; border-right: 1px solid #e4e4e7; background: #ececef; color: #09090b; font: 500 13px/1 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; } .ds-id { width: 24px; font-family: 'Cascadia Mono', Consolas, monospace; font-size: 11px; color: #62626c; }"
+    },
+    {
+      "name": "Playhead",
+      "kind": "data",
+      "refersTo": "playhead",
+      "description": "1px vermilion line with a 13px pentagon head that lives in the sticky ruler.",
+      "html": "<div class=\"ds-ruler\"><i class=\"ds-head\"></i></div>",
+      "css": ".ds-ruler { position: relative; width: 240px; height: 60px; background: #f4f4f5; } .ds-head { position: absolute; left: 80px; top: 0; bottom: 0; width: 1px; background: #b6341f; } .ds-head::before { content: ''; position: absolute; left: -6px; top: 0; width: 13px; height: 13px; background: #b6341f; clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%); }"
+    },
+    {
+      "name": "Discard Dialog",
+      "kind": "overlay",
+      "refersTo": "alert-dialog",
+      "description": "shadcn AlertDialog, small and centred: Cancel focused first, a destructive Discard; only when work would be lost.",
+      "html": "<div class=\"ds-alert\"><strong>Discard unsaved changes?</strong><p>“Pythagoras” has changes that are not saved to a file. They will be lost.</p><div class=\"ds-actions\"><button class=\"ds-cancel\">Cancel</button><button class=\"ds-discard\">Discard changes</button></div></div>",
+      "css": ".ds-alert { display: grid; gap: 8px; width: 320px; padding: 24px; border: 1px solid #e4e4e7; border-radius: 10px; background: #fff; box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1); text-align: center; color: #09090b; font: 400 13px/1.45 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; } .ds-alert strong { font-size: 18px; } .ds-alert p { margin: 0; color: #62626c; } .ds-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; } .ds-actions button { height: 32px; border-radius: 8px; font: 500 13px/1 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif; } .ds-cancel { border: 1px solid #e4e4e7; background: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / .05); } .ds-discard { border: 0; background: #e7000b; color: #fff; }"
     }
   ],
   "narrative": {
-    "northStar": "Clarity and restraint",
-    "overview": "The established direction applies Apple principles of clarity, agency, familiarity, and restraint to a Windows application. Segoe UI, compact controls, and quiet panel boundaries keep attention on the rendered scene and its timeline. This describes the current interface, not a redesign or an accessibility certification.",
-    "keyCharacteristics": ["Dense, practical desktop controls.", "Paired light and dark themes with blue selection.", "A consistently black video stage.", "A stacked library and inspector beside the preview and timeline."],
-    "rules": [],
-    "dos": ["Do retain Segoe UI, compact density, and the established Windows workspace arrangement.", "Do preserve light/dark semantic pairs and the black stage.", "Do use blue for selection and presence, and purple for animation clips.", "Do retain visible focus outlines and the existing reduced-motion press override."],
-    "donts": ["Don't replace this interface with macOS window chrome or a new visual concept.", "Don't promote scene artwork colors into interface brand tokens.", "Don't describe unimplemented motion, materials, or accessibility guarantees as established behavior."]
+    "northStar": "The Edit Suite for Mathematics, built from shadcn/ui",
+    "overview": "An edit-suite frame (pool, black viewer, inspector, a timeline band) assembled from shadcn/ui new-york components on the zinc base, with Inter, 8px controls and soft focus rings. Vermilion is shadcn's primary, so it marks Render, the playhead and selection; clip colour encodes object kind; data is set in Cascadia Mono.",
+    "keyCharacteristics": [
+      "shadcn/ui components for every control, owned in src/components/ui.",
+      "One brand colour: vermilion as --primary.",
+      "Panels on 1px seams; only transient surfaces float.",
+      "Clip colour encodes object kind; animation clips are zinc pills with a motion glyph.",
+      "Timecode and measurement are monospaced, tabular data.",
+      "The window draws its own title bar and opens on a Projects screen after a short launch animation of the logo."
+    ],
+    "rules": [
+      {
+        "name": "The One Brand Colour Rule",
+        "body": "Vermilion is shadcn's primary and appears only on Render / Cancel, the playhead, selection rings, the selected animation's outline, the unsaved and stale dots, and the timeline timecode."
+      },
+      {
+        "name": "The Tone Means Kind Rule",
+        "body": "A clip's colour is decided by what the object is, never by state; state is the ring, hatching and lock."
+      },
+      {
+        "name": "The Ring Means Target Rule",
+        "body": "The 2px vermilion ring marks what Delete and the arrow keys act on; the accent wash marks what belongs to it."
+      },
+      {
+        "name": "The Data Is Mono Rule",
+        "body": "Time, duration, track IDs, hex colours and LaTeX are set in Cascadia Mono with tabular figures."
+      },
+      {
+        "name": "The Regions Stay Flat Rule",
+        "body": "Panels, the timeline and the inspector never become floating cards; only dialogs and tooltips float, with shadcn's own shadows."
+      }
+    ],
+    "dos": [
+      "Add controls with the shadcn CLI and fix its cn import to @/lib/cn.",
+      "Style shadcn components with utility classes; style.css sits in the components layer.",
+      "Keep vermilion to Render / Cancel, the playhead, selection, the unsaved and stale dots and the timeline timecode.",
+      "Colour new element kinds with an existing tone by family; give new animations a pill with a drawn glyph.",
+      "Set times, durations, IDs, hex values and LaTeX in Cascadia Mono with tabular figures.",
+      "Keep the ruler, lane and playhead insets (10px start, 16px end) in sync.",
+      "Confirm only when work would be lost; undoable edits never ask.",
+      "Add render and video choices to contracts/render-options.json first; TypeScript and Python both read it.",
+      "Do keep every title-bar control a button, input or menu so the drag region skips it."
+    ],
+    "donts": [
+      "Don't turn regions into floating cards or add shadows beyond shadcn's own.",
+      "Don't introduce a second accent colour or use vermilion for links, badges, hover or focus.",
+      "Don't recolour clips to show state.",
+      "Don't use stock AI iconography (sparkles, wands, robots) or emoji.",
+      "Don't put the timeline back under a stacked sidebar of forms.",
+      "Don't use uppercase kickers, eyebrows or display type outside the empty viewer, the Projects heading and the launch animation.",
+      "Don't paint the stage any colour but the scene's background (black by default).",
+      "Don't read the Close button's system red as a second brand colour; it is Windows' own."
+    ]
   }
 }
