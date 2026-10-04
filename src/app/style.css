@@ -137,6 +137,13 @@
   /* Upper row: pool | viewer | inspector */
   .upper { display: grid; grid-template-columns: 272px minmax(0, 1fr) 320px; gap: var(--seam); min-height: 0; }
   .library, .inspector { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+  /* Scroll hint: a fade pinned to the foot that clears once the end is reached. */
+  .library::after, .inspector::after {
+    content: ""; display: block; position: sticky; bottom: 0; height: 32px; margin-top: -32px; pointer-events: none;
+    background: linear-gradient(transparent, var(--panel) 85%);
+    animation: scroll-hint linear both; animation-timeline: scroll(nearest block);
+  }
+  @keyframes scroll-hint { 0%, 90% { opacity: 1; } 100% { opacity: 0; } }
   .library { padding: 10px 10px 14px; }
   .search-field { position: relative; }
   .search-field > svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted-foreground); pointer-events: none; }
@@ -321,7 +328,7 @@
   .clip-lane { position: relative; min-width: 0; margin: 0 var(--lane-end) 0 var(--lane-start); }
 
   .editable-clip {
-    position: absolute; top: 4px; bottom: 4px; display: flex; align-items: stretch; min-width: 8px;
+    position: absolute; top: 4px; bottom: 4px; display: flex; align-items: stretch; min-width: 8px; container-type: inline-size;
     border-radius: var(--radius-sm); color: #fff; touch-action: none;
     background: var(--tone-shape); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .14);
   }
@@ -344,12 +351,23 @@
   .clip-body:hover { background: rgb(255 255 255 / .08); }
   .clip-body:active { cursor: grabbing; }
   .clip-body:focus-visible { outline: none; box-shadow: inset 0 0 0 2px rgb(255 255 255 / .6); }
-  .editable-clip.animation .clip-body { justify-content: center; }
+  .editable-clip.animation .clip-body { padding-right: 4px; }
+  .editable-clip.animation .clip-duration { padding-right: 9px; }
+  /* A short clip keeps its duration; the name gives way and stays on the track label and tooltip. */
+  @container (max-width: 112px) {
+    .clip-body span { display: none; }
+    .editable-clip.animation .clip-duration { padding-right: 6px; }
+  }
+  /* Narrower still, the duration alone spans the pill; it ignores the pointer, so the grips still work. */
+  @container (max-width: 64px) {
+    .clip-body svg { display: none; }
+    .editable-clip.animation .clip-duration { position: absolute; inset: 0; justify-content: center; padding: 0; overflow: hidden; }
+  }
   .clip-body span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* A zoomed clip that starts off-screen keeps its name beside the track labels. */
   .editable-clip.presence .clip-body span { position: sticky; left: calc(var(--label-w) + 8px); }
   .clip-duration {
-    display: flex; align-items: center; gap: 4px; padding-right: 8px; white-space: nowrap; pointer-events: none;
+    flex: none; display: flex; align-items: center; gap: 4px; padding-right: 8px; white-space: nowrap; pointer-events: none;
     font-family: var(--font-mono); font-size: 10.5px; opacity: .85;
   }
   .clip-grip { width: 7px; flex: 0 0 7px; padding: 0; border: 0; background: none; cursor: ew-resize; }
@@ -450,6 +468,8 @@
     .preview-state.busy .dot { animation: none; }
     /* Movement goes; the fades that say something arrived or left stay. */
     .splash * { animation: none !important; }
+    /* The scroll hint follows the scroll position, not the clock. */
+    .library::after, .inspector::after { animation-duration: auto !important; }
     .splash { animation: splash-out .2s ease .45s forwards !important; }
     .splash[data-skipped] { animation: splash-skip .12s ease forwards !important; }
     .update-banner { transition: opacity .2s ease !important; }
