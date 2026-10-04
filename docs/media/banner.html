@@ -1,0 +1,53 @@
+<!doctype html>
+<!-- The GitHub banner and social preview. scripts/render-banner.mjs renders it to banner.png
+     from the app icon and a real screenshot; nothing here is drawn from imagination. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>manim-editor banner</title>
+<style>
+  @font-face {
+    font-family: "Inter Variable";
+    src: url("../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2");
+    font-weight: 100 900;
+  }
+  :root { --ink: #fafafa; --muted: #a1a1aa; --vermilion: #f66140; }
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1280px; height: 640px; overflow: hidden; background: #09090b; font-family: "Inter Variable", "Segoe UI", sans-serif; color: var(--ink); }
+  .banner { position: relative; width: 100%; height: 100%; overflow: hidden;
+    background: radial-gradient(640px 420px at 12% 18%, rgb(246 97 64 / .13), transparent 70%), #09090b; }
+  .copy { position: absolute; left: 72px; top: 92px; width: 440px; }
+  .icon { display: block; width: 96px; height: 96px; margin-bottom: 34px; }
+  h1 { font-size: 60px; font-weight: 650; letter-spacing: -0.035em; line-height: 1; }
+  .tagline { margin-top: 20px; font-size: 27px; line-height: 1.3; letter-spacing: -0.015em; color: #d4d4d8; }
+  .stack { margin-top: 26px; font: 15px/1.5 "Cascadia Mono", Consolas, monospace; color: var(--muted); letter-spacing: 0; }
+  /* The product's mechanism in its own grammar: clips by kind, and the playhead crossing them. */
+  .timeline { position: absolute; left: 72px; bottom: 74px; width: 380px; display: grid; gap: 7px; }
+  .clip { height: 10px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16); }
+  .playhead { position: absolute; top: -22px; bottom: -10px; left: 58%; width: 2px; background: var(--vermilion); }
+  .playhead::before { content: ""; position: absolute; top: 0; left: -6px; width: 14px; height: 14px; background: var(--vermilion);
+    clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%); }
+  .shot { position: absolute; left: 520px; top: 82px; width: 900px; border-radius: 14px; overflow: hidden;
+    border: 1px solid rgb(255 255 255 / .12); box-shadow: 0 30px 80px rgb(0 0 0 / .55), 0 8px 24px rgb(0 0 0 / .35); }
+  .shot img { display: block; width: 100%; }
+</style>
+</head>
+<body>
+<main class="banner">
+  <section class="copy">
+    <img class="icon" src="../../src-tauri/icon.svg" alt="">
+    <h1>manim-editor</h1>
+    <p class="tagline">Mathematical animations,<br>built on a timeline.</p>
+    <p class="stack">Windows · Tauri · React · Manim CE</p>
+  </section>
+  <div class="timeline" aria-hidden="true">
+    <span class="clip" style="background:#4c515a; margin-right: 6%"></span>
+    <span class="clip" style="background:#1c6578; margin: 0 2% 0 14%"></span>
+    <span class="clip" style="background:#54478a; margin: 0 0 0 34%"></span>
+    <span class="clip" style="background:#7a5f12; margin: 0 22% 0 48%"></span>
+    <span class="playhead"></span>
+  </div>
+  <figure class="shot"><img src="../screenshots/calculus-area-dark.png" alt=""></figure>
+</main>
+</body>
+</html>
