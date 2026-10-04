@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en-US" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>A · Computation pad</title>
+<script src="shared.js"></script>
+<style>
+:root {
+  --paper: #eef3e3; --grid: #cfe0bf; --grid-strong: #b5cfa0; --ink: #16251d; --ink-soft: #4b5e52;
+  --margin: #c7303f; --accent: #1f6a4a; --accent-ink: #fff; --field: #f8fbf2; --sel: #dce9cc; --shade: rgba(31,106,74,.16);
+  --math: "Cambria Math", "STIX Two Math", "Cambria", serif;
+  --ui: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+}
+:root[data-theme="dark"] {
+  --paper: #1f2b26; --grid: #2a3a33; --grid-strong: #34473f; --ink: #e9efe6; --ink-soft: #a8b8ad;
+  --margin: #e0707b; --accent: #8fd3a8; --accent-ink: #10201a; --field: #26342e; --sel: #2c4038; --shade: rgba(143,211,168,.18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font: 13px/1.45 var(--ui); color: var(--ink); background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    linear-gradient(var(--grid-strong) 1px, transparent 1px), linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px);
+  background-size: 12px 12px, 12px 12px, 60px 60px, 60px 60px;
+  display: grid; grid-template-rows: auto 1fr auto; overflow: hidden;
+}
+::selection { background: var(--shade); }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.margin-rule { position: fixed; top: 0; bottom: 0; left: 248px; width: 0; border-left: 2px solid var(--margin); opacity: .55; pointer-events: none; }
+
+/* Title block, the pad's header */
+.title-block { display: grid; grid-template-columns: 236px 1.6fr 1fr 1fr auto; border-bottom: 2px solid var(--ink); background: var(--paper); }
+.cell { border-right: 1px solid var(--ink); padding: 6px 12px 7px; min-width: 0; }
+.cell:last-child { border-right: 0; }
+.cell small { display: block; font-size: 10px; letter-spacing: .06em; font-variant: all-small-caps; color: var(--ink-soft); }
+.cell .value { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; }
+.brand .mark { font-family: var(--math); font-style: italic; font-size: 24px; line-height: 1; color: var(--accent); }
+.state { color: var(--margin); font-weight: 600; }
+.actions { display: flex; align-items: center; gap: 4px; padding: 6px 10px; }
+.tool { border: 1px solid transparent; background: none; border-radius: 3px; padding: 6px 9px; }
+.tool:hover { border-color: var(--ink-soft); }
+.render { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 3px; padding: 8px 16px; font-weight: 700; margin-left: 6px; display: flex; gap: 8px; align-items: center; }
+.render kbd { font: 11px var(--ui); opacity: .75; }
+
+/* Work area */
+.work { display: grid; grid-template-columns: 248px 1fr 300px; min-height: 0; }
+.col { min-height: 0; overflow: auto; padding: 16px 18px; }
+h2 { font-size: 13px; margin: 0 0 10px; font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; }
+h2 span { font-weight: 400; color: var(--ink-soft); font-size: 12px; }
+.search { width: 100%; border: 0; border-bottom: 1px solid var(--ink); background: transparent; padding: 6px 2px; margin-bottom: 14px; outline: none; }
+.search:focus { border-bottom: 2px solid var(--accent); }
+.group { margin-bottom: 14px; }
+.group h3 { font-size: 11px; margin: 0 0 4px; color: var(--ink-soft); font-weight: 600; }
+.entry { display: grid; grid-template-columns: 30px 1fr; align-items: center; width: 100%; text-align: left; border: 0; background: none; padding: 4px 6px; border-radius: 2px; }
+.entry:hover { background: var(--shade); }
+.entry .n { color: var(--accent); display: flex; }
+
+.sheet { padding: 18px 26px 10px; display: grid; grid-template-rows: auto 1fr auto; gap: 10px; min-height: 0; }
+.figure { display: grid; place-items: center; min-height: 0; }
+.figure .frame { height: 100%; max-width: 100%; aspect-ratio: 16/9; border: 1.5px solid var(--ink); box-shadow: 0 10px 24px -14px rgba(0,0,0,.45); }
+.figure svg { display: block; width: 100%; height: 100%; }
+.caption { display: flex; justify-content: space-between; color: var(--ink-soft); font-size: 12px; }
+.caption em { font-family: var(--math); color: var(--ink); font-size: 14px; }
+
+.props .given { font-family: var(--math); font-size: 15px; margin: 0 0 12px; }
+.field { display: grid; gap: 3px; margin-bottom: 11px; }
+.field label { font-size: 11px; color: var(--ink-soft); }
+.field input { border: 0; border-bottom: 1px solid var(--ink-soft); background: transparent; padding: 3px 1px; font-variant-numeric: tabular-nums; outline: none; }
+.field input:focus { border-bottom: 2px solid var(--accent); }
+.field input.math { font-family: var(--math); font-size: 16px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.props hr { border: 0; border-top: 1px dashed var(--ink-soft); margin: 14px 0; }
+.swatch { display: inline-block; width: 12px; height: 12px; border: 1px solid var(--ink); vertical-align: -2px; margin-right: 6px; }
+.add-anim { width: 100%; border: 1px dashed var(--ink-soft); background: none; padding: 7px; border-radius: 2px; }
+.add-anim:hover { border-style: solid; border-color: var(--accent); color: var(--accent); }
+
+/* Timeline as intervals on the real line */
+.timeline { border-top: 2px solid var(--ink); background: var(--paper); height: 300px; display: grid; grid-template-rows: auto auto 1fr; }
+.tl-head { display: flex; align-items: center; gap: 16px; padding: 8px 18px; }
+.tl-head .t { font-family: var(--math); font-size: 15px; }
+.tl-head .t b { color: var(--margin); }
+.axis, .row { display: grid; grid-template-columns: 230px 1fr; }
+.lane { position: relative; margin-right: 26px; }
+.axis .lane { height: 34px; border-bottom: 1.5px solid var(--ink); }
+.tick { position: absolute; bottom: -1px; height: 8px; border-left: 1.5px solid var(--ink); }
+.tick.minor { height: 4px; border-left-width: 1px; }
+.tick span { position: absolute; bottom: 10px; left: 0; transform: translateX(-50%); font-family: var(--math); font-size: 13px; }
+.rows { overflow: auto; position: relative; }
+.row { height: 30px; align-items: center; }
+.row.sel { background: var(--sel); }
+.row-label { padding-left: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; gap: 8px; align-items: baseline; }
+.row-label .n { font-family: var(--math); color: var(--accent); width: 18px; }
+.row-label .math { font-family: var(--math); font-size: 14px; }
+.row .lane { height: 30px; }
+.interval { position: absolute; top: 14px; height: 2px; background: var(--ink); }
+.interval::before, .interval::after { content: ""; position: absolute; top: -7px; width: 5px; height: 16px; border: 2px solid var(--ink); }
+.interval::before { left: -1px; border-right: 0; }
+.interval::after { right: -1px; border-left: 0; }
+.interval.open::after { border-radius: 0 10px 10px 0; border-left: 0; }
+.interval span { position: absolute; bottom: 6px; left: 8px; font-family: var(--math); font-size: 12px; white-space: nowrap; color: var(--ink-soft); }
+.row.sel .interval { height: 3px; background: var(--accent); }
+.row.sel .interval::before, .row.sel .interval::after { border-color: var(--accent); }
+.anim .interval { top: 7px; height: 16px; background: var(--shade); border: 1.5px solid var(--accent); }
+.anim .interval::before, .anim .interval::after { display: none; }
+.anim .interval span { bottom: auto; top: -1px; left: 6px; color: var(--ink); font-family: var(--ui); font-size: 11px; font-weight: 600; }
+.divider-row { height: 18px; display: grid; grid-template-columns: 230px 1fr; font-size: 11px; color: var(--ink-soft); padding-left: 18px; align-items: end; }
+.playhead { position: absolute; top: 0; bottom: 0; border-left: 2px solid var(--margin); pointer-events: none; }
+.playhead span { position: absolute; top: 2px; left: 5px; font-family: var(--math); font-size: 12px; color: var(--margin); white-space: nowrap; background: var(--paper); padding: 0 3px; }
+</style>
+</head>
+<body>
+<div class="margin-rule"></div>
+<header class="title-block">
+  <div class="cell brand"><span class="mark">ƒ</span>manim-editor</div>
+  <div class="cell"><small>Project</small><div class="value">Parabola transformation</div></div>
+  <div class="cell"><small>Scene</small><div class="value">12.0 s · 480p · 15 fps</div></div>
+  <div class="cell"><small>Preview</small><div class="value state">Changes not rendered</div></div>
+  <div class="cell actions">
+    <button class="tool" title="Undo (Ctrl+Z)">Undo</button><button class="tool" title="Redo (Ctrl+Y)">Redo</button>
+    <button class="tool">Open</button><button class="tool">Save</button><button class="tool">Export .py</button>
+    <button class="tool" data-toggle-theme title="Switch theme">Theme</button>
+    <button class="render">Render <kbd>Ctrl ↵</kbd></button>
+  </div>
+</header>
+
+<main class="work">
+  <aside class="col">
+    <h2>Objects <span>17 kinds</span></h2>
+    <input class="search" placeholder="Search objects" aria-label="Search objects">
+    <div id="catalog"></div>
+  </aside>
+
+  <section class="sheet">
+    <div class="caption"><span>Fig. 1 — last render</span><span>Up to date with change 14 of 15</span></div>
+    <div class="figure"><div class="frame" id="stage"></div></div>
+    <div class="caption"><span><em>t</em> = 7.22 s of 12 s</span><span>Manim Community 0.21 · local</span></div>
+  </section>
+
+  <aside class="col props">
+    <h2>② Graph <span>Duplicate · Remove</span></h2>
+    <p class="given">Given &nbsp;<i>f</i>(<i>x</i>) = <i>x</i>², &nbsp;<i>x</i> ∈ [−2.5, 2.5]</p>
+    <div class="field"><label>Expression</label><input class="math" value="x^2"></div>
+    <div class="pair">
+      <div class="field"><label>x from</label><input value="−2.5"></div>
+      <div class="field"><label>x to</label><input value="2.5"></div>
+      <div class="field"><label>Axes</label><input value="① Axes"></div>
+    </div>
+    <hr>
+    <div class="pair">
+      <div class="field"><label>Position x</label><input value="0"></div>
+      <div class="field"><label>y</label><input value="0"></div>
+      <div class="field"><label>z</label><input value="0"></div>
+    </div>
+    <div class="pair">
+      <div class="field"><label>Scale</label><input value="1"></div>
+      <div class="field"><label>Rotation °</label><input value="0"></div>
+      <div class="field"><label>Opacity</label><input value="1"></div>
+    </div>
+    <div class="field"><label>Colour</label><input value="#58C4DD" style="padding-left:2px"></div>
+    <hr>
+    <h2>Animations <span>2</span></h2>
+    <p class="given" style="font-size:14px">Create on [1.0, 2.5] · Transform on [6.0, 7.8]</p>
+    <button class="add-anim">+ Add animation to ② Graph</button>
+  </aside>
+</main>
+
+<section class="timeline">
+  <div class="tl-head">
+    <strong>Timeline</strong>
+    <span class="t"><i>t</i> = <b>7.22</b> s</span>
+    <span style="color:var(--ink-soft)">Drag an interval to move it · drag an endpoint to resize · ← → 0.1 s</span>
+  </div>
+  <div class="axis"><div></div><div class="lane" id="axis"></div></div>
+  <div class="rows" id="rows"></div>
+</section>
+
+<script>
+const M = MOCK; M.themeSwitch();
+document.getElementById("stage").innerHTML = M.stage();
+document.getElementById("catalog").innerHTML = M.catalog.map(g => `<div class="group"><h3>${g.group}</h3>${g.items.map(i =>
+  `<button class="entry"><span class="n">${M.icon(i,18)}</span><span>${i}</span></button>`).join("")}</div>`).join("");
+const axis = document.getElementById("axis");
+for (let s = 0; s <= 12; s++) axis.insertAdjacentHTML("beforeend", `<div class="tick" style="left:${M.pct(s*1000)}%"><span>${s}</span></div>`);
+for (let s = 0.5; s < 12; s += 1) axis.insertAdjacentHTML("beforeend", `<div class="tick minor" style="left:${M.pct(s*1000)}%"></div>`);
+const fmt = ms => (ms/1000).toFixed(1);
+const rows = M.elements.map(e => `<div class="row ${e.id==="graph"?"sel":""}"><div class="row-label"><span class="n">${"①②③④⑤"[e.n-1]}</span><span>${e.kind}</span><span class="math">${e.math}</span></div>
+  <div class="lane"><div class="interval ${e.owned?"open":""}" style="left:${M.pct(e.start)}%;width:${M.pct(e.end-e.start)}%"><span>[${fmt(e.start)}, ${fmt(e.end)}${e.owned?")":"]"}</span></div></div></div>`).join("")
+  + `<div class="divider-row">Animations</div>`
+  + M.animations.map(a => `<div class="row anim ${a.target==="graph"?"sel":""}"><div class="row-label"><span class="n">${"①②③④⑤"[M.byId[a.target].n-1]}</span><span>${a.kind}</span></div>
+  <div class="lane"><div class="interval" style="left:${M.pct(a.start)}%;width:${M.pct(a.end-a.start)}%"><span>${a.kind}</span></div></div></div>`).join("");
+const rowsEl = document.getElementById("rows");
+rowsEl.innerHTML = rows + `<div class="axis" style="position:absolute;inset:0;pointer-events:none"><div></div><div class="lane"><div class="playhead" style="left:${M.pct(M.PLAYHEAD)}%"><span>t = 7.22</span></div></div></div>`;
+</script>
+</body>
+</html>
