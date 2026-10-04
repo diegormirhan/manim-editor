@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en-US" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>D · macOS</title>
+<script src="shared.js"></script>
+<style>
+:root {
+  --desk: linear-gradient(135deg, #b6c7e4, #d9c7e0 55%, #f0d6c6);
+  --window: #ffffff; --toolbar: #f6f5f7; --sidebar: rgba(236,234,240,.72); --canvas: #f2f2f4; --sep: rgba(0,0,0,.1);
+  --label: #1d1d1f; --label-2: rgba(60,60,67,.66); --label-3: rgba(60,60,67,.38); --fill: rgba(120,120,128,.12); --fill-2: rgba(120,120,128,.2);
+  --accent: #007aff; --accent-ink: #fff; --row-sel: #007aff; --group: #ffffff; --group-line: rgba(0,0,0,.08);
+  --tl: #ececee; --tl-lane: #e3e3e6; --clip-axes: #8e8e93; --clip-graph: #3d8bd9; --clip-title: #8a5cc9; --clip-text: #c99a1f; --clip-red: #d8574b; --clip-fx: #34a853;
+  --sys: -apple-system, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+}
+:root[data-theme="dark"] {
+  --desk: linear-gradient(135deg, #1e2a44, #3a2a46 55%, #4a3328);
+  --window: #1e1e1e; --toolbar: #2b2b2d; --sidebar: rgba(44,42,48,.7); --canvas: #161617; --sep: rgba(255,255,255,.09);
+  --label: #f5f5f7; --label-2: rgba(235,235,245,.62); --label-3: rgba(235,235,245,.32); --fill: rgba(120,120,128,.24); --fill-2: rgba(120,120,128,.36);
+  --accent: #0a84ff; --row-sel: #0a84ff; --group: #2a2a2c; --group-line: rgba(255,255,255,.07);
+  --tl: #1c1c1e; --tl-lane: #232325; --clip-axes: #636366; --clip-graph: #2f6db0; --clip-title: #6c46a3; --clip-text: #9c7714; --clip-red: #a9443b; --clip-fx: #2a8644;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font: 13px/1.38 var(--sys); color: var(--label); background: var(--desk); padding: 18px; overflow: hidden; -webkit-font-smoothing: antialiased; }
+::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+button, input { font: inherit; color: inherit; }
+button { cursor: default; }
+.window { height: 100%; border-radius: 12px; overflow: hidden; display: grid; grid-template-rows: 52px minmax(0, 1fr) 42%; background: var(--window);
+  box-shadow: 0 0 0 .5px rgba(0,0,0,.35), 0 22px 60px -18px rgba(0,0,0,.55); }
+.toolbar { display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--toolbar); border-bottom: 1px solid var(--sep); }
+.lights { display: flex; gap: 8px; margin-right: 10px; }
+.lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.2); }
+.lights i:nth-child(2) { background: #febc2e; } .lights i:nth-child(3) { background: #28c840; }
+.tb-btn { width: 30px; height: 26px; border: 0; border-radius: 6px; background: none; display: grid; place-items: center; color: var(--label-2); }
+.tb-btn:hover { background: var(--fill); }
+.tb-btn svg { width: 17px; height: 17px; }
+.doc { margin: 0 auto; text-align: center; line-height: 1.15; }
+.doc b { font-weight: 600; }
+.doc small { display: block; color: var(--label-2); font-size: 11px; }
+.seg { display: inline-flex; background: var(--fill); border-radius: 7px; padding: 2px; }
+.seg span { padding: 3px 12px; border-radius: 5px; color: var(--label-2); font-size: 12px; }
+.seg span.on { background: var(--window); color: var(--label); box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+:root[data-theme="dark"] .seg span.on { background: #636366; }
+.primary { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 6px; padding: 5px 14px; font-weight: 500; display: flex; gap: 6px; align-items: center; }
+.primary svg { width: 13px; height: 13px; }
+
+.main { display: grid; grid-template-columns: 236px minmax(0, 1fr) 300px; min-height: 0; }
+.sidebar { background: var(--sidebar); backdrop-filter: blur(30px) saturate(1.6); border-right: 1px solid var(--sep); overflow: auto; padding: 10px 10px; }
+.search { display: flex; align-items: center; gap: 6px; background: var(--fill); border-radius: 7px; padding: 4px 8px; color: var(--label-3); margin-bottom: 10px; }
+.search svg { width: 13px; height: 13px; }
+.sb-h { font-size: 11px; font-weight: 600; color: var(--label-3); margin: 12px 8px 3px; }
+.sb-row { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; overflow: hidden; }
+.sb-row svg { color: var(--accent); flex: none; }
+.sb-row:hover { background: var(--fill); }
+.sb-row.sel { background: var(--row-sel); color: #fff; }
+.sb-row.sel svg { color: #fff; }
+.sb-row .meta { margin-left: auto; color: var(--label-3); font-size: 11px; }
+.sb-row.sel .meta { color: rgba(255,255,255,.75); }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+.viewer { background: var(--canvas); display: grid; grid-template-rows: 1fr auto; min-height: 0; padding: 14px 18px 8px; }
+.viewer .frame { display: grid; place-items: center; min-height: 0; }
+.viewer .frame > div { height: 100%; aspect-ratio: 16/9; max-width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 8px 24px -10px rgba(0,0,0,.5); }
+.viewer svg { display: block; width: 100%; height: 100%; }
+.vbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-top: 8px; color: var(--label-2); font-size: 12px; font-variant-numeric: tabular-nums; }
+.vbar .ctl { display: flex; gap: 4px; }
+.vbar .badge { justify-self: end; display: flex; align-items: center; gap: 6px; color: #ff9f0a; white-space: nowrap; }
+.vbar .badge i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+.inspector { border-left: 1px solid var(--sep); overflow: auto; padding: 12px 14px; background: var(--window); }
+.insp-top { display: flex; justify-content: center; margin-bottom: 12px; }
+.insp-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; margin: 0 2px 10px; }
+.insp-title .dot { width: 10px; height: 10px; }
+.group-h { font-size: 11px; color: var(--label-2); margin: 14px 4px 5px; font-weight: 500; }
+.group { background: var(--group); border-radius: 10px; box-shadow: 0 0 0 .5px var(--group-line), 0 1px 2px rgba(0,0,0,.05); }
+:root[data-theme="dark"] .group { box-shadow: none; }
+.grow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 7px 11px; min-height: 34px; }
+.grow + .grow { border-top: .5px solid var(--sep); }
+.grow input { background: var(--fill); border: 0; border-radius: 5px; padding: 3px 7px; width: 116px; text-align: right; font-variant-numeric: tabular-nums; outline: none; }
+.grow input:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent); }
+.grow .well { width: 40px; height: 20px; border-radius: 5px; background: #58C4DD; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.25); }
+.slider { width: 116px; height: 4px; border-radius: 2px; background: var(--fill-2); position: relative; }
+.slider::before { content: ""; position: absolute; inset: 0 0 0 0; width: 100%; border-radius: 2px; background: var(--accent); }
+.slider::after { content: ""; position: absolute; right: -8px; top: -7px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.add { margin-top: 12px; width: 100%; background: var(--fill); border: 0; border-radius: 7px; padding: 6px; color: var(--accent); font-weight: 500; }
+
+.timeline { background: var(--tl); border-top: 1px solid var(--sep); display: grid; grid-template-rows: 34px 22px minmax(0, 1fr); min-height: 0; }
+.tl-bar { display: flex; align-items: center; gap: 8px; padding: 0 12px; border-bottom: 1px solid var(--sep); }
+.tl-bar .tc { font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 300; letter-spacing: .02em; margin: 0 auto; }
+.tl-bar .tc b { font-weight: 500; }
+.ruler { position: relative; margin: 0 16px; border-bottom: 1px solid var(--sep); }
+.ruler i { position: absolute; bottom: 0; height: 6px; border-left: 1px solid var(--label-3); }
+.ruler span { position: absolute; bottom: 7px; transform: translateX(-50%); font-size: 10px; color: var(--label-2); font-variant-numeric: tabular-nums; }
+.lanes { position: relative; overflow: auto; padding: 8px 16px 12px; }
+.storyline { position: relative; height: 228px; }
+.clip { position: absolute; height: 30px; border-radius: 6px; color: #fff; font-size: 11.5px; padding: 0 9px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.18); }
+.clip svg { flex: none; opacity: .9; }
+.clip.sel { box-shadow: 0 0 0 2px #ffd60a, inset 0 1px 0 rgba(255,255,255,.18); }
+.clip.fx { height: 20px; border-radius: 10px; font-size: 10.5px; background: var(--clip-fx); }
+.conn { position: absolute; width: 1px; background: var(--label-3); }
+.lanes .ph { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--label); pointer-events: none; }
+.ruler .phh { position: absolute; bottom: -3px; width: 11px; height: 11px; margin-left: -5px; background: var(--label); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.lane-tag { position: absolute; left: 0; font-size: 10.5px; color: var(--label-3); }
+</style>
+</head>
+<body>
+<div class="window">
+  <header class="toolbar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <button class="tb-btn" title="Sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M9 5v14"/></svg></button>
+    <button class="tb-btn" title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-2"/></svg></button>
+    <button class="tb-btn" title="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h2"/></svg></button>
+    <div class="doc"><b>Parabola transformation</b><small>Edited · not rendered</small></div>
+    <button class="tb-btn" data-toggle-theme title="Appearance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 000 16z" fill="currentColor"/></svg></button>
+    <button class="tb-btn" title="Export Python"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg></button>
+    <button class="primary"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>Render</button>
+  </header>
+
+  <div class="main">
+    <nav class="sidebar">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Search</div>
+      <div id="side"></div>
+    </nav>
+    <section class="viewer">
+      <div class="frame"><div id="stage"></div></div>
+      <div class="vbar">
+        <span>480p · 15 fps</span>
+        <div class="ctl">
+          <button class="tb-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 5v14L8 12zM6 5h2v14H6z"/></svg></button>
+          <button class="tb-btn" style="color:var(--label)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
+          <button class="tb-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5v14l10-7zM16 5h2v14h-2z"/></svg></button>
+        </div>
+        <span class="badge"><i></i>Changes not rendered</span>
+      </div>
+    </section>
+    <aside class="inspector">
+      <div class="insp-top"><div class="seg"><span class="on">Object</span><span>Animations</span><span>Scene</span></div></div>
+      <div class="insp-title"><span class="dot" style="background:#58C4DD"></span>Graph · x²</div>
+      <div class="group-h">Function</div>
+      <div class="group">
+        <div class="grow"><span>f(x)</span><input value="x^2"></div>
+        <div class="grow"><span>Domain</span><input value="−2.5 to 2.5"></div>
+        <div class="grow"><span>Plotted on</span><input value="Axes"></div>
+      </div>
+      <div class="group-h">Transform</div>
+      <div class="group">
+        <div class="grow"><span>Position</span><input value="0, 0, 0"></div>
+        <div class="grow"><span>Scale</span><input value="1.0"></div>
+        <div class="grow"><span>Rotation</span><input value="0°"></div>
+      </div>
+      <div class="group-h">Appearance</div>
+      <div class="group">
+        <div class="grow"><span>Colour</span><span class="well"></span></div>
+        <div class="grow"><span>Opacity</span><span class="slider"></span></div>
+      </div>
+      <div class="group-h">Timing</div>
+      <div class="group">
+        <div class="grow"><span>Appears at</span><input value="1.0 s"></div>
+        <div class="grow"><span>Ends</span><span style="color:var(--label-2)">7.8 s · by Transform</span></div>
+      </div>
+      <button class="add">Add Animation…</button>
+    </aside>
+  </div>
+
+  <section class="timeline">
+    <div class="tl-bar">
+      <div class="seg"><span class="on">Select</span><span>Trim</span><span>Snap</span></div>
+      <div class="tc"><b>00:07</b>:03 &nbsp;/&nbsp; 00:12:00</div>
+      <button class="tb-btn" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M20 20l-4-4"/></svg></button>
+      <button class="tb-btn" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M11 8v6M20 20l-4-4"/></svg></button>
+    </div>
+    <div class="ruler" id="ruler"></div>
+    <div class="lanes"><div class="storyline" id="story"></div></div>
+  </section>
+</div>
+<script>
+const M = MOCK; M.themeSwitch();
+document.getElementById("stage").innerHTML = M.stage();
+let side = `<div class="sb-h">Scene</div>` + M.elements.map(e => `<div class="sb-row ${e.id==="graph"?"sel":""}">${M.icon(e.glyph,15)}<span>${e.kind} · ${e.label}</span><span class="meta">${(e.start/1000).toFixed(1)}s</span></div>`).join("");
+side += M.catalog.map(g => `<div class="sb-h">${g.group}</div>` + g.items.map(i => `<div class="sb-row">${M.icon(i,15)}<span>${i}</span></div>`).join("")).join("");
+document.getElementById("side").innerHTML = side;
+const ruler = document.getElementById("ruler");
+for (let s = 0; s <= 12; s++) ruler.insertAdjacentHTML("beforeend", `<i style="left:${M.pct(s*1000)}%"></i>${s%2?"":`<span style="left:${M.pct(s*1000)}%">00:${String(s).padStart(2,"0")}</span>`}`);
+ruler.insertAdjacentHTML("beforeend", `<div class="phh" style="left:${M.pct(M.PLAYHEAD)}%"></div>`);
+// Storyline: objects stacked bottom-up, animations as connected clips above their object.
+const color = { axes: "--clip-axes", graph: "--clip-graph", equation: "--clip-title", annotation: "--clip-text", target: "--clip-red" };
+// One band per object, top to bottom: its connected animation clips, then the object itself.
+const band = { annotation: 0, equation: 56, graph: 112, target: 112, axes: 168 };
+const row = Object.fromEntries(Object.entries(band).map(([k, v]) => [k, v + 24]));
+let s = "";
+for (const e of M.elements) s += `<div class="clip ${e.id==="graph"?"sel":""}" style="top:${row[e.id]}px;left:${M.pct(e.start)}%;width:calc(${M.pct(e.end-e.start)}% - 2px);background:var(${color[e.id]})">${M.icon(e.glyph,13)}${e.kind} · ${e.label}</div>`;
+for (const a of M.animations) {
+  const top = band[a.target];
+  s += `<div class="conn" style="left:${M.pct(a.start)+0.4}%;top:${top+20}px;height:${row[a.target]-top-20}px"></div>`;
+  s += `<div class="clip fx" style="top:${top}px;left:${M.pct(a.start)}%;width:calc(${M.pct(a.end-a.start)}% - 2px)">${a.kind}</div>`;
+}
+s += `<div class="ph" style="left:${M.pct(M.PLAYHEAD)}%"></div>`;
+document.getElementById("story").innerHTML = s;
+</script>
+</body>
+</html>
