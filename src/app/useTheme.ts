@@ -5,10 +5,11 @@ export type ThemePreference = "system" | "light" | "dark";
 const KEY = "manim-editor-theme";
 const darkScheme = () => window.matchMedia?.("(prefers-color-scheme: dark)");
 
+/** Follows the operating system until the user picks a theme; that choice then sticks. */
 export function useTheme() {
   const [preference, setPreference] = useState<ThemePreference>(() => {
     try { const saved = localStorage.getItem(KEY); if (saved === "dark" || saved === "light" || saved === "system") return saved; } catch {}
-    return "dark";
+    return "system";
   });
   const [systemDark, setSystemDark] = useState(() => darkScheme()?.matches ?? true);
   useEffect(() => {
