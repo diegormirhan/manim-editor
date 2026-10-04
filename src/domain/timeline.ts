@@ -19,6 +19,25 @@ export const frameAt = (milliseconds: number) => Math.floor(milliseconds * 15 / 
 export const childrenOf = (clip: Animation): Animation[] => clip.kind === "parallel" ? clip.clips ?? [] : [clip];
 export const leafClips = (scene: Project["scene"]) => (scene.animations ?? []).flatMap(childrenOf);
 export const seconds = (ms: number) => (ms / 1000).toLocaleString("en-US", { maximumFractionDigits: 2 }) + " s";
+export function timecode(ms: number): string {
+  const frames = frameAt(ms), two = (value: number) => String(value).padStart(2, "0");
+  const total = Math.floor(frames / 15);
+  return [Math.floor(total / 3600), Math.floor(total / 60) % 60, total % 60, frames % 15].map(two).join(":");
+}
+
+const RULER_STEPS = [100, 200, 500, 1000, 2000, 5000, 10000, 15000, 30000, 60000];
+
+/** Ruler marks on round times: the smallest step that keeps twelve labelled intervals or fewer in view. */
+export function rulerTicks(durationMs: number, visibleMs = durationMs): { majors: number[]; minors: number[] } {
+  const step = RULER_STEPS.find(candidate => visibleMs / candidate <= 12) ?? RULER_STEPS.at(-1)!;
+  const minorStep = step / (step === 200 || step === 2000 ? 4 : 5);
+  const majors: number[] = [], minors: number[] = [];
+  for (let ms = 0; ms <= durationMs + 1e-6; ms += minorStep) {
+    const time = Math.round(ms);
+    (time % step === 0 ? majors : minors).push(time);
+  }
+  return { majors, minors };
+}
 
 export function lifetimes(scene: Project["scene"]): Record<string, [number, number]> {
   const spans = Object.fromEntries(Object.entries(scene.elements).map(([id, element]) =>
@@ -91,6 +110,26 @@ export function validateTimeline(scene: Project["scene"]): string | null {
     previousEnd = end;
   }
   return null;
+}
+
+/** Where an element added at `atMs` may appear: on the 100 ms grid, inside the scene, never mid-animation. */
+export function appearanceTime(scene: Project["scene"], atMs: number): number {
+  const latest = Math.max(0, scene.durationMs - 100);
+  const time = Math.min(Math.max(0, Math.round(atMs / 100) * 100), latest);
+  const block = (scene.animations ?? []).find(clip => clip.startMs < time && time < clip.startMs + clip.durationMs);
+  if (!block) return time;
+  const end = block.startMs + block.durationMs;
+  return end <= latest ? end : block.startMs;
+}
+
+/** A Transform owns its destination, so removing the clip removes what it created. */
+export function removeAnimation(project: Project, index: number): Project {
+  const block = project.scene.animations?.[index];
+  if (!block) return project;
+  let next: Project = { ...project, scene: { ...project.scene, animations: project.scene.animations!.filter((_, i) => i !== index) } };
+  for (const clip of childrenOf(block))
+    if (clip.kind === "transform" && clip.destinationId) next = removeElement(next, clip.destinationId);
+  return next;
 }
 
 export function removeElement(project: Project, identifier: string): Project {
