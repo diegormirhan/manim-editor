@@ -72,6 +72,15 @@ async function capture(name) {
   await screenshot(name);
 }
 const click = selector => evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`);
+// A real click at an element's centre: Radix tabs switch on pointer down, which click() never sends.
+async function clickOn(expression) {
+  const { x, y } = await evaluate(`(() => { const box = (${expression}).getBoundingClientRect();
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 }; })()`);
+  for (const type of ["mousePressed", "mouseReleased"]) await send("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 });
+}
+// Real key presses through the debugging protocol, so the app's own shortcuts handle them.
+const press = (key, code, keyCode, modifiers = 0) => send("Input.dispatchKeyEvent", { type: "keyDown", key, code, windowsVirtualKeyCode: keyCode, modifiers })
+  .then(() => send("Input.dispatchKeyEvent", { type: "keyUp", key, code, windowsVirtualKeyCode: keyCode, modifiers }));
 const status = 'document.querySelector("[role=status]").textContent';
 const kept = await evaluate(`JSON.stringify(Object.fromEntries(${JSON.stringify(keptKeys)}.map(key => [key, localStorage.getItem(key)])))`);
 try {
@@ -98,6 +107,13 @@ try {
     await evaluate('document.querySelector(".library").scrollTop = 0');
     await capture(`${key}-dark`);
     if (key === "calculus-area") {
+      await press(",", "Comma", 188, 2);
+      await waitFor('!!document.querySelector("[role=dialog]")');
+      await clickOn(`[...document.querySelectorAll("[role=tab]")].find(tab => tab.textContent.trim() === "Export")`);
+      await waitFor(`[...document.querySelectorAll("[role=tab]")].find(tab => tab.textContent.trim() === "Export").getAttribute("aria-selected") === "true"`);
+      await screenshot("settings-dark");
+      await press("Escape", "Escape", 27);
+      await waitFor('!document.querySelector("[role=dialog]")');
       await click('[aria-label="Switch to light mode"]');
       await capture("calculus-area-light");
       await click('[aria-label="Switch to dark mode"]');
@@ -106,7 +122,7 @@ try {
   await click('[aria-label="All projects"]');
   await waitFor('!!document.querySelector(".projects-screen")');
   await screenshot("projects-dark");
-  console.log("Captured four screenshots from the real Tauri app with freshly rendered Manim videos.");
+  console.log("Captured five screenshots from the real Tauri app with freshly rendered Manim videos.");
 } finally {
   await evaluate(`Object.entries(${kept}).forEach(([key, value]) =>
     value === null ? localStorage.removeItem(key) : localStorage.setItem(key, value))`).catch(() => {});
