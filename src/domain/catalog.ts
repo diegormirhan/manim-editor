@@ -1,4 +1,5 @@
 import type { Element, Project } from "./project";
+import { appearanceTime } from "./timeline";
 
 export const elementLabels = {
   mathTex: "Equation", text: "Text", circle: "Circle", dot: "Dot",
@@ -55,9 +56,17 @@ export function createElement(kind: Element["kind"], project?: Project): Element
   }
 }
 
-export function addElement(project: Project, kind: Element["kind"]): Project {
+export function addElement(project: Project, kind: Element["kind"], atMs = 0): Project {
+  const element = { ...createElement(kind, project), appearsAtMs: appearanceTime(project.scene, atMs) };
+  return { ...project, scene: { ...project.scene, elements: { ...project.scene.elements, [crypto.randomUUID()]: element } } };
+}
+
+/** Copies an element only. Animations stay with the original, so the copy is inert. */
+export function duplicateElement(project: Project, identifier: string): Project {
+  const source = project.scene.elements[identifier];
+  if (!source) return project;
   return { ...project, scene: { ...project.scene, elements: {
-    ...project.scene.elements, [crypto.randomUUID()]: createElement(kind, project),
+    ...project.scene.elements, [crypto.randomUUID()]: structuredClone(source),
   } } };
 }
 
