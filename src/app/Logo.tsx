@@ -18,7 +18,8 @@ export function Logo({ size = 22 }: { size?: number }) {
       </defs>
       <g className="logo-tile">
         <rect x="8" y="8" width="240" height="240" rx="56" fill={`url(#${id}tile)`} />
-        <rect x="8.5" y="8.5" width="239" height="239" rx="55.5" fill="none" stroke="#fff" strokeOpacity=".14" />
+        {/* A hairline at any size, so the dark tile still reads on a dark title bar. */}
+        <rect x="8.5" y="8.5" width="239" height="239" rx="55.5" fill="none" stroke="#fff" strokeOpacity=".22" strokeWidth="1" vectorEffect="non-scaling-stroke" />
       </g>
       <path className="logo-ghost" d={WAVE} fill="none" stroke="#fff" strokeOpacity=".32" strokeWidth="20" strokeLinecap="round" />
       <path d={WAVE} fill="none" stroke="#fff" strokeWidth="20" strokeLinecap="round" clipPath={`url(#${id}played)`} />
