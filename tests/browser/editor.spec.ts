@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { openEditor } from "./desktop-mock";
 
 test("English labels and singular counts survive theme changes", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" });
   await openEditor(page);
   await expect(page.locator("html")).toHaveAttribute("lang", "en-US");
   await expect(page.getByRole("heading", { name: "Timeline" })).toContainText("1 element");
@@ -17,6 +18,8 @@ test("English labels and singular counts survive theme changes", async ({ page }
 test("edits, validates, adds and undoes without pretending to render in browser", async ({
   page,
 }) => {
+  // desktop.png and compact.png are the dark review captures; the -light files are separate.
+  await page.emulateMedia({ colorScheme: "dark" });
   await openEditor(page);
   await expect(
     page.getByRole("heading", { name: "Your scene starts here" }),
