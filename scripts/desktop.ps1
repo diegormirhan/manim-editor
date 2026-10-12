@@ -7,10 +7,11 @@ Set-Location $projectRoot
 $command = if ($args.Count -gt 0) { $args[0] } else { 'dev' }
 if ($command -eq 'build') {
   # Installers carry an updater signature; the private key stays outside the repository.
-  if (-not $env:TAURI_SIGNING_PRIVATE_KEY -and -not $env:TAURI_SIGNING_PRIVATE_KEY_PATH) {
-    $key = Join-Path $HOME '.tauri/manim-editor.key'
+  # The bundler reads only TAURI_SIGNING_PRIVATE_KEY, so a key file is loaded into it.
+  if (-not $env:TAURI_SIGNING_PRIVATE_KEY) {
+    $key = if ($env:TAURI_SIGNING_PRIVATE_KEY_PATH) { $env:TAURI_SIGNING_PRIVATE_KEY_PATH } else { Join-Path $HOME '.tauri/manim-editor.key' }
     if (-not (Test-Path $key)) { throw "Updater signing key not found at $key. See README.md, Updates." }
-    $env:TAURI_SIGNING_PRIVATE_KEY_PATH = $key
+    $env:TAURI_SIGNING_PRIVATE_KEY = (Get-Content -Raw $key).Trim()
   }
   if ($null -eq $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD) { $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = '' }
 }
