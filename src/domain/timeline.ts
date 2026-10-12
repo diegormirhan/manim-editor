@@ -66,7 +66,8 @@ export function validateTimeline(scene: Project["scene"]): string | null {
   let previousEnd = 0;
   for (const block of [...(scene.animations ?? [])].sort((a, b) => a.startMs - b.startMs)) {
     const start = block.startMs, end = start + block.durationMs;
-    if (start < previousEnd || end > scene.durationMs) return "Animations must be sequential and end within the scene.";
+    if (start < previousEnd) return "Two animations would overlap. Place this one before or after the other.";
+    if (end > scene.durationMs) return "The animation would run past the end of the scene.";
     if (frameAt(end) <= frameAt(start)) return "An animation must span at least one frame.";
     const children = childrenOf(block);
     if (block.kind === "parallel") {
@@ -82,11 +83,11 @@ export function validateTimeline(scene: Project["scene"]): string | null {
       if (touched.has(target)) return "An element cannot have two animations in the same group.";
       touched.add(target);
       if (removed.has(target) || !available.has(target) || start < available.get(target)!)
-        return "The element is not available at this time.";
-      if (end > (element.disappearsAtMs ?? scene.durationMs)) return "The animation extends beyond the element's end.";
+        return "The animation would start while its object is not on screen.";
+      if (end > (element.disappearsAtMs ?? scene.durationMs)) return "The animation would run past the moment its object leaves the screen.";
       if (isEntrance(clip.kind)) {
         if (entered.has(target) || owners.has(target) || start !== available.get(target))
-          return "An entrance must start with its element and occur only once.";
+          return "An entrance plays once, starting when its object appears.";
         entered.add(target);
       }
       for (const [kind, field] of Object.entries(clipFields))
@@ -101,25 +102,15 @@ export function validateTimeline(scene: Project["scene"]): string | null {
       if (clip.kind === "fadeOut") removed.add(target);
     }
     for (const [id, time] of pending) available.set(id, time);
-    for (const [id, item] of Object.entries(scene.elements)) {
-      const times = [item.disappearsAtMs ?? scene.durationMs];
-      if (!owners.has(id)) times.push(item.appearsAtMs);
-      if (times.some(time => start < time && time < end))
-        return "An element appears or disappears during another animation: adjust its timing or use a parallel group.";
-    }
     previousEnd = end;
   }
   return null;
 }
 
-/** Where an element added at `atMs` may appear: on the 100 ms grid, inside the scene, never mid-animation. */
+/** Where an element added at `atMs` appears: on the 100 ms grid, inside the scene. */
 export function appearanceTime(scene: Project["scene"], atMs: number): number {
   const latest = Math.max(0, scene.durationMs - 100);
-  const time = Math.min(Math.max(0, Math.round(atMs / 100) * 100), latest);
-  const block = (scene.animations ?? []).find(clip => clip.startMs < time && time < clip.startMs + clip.durationMs);
-  if (!block) return time;
-  const end = block.startMs + block.durationMs;
-  return end <= latest ? end : block.startMs;
+  return Math.min(Math.max(0, Math.round(atMs / 100) * 100), latest);
 }
 
 /** A Transform owns its destination, so removing the clip removes what it created. */
