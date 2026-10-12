@@ -57,6 +57,7 @@ import { ElementIcon } from "./ElementIcon";
 import { SecondsField } from "./ElementInspector";
 import { ConfirmDialog, ShortcutsDialog, type ConfirmRequest } from "./Dialogs";
 import { Hint } from "./Hint";
+import { StageHandles } from "./StageHandles";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -76,6 +77,7 @@ import { Wordmark } from "./Logo";
 import { examples } from "./examples";
 import { stageStyle } from "./stage";
 import { useRecentProjects } from "./useRecentProjects";
+import { useLiveFrame } from "./useLiveFrame";
 import { useSettings } from "./useSettings";
 import { useTheme } from "./useTheme";
 
@@ -162,9 +164,10 @@ export function App() {
     } catch { /* storage full or blocked */ }
   }, [project, filePath, saved, settings.restoreSession]);
 
-  const change = (next: Project) => {
+  /** `sameStep` folds the edit into the previous undo step, as the moves of one drag on the stage are. */
+  const change = (next: Project, sameStep = false) => {
     const target = document.activeElement, now = performance.now();
-    const continuing = typingInto(target) && lastEdit.current.target === target && now - lastEdit.current.at < 1000;
+    const continuing = sameStep || (typingInto(target) && lastEdit.current.target === target && now - lastEdit.current.at < 1000);
     lastEdit.current = { target: typingInto(target) ? target : null, at: now };
     if (!continuing) setPast((p) => [...p, project]);
     setFuture([]);
@@ -425,9 +428,17 @@ export function App() {
   };
   const elementCount = Object.keys(project.scene.elements).length;
   const stale = !!video && rendered !== serialized;
+  // Manim's frame at the playhead stands in whenever the rendered video cannot show the scene as it is now;
+  // either way its boxes let objects be dragged on the stage.
+  const liveWanted = settings.livePreview && desktopAvailable() && view === "editor" && !validation && !playing;
+  const live = useLiveFrame(project, playheadMs, liveWanted);
+  const liveStage = liveWanted && (!video || stale);
+  const showLive = liveStage && !!live.frame;
   const percent = progress?.phase === "rendering" ? Math.round(progress.fraction * 100) : null;
   const previewState = rendering ? `Rendering… ${percent === null ? elapsed + " s" : percent + "%"}`
-    : video ? (rendered === serialized ? "Up to date" : "Changes not rendered") : "Not rendered yet";
+    : showLive ? "Live preview"
+    : video ? (rendered === serialized ? "Up to date" : "Changes not rendered")
+    : liveStage ? "Starting live preview…" : "Not rendered yet";
   const status = validation || (manimBusy
     ? `${rendering ? "Rendering" : "Exporting"} with Manim… ${percent === null ? "preparing" : percent + "%"} · ${elapsed} s · Esc cancels`
     : message) || "Ready to create.";
@@ -590,29 +601,40 @@ export function App() {
                 <NativeSelectOption key={resolution} value={resolution}>{describeQuality({ ...settings.preview, resolution })}</NativeSelectOption>)}
             </NativeSelect>
             {video && previewQuality !== describeQuality(settings.preview) && <span className="muted">Last render {previewQuality}</span>}
-            <Badge variant="outline" className={"preview-state" + (rendering ? " busy" : stale ? " stale" : "") + (rendering || stale ? "" : " text-muted-foreground")}>
-              {(rendering || stale) && <span className="dot" />}{previewState}
-            </Badge>
+            <Hint label={showLive ? "Manim's own frame at the playhead. Drag objects to move them; Render to play the scene." : previewState}>
+              <Badge variant="outline" className={"preview-state" + (rendering ? " busy" : stale && !showLive ? " stale" : "")
+                + (rendering || (stale && !showLive) ? "" : " text-muted-foreground")}>
+                {(rendering || (stale && !showLive)) && <span className="dot" />}{previewState}
+              </Badge>
+            </Hint>
           </div>
           <div className="stage">
-            {video ? (
-              <video ref={videoRef} src={video} aria-label="Rendered video" onClick={togglePlay} loop={settings.loop}
-                onLoadedMetadata={event => {
-                  const player = event.currentTarget, atEnd = playheadMs >= project.scene.durationMs - FRAME_MS;
-                  player.currentTime = playNext.current && atEnd ? 0 : playheadMs / 1000;
-                  if (playNext.current) { playNext.current = false; void player.play(); }
-                }}
-                onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}
-                onTimeUpdate={event => setPlayheadMs(Math.round(event.currentTarget.currentTime * 1000))} />
-            ) : (
-              <div className="empty-preview" style={stageStyle(project.scene.background)}>
-                <span className="media"><Film className="size-5" strokeWidth={1.5} /></span>
-                <h2>Your scene starts here</h2>
-                <p>{rendering ? "Manim is rendering the scene. Keep editing; changes made now need another render."
-                  : elementCount ? "Render (Ctrl+Enter) to preview the scene here, then scrub the result."
-                  : "Add objects from the pool, place them in time, then Render."}</p>
-              </div>
-            )}
+            <div className="canvas">
+              {showLive && <img className="live-frame" src={live.frame} alt="Manim's frame at the playhead" />}
+              {video ? (
+                // Hidden rather than unmounted under a live frame, so Play still has its video.
+                <video ref={videoRef} src={video} aria-label="Rendered video" onClick={togglePlay} loop={settings.loop} hidden={showLive}
+                  onLoadedMetadata={event => {
+                    const player = event.currentTarget, atEnd = playheadMs >= project.scene.durationMs - FRAME_MS;
+                    player.currentTime = playNext.current && atEnd ? 0 : playheadMs / 1000;
+                    if (playNext.current) { playNext.current = false; void player.play(); }
+                  }}
+                  onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}
+                  onTimeUpdate={event => setPlayheadMs(Math.round(event.currentTarget.currentTime * 1000))} />
+              ) : !showLive && (
+                <div className="empty-preview" style={stageStyle(project.scene.background)}>
+                  <span className="media"><Film className="size-5" strokeWidth={1.5} /></span>
+                  <h2>Your scene starts here</h2>
+                  <p>{rendering ? "Manim is rendering the scene. Keep editing; changes made now need another render."
+                    : liveStage && !live.error ? "Manim is drawing the frame at the playhead. The first one takes a few seconds while Manim loads."
+                    : elementCount ? "Render (Ctrl+Enter) to preview the scene here, then scrub the result."
+                    : "Add objects from the pool, place them in time, then Render."}</p>
+                </div>
+              )}
+              {liveWanted && <StageHandles project={project} atMs={playheadMs} boxes={live.boxes} current={live.source === project}
+                selection={selection} onSelect={selectElement} onChange={change} />}
+            </div>
+            {liveStage && live.error && <p className="live-error" aria-live="polite">{live.error}</p>}
           </div>
           <div className="transport">
             <span className="timecode">{timecode(playheadMs)}</span>
