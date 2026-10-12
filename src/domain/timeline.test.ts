@@ -68,7 +68,7 @@ test("an emphasis clip cannot run after the element leaves", () => {
     { kind: "fadeOut", targetId: "a", startMs: 0, durationMs: 1000 },
     { kind: "indicate", targetId: "a", startMs: 2000, durationMs: 1000 },
   ];
-  expect(validateProject(p)).toContain("available");
+  expect(validateProject(p)).toContain("not on screen");
 });
 
 test("timecode counts whole seconds and 15 fps frames", () => {
@@ -90,17 +90,22 @@ test("ruler steps land on round seconds and keep at most twelve labelled marks",
   for (const ms of rulerTicks(12000).minors) expect(demo.majors).not.toContain(ms);
 });
 
-test("a new element appears at the playhead but never inside a running animation", () => {
+test("a new element appears at the playhead, even while an animation plays", () => {
   const p = twoCircles();
   p.scene.animations = [{ kind: "indicate", targetId: "a", startMs: 1000, durationMs: 1000 }];
   expect(appearanceTime(p.scene, 437)).toBe(400);
-  expect(appearanceTime(p.scene, 1500)).toBe(2000);
-  expect(appearanceTime(p.scene, 1000)).toBe(1000);
+  expect(appearanceTime(p.scene, 1500)).toBe(1500);
   expect(appearanceTime(p.scene, -50)).toBe(0);
   // The scene must still show the element for at least one frame.
   expect(appearanceTime(p.scene, 6000)).toBe(5900);
-  p.scene.animations = [{ kind: "indicate", targetId: "a", startMs: 5000, durationMs: 1000 }];
-  expect(appearanceTime(p.scene, 5600)).toBe(5000);
+});
+
+test("an element may appear and leave while another animation plays", () => {
+  const p = twoCircles();
+  p.scene.animations = [{ kind: "indicate", targetId: "a", startMs: 1000, durationMs: 2000 }];
+  p.scene.elements.b.appearsAtMs = 1400;
+  p.scene.elements.b.disappearsAtMs = 2600;
+  expect(validateProject(p)).toBeNull();
 });
 
 test("removing a transform also removes the destination it created", () => {
