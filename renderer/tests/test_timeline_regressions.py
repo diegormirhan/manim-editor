@@ -11,6 +11,19 @@ def scene():
 
 
 class TimelineRegressions(unittest.TestCase):
+    def test_elements_enter_and_leave_in_the_middle_of_another_animation(self):
+        p = scene()
+        p["scene"]["animations"] = [dict(kind="indicate", targetId="a", startMs=1000, durationMs=2000)]
+        p["scene"]["elements"]["b"].update(appearsAtMs=1400, disappearsAtMs=2600)
+        source = compile_project(p)
+        # 1.4 s is 6 frames into the 30-frame Indicate, and 2.6 s is 24.
+        self.assertIn("self.play(Indicate(element_0), at(6 / 30, Add(element_1)), at(24 / 30, Remove(element_1)), "
+                      "run_time=(30 - 1e-6) / 15)", source)
+        self.assertIn("class Remove(Add):", source)
+        # Changes inside a play add no segment of their own.
+        self.assertEqual(segment_frames(p), [15, 30, 45])
+        self.assertNotIn("class Remove", compile_project(scene()))
+
     def test_transform_destination_is_hidden_and_source_is_replaced(self):
         p = scene()
         p["scene"]["animations"] = [dict(kind="transform", targetId="a", destinationId="b", startMs=1000, durationMs=1000)]
