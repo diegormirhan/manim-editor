@@ -9,8 +9,14 @@ export type UpdateOffer = { version: string; currentVersion: string; body?: stri
  * Window and updater plugin calls are answered too, so the title bar and the update
  * banner behave as they do in the app.
  */
-export async function mockDesktop(page: Page, options: { renderMs?: number; renderError?: string; openProject?: unknown; update?: UpdateOffer } = {}) {
-  await page.addInitScript(({ renderMs, renderError, openProject, update }) => {
+/**
+ * `live` answers live preview requests with a tiny PNG and a box of ±0.5 units around each element's
+ * position, and fails any whose project contains `failOn`.
+ */
+export type LiveOptions = { failOn?: string };
+
+export async function mockDesktop(page: Page, options: { renderMs?: number; renderError?: string; openProject?: unknown; update?: UpdateOffer; live?: LiveOptions } = {}) {
+  await page.addInitScript(({ renderMs, renderError, openProject, update, live }) => {
     const calls: unknown[] = [];
     let stopRender: (() => void) | null = null;
     let renderStarted = 0;
@@ -31,6 +37,15 @@ export async function mockDesktop(page: Page, options: { renderMs?: number; rend
           return new Promise(() => {});
         }
         if (cmd === "plugin:window|is_maximized") return false;
+        // Without `live`, the worker never answers, as if Manim were still loading.
+        if (cmd === "live_frame") {
+          if (!live) return new Promise(() => {});
+          const { elements } = (args as unknown as { project: { scene: { elements: Record<string, { position: number[] }> } } }).project.scene;
+          await new Promise(resolve => setTimeout(resolve, 40));
+          if (live.failOn && JSON.stringify(args).includes(live.failOn)) throw "LaTeX error: Missing } inserted. Check the equation's LaTeX.";
+          return { frame: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+            boxes: Object.fromEntries(Object.entries(elements).map(([id, { position: [x, y] }]) => [id, [x - 0.5, y - 0.5, x + 0.5, y + 0.5]])) };
+        }
         if (cmd.startsWith("plugin:")) return null;
         if (cmd === "cancel_render") { stopRender?.(); return true; }
         // Progress climbs with the clock, like Manim finishing segments.
@@ -62,13 +77,19 @@ export async function mockDesktop(page: Page, options: { renderMs?: number; rend
         throw "Unknown operation.";
       },
     } });
-  }, { renderMs: options.renderMs ?? 300, renderError: options.renderError ?? "", openProject: options.openProject ?? null, update: options.update ?? null });
+  }, { renderMs: options.renderMs ?? 300, renderError: options.renderError ?? "", openProject: options.openProject ?? null,
+    update: options.update ?? null, live: options.live ?? null });
 }
 
 /** The project commands the page sent, without the progress polling and the window and updater plugins. */
 export const desktopCalls = (page: Page) =>
   page.evaluate(() => (window as unknown as { __desktopCalls: DesktopCall[] }).__desktopCalls
-    .filter(call => call.cmd !== "render_progress" && !call.cmd.startsWith("plugin:")));
+    .filter(call => !["render_progress", "live_frame"].includes(call.cmd) && !call.cmd.startsWith("plugin:")));
+
+/** The live preview requests the page sent: the playhead time and the project's name. */
+export const liveFrameCalls = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __desktopCalls: { cmd: string; args: { timeMs: number; project: { name: string } } }[] }).__desktopCalls
+    .filter(call => call.cmd === "live_frame").map(call => ({ timeMs: call.args.timeMs, name: call.args.project.name })));
 
 /** Every call to a Tauri plugin, such as the window controls and the updater. */
 export const pluginCalls = (page: Page) =>
