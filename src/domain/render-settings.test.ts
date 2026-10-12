@@ -9,13 +9,16 @@ test("stored settings fall back to defaults wherever they leave the contract", (
   const read = readSettings({
     preview: { resolution: "2160p", fps: 30 },
     output: { resolution: "1440p", fps: 24, format: "avi", transparent: "yes" },
-    snapping: "no", loop: true,
+    snapping: "no", loop: true, livePreview: false,
   });
   // A 4K preview is not offered, 24 fps is off the 15 fps grid, and AVI is not a format.
   expect(read.preview).toEqual({ resolution: DEFAULT_SETTINGS.preview.resolution, fps: 30 });
   expect(read.output).toEqual({ ...DEFAULT_SETTINGS.output, resolution: "1440p" });
   expect(read.snapping).toBe(DEFAULT_SETTINGS.snapping);
   expect(read.loop).toBe(true);
+  // The live preview is on unless someone turned it off.
+  expect(DEFAULT_SETTINGS.livePreview).toBe(true);
+  expect(read.livePreview).toBe(false);
 });
 
 test("transparency survives only in containers with an alpha channel", () => {
