@@ -65,8 +65,10 @@ def validate_timeline(scene):
     previous_end = 0
     for block in clips:
         start, end = block["startMs"], block["startMs"] + block["durationMs"]
-        if start < previous_end or end > scene["durationMs"]:
-            raise ValueError("Animations must be sequential and end within the scene.")
+        if start < previous_end:
+            raise ValueError("Two animations would overlap. Place this one before or after the other.")
+        if end > scene["durationMs"]:
+            raise ValueError("The animation would run past the end of the scene.")
         if frame_at(end) <= frame_at(start):
             raise ValueError("An animation must span at least one frame.")
         children = children_of(block)
@@ -87,12 +89,12 @@ def validate_timeline(scene):
                 raise ValueError("An element cannot have two animations in the same group.")
             touched.add(target)
             if target in removed or target not in available or start < available[target]:
-                raise ValueError("The element is not available at this time.")
+                raise ValueError("The animation would start while its object is not on screen.")
             if end > element.get("disappearsAtMs", scene["durationMs"]):
-                raise ValueError("The animation extends beyond the element's end.")
+                raise ValueError("The animation would run past the moment its object leaves the screen.")
             if clip["kind"] in ENTRANCES:
                 if target in entered or target in owners or start != available[target]:
-                    raise ValueError("An entrance must start with its element and occur only once.")
+                    raise ValueError("An entrance plays once, starting when its object appears.")
                 entered.add(target)
             check_clip_fields(clip)
             if clip["kind"] == "transform":
@@ -107,12 +109,6 @@ def validate_timeline(scene):
             if clip["kind"] == "fadeOut":
                 removed.add(target)
         available.update(pending)
-        for identifier, item in scene["elements"].items():
-            times = [item.get("disappearsAtMs", scene["durationMs"])]
-            if identifier not in owners:
-                times.append(item["appearsAtMs"])
-            if any(start < time < end for time in times):
-                raise ValueError("An element appears or disappears during another animation: adjust its timing or use a parallel group.")
         previous_end = end
 
 
