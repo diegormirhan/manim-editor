@@ -10,6 +10,10 @@ from .render_options import resolve_options
 from .scene_compiler import compile_project
 
 
+# Where the bundled TinyTeX lives, relative to the app's root.
+TEX_BIN = "work/runtime/tex/TinyTeX/bin/windows"
+
+
 def render_root(root: Path) -> Path:
     """Where render jobs may write.
 
@@ -57,7 +61,7 @@ def dispatch(request: dict, root: Path, emit=emit_progress) -> dict:
         options = resolve_options(request.get("options"), preview=operation == "render")
         artifact = render_project(
             project, render_root(root), options=options, on_progress=emit,
-            tex_bin=root / "work/runtime/tex/TinyTeX/bin/windows",
+            tex_bin=root / TEX_BIN,
         )
         if operation == "render":
             return {"path": str(artifact)}
