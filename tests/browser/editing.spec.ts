@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { fileCommand, openEditor } from "./desktop-mock";
+import { fileCommand, mockDesktop, openEditor } from "./desktop-mock";
 
 const status = (page: Page) => page.getByRole("status");
 const heading = (page: Page) => page.getByRole("heading", { name: "Timeline" });
@@ -197,4 +197,25 @@ test("colour fields never rewrite the native picker, so an open picker cannot lo
   await settings.getByLabel("Background colour").locator("input").fill("#ff0000");
   await expect(settings).toContainText("#FF0000");
   expect(await writes()).toBe(0);
+});
+
+test("an object can enter while another object's animation plays", async ({ page }) => {
+  await mockDesktop(page, { openProject: { schemaVersion: 1, name: "Overlap", scene: { durationMs: 6000, elements: {
+    a: { kind: "circle", radius: 1, position: [-3, 0, 0], appearsAtMs: 0 },
+    b: { kind: "circle", radius: 1, position: [3, 0, 0], appearsAtMs: 0 },
+  }, animations: [{ kind: "indicate", targetId: "a", startMs: 1000, durationMs: 2000 }] } } });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open…" }).click();
+  const grip = page.getByRole("button", { name: "Adjust start of Circle 2" });
+  const lane = (await page.locator(".clip-lane").nth(1).boundingBox())!;
+  const box = (await grip.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  // 1.5 s of a 6 s scene: the middle of the Indicate.
+  await page.mouse.move(lane.x + lane.width * 0.25, box.y + box.height / 2, { steps: 10 });
+  await expect(page.locator(".timeline-help")).not.toHaveClass(/invalid/);
+  await page.mouse.up();
+  await expect(page.getByRole("status")).not.toContainText("went back");
+  await page.getByRole("button", { name: "Select circle 2" }).click();
+  await expect(page.getByLabel("Appear at (s)")).toHaveValue("1.5");
 });
