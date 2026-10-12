@@ -3,21 +3,24 @@
 # looks for first (see src-tauri/src/project_commands.rs). No installer, no
 # admin rights: extract the zip anywhere and run manim-editor.exe.
 param(
-  [string]$Output = "work/portable/manim-editor-portable-windows.zip",
+  [string]$Output = "",
   [switch]$SkipBuild
 )
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
+if (-not $Output) {
+  $version = (Get-Content -Raw (Join-Path $root "package.json") | ConvertFrom-Json).version
+  $Output = "Releases/v$version/manim-editor-$version-portable-windows.zip"
+}
 $env:CARGO_HOME = Join-Path $root "work/cargo"
 $env:RUSTUP_HOME = Join-Path $root "work/rustup"
 $env:PATH = (Join-Path $env:CARGO_HOME "bin") + [IO.Path]::PathSeparator + $env:PATH
 
+& (Join-Path $PSScriptRoot "prepare-runtime.ps1") | Out-Null
 if (-not $SkipBuild) {
   Push-Location $root
-  npm run build
-  Pop-Location
-  Push-Location (Join-Path $root "src-tauri")
-  cargo build --release --no-default-features
+  # Only the Tauri CLI builds an exe that carries the interface; a bare cargo build loads it from the dev server.
+  npm run tauri -- build --no-bundle
   Pop-Location
 }
 
@@ -31,7 +34,7 @@ New-Item -ItemType Directory -Force -Path $payload | Out-Null
 Copy-Item $exe (Join-Path $payload "manim-editor.exe") -Force
 Copy-Item (Join-Path $root "renderer") (Join-Path $payload "renderer") -Recurse -Force
 Copy-Item (Join-Path $root "contracts") (Join-Path $payload "contracts") -Recurse -Force
-Copy-Item (Join-Path $root ".venv") (Join-Path $payload ".venv") -Recurse -Force
+Copy-Item (Join-Path $root "work/runtime/python") (Join-Path $payload ".venv") -Recurse -Force
 New-Item -ItemType Directory -Force -Path (Join-Path $payload "work/runtime") | Out-Null
 Copy-Item (Join-Path $root "work/runtime/tex") (Join-Path $payload "work/runtime/tex") -Recurse -Force
 Copy-Item (Join-Path $root "README.md") (Join-Path $payload "README.md") -Force
