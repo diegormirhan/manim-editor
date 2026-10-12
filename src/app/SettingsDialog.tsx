@@ -91,6 +91,8 @@ export function SettingsDialog({ open, tab, onTab, onClose, settings, onSettings
             checked={settings.playAfterRender} onChange={playAfterRender => onSettings({ playAfterRender })} />
           <Toggle label="Loop playback" description="Play the preview again from the start when it ends."
             checked={settings.loop} onChange={loop => onSettings({ loop })} />
+          <Toggle label="Live preview" description="While you edit or scrub, show Manim's own frame at the playhead. A Manim process stays loaded in the background for it."
+            checked={settings.livePreview} onChange={livePreview => onSettings({ livePreview })} />
         </Page>
 
         <Page value="export" title="Export" description="The video Export → Video… writes to a file you choose.">
