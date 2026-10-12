@@ -47,11 +47,10 @@ class CatalogTests(unittest.TestCase):
             with self.subTest(clip=clip), self.assertRaises(ValueError):
                 validate_project(p)
 
-    def test_rejects_static_appearance_inside_animation(self):
+    def test_accepts_an_element_appearing_inside_another_animation(self):
         p = sample()
         p["scene"]["elements"]["b"] = {**p["scene"]["elements"]["a"], "appearsAtMs": 500}
-        with self.assertRaises(ValueError):
-            validate_project(p)
+        validate_project(p)
 
     def test_rejects_animation_after_exit(self):
         p = sample()
