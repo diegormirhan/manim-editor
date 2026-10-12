@@ -190,11 +190,14 @@ When it lists a newer version, a banner offers to download it; the installer's s
 against the public key in [tauri.conf.json](src-tauri/tauri.conf.json) before it runs.
 
 1. Raise `version` in [package.json](package.json); Tauri reads it from there.
-2. Run `npm run build:installers`. It signs the installers with `%USERPROFILE%\.tauri\manim-editor.key`
-   (or `TAURI_SIGNING_PRIVATE_KEY_PATH`) and writes `src-tauri/target/release/bundle/latest.json`.
+2. Run `npm run build:installers`. It packs a Python that needs no installed Python
+   ([prepare-runtime.ps1](scripts/prepare-runtime.ps1)), signs the installers with
+   `%USERPROFILE%\.tauri\manim-editor.key` (or `TAURI_SIGNING_PRIVATE_KEY_PATH`) and writes
+   `src-tauri/target/release/bundle/latest.json`.
    Add release notes with `npm run release:manifest -- --notes "What changed"`.
-3. Create the GitHub release `v<version>` and attach `latest.json`, the `…_x64-setup.exe` and the
-   `…_x64_en-US.msi`.
+3. Optionally run `npm run build:portable`. Every download of the version then sits in
+   `Releases/v<version>`, which Git ignores.
+4. Create the GitHub release `v<version>` and attach the files in `Releases/v<version>`.
 
 > [!WARNING]
 > Keep a backup of the private key. Without it, installed copies can never be updated again; a new
@@ -231,8 +234,9 @@ real app with fresh Manim renders; see [media provenance](docs/media/README.md).
 - Timing sits on a 15 fps grid, so exports use 15, 30 or 60 fps, and render progress advances once
   per finished Manim segment.
 - Animations cannot partially overlap; simultaneous animations need an explicit parallel group.
-- Packaging relocation, licence review of the bundled runtime, Authenticode signing and a clean-machine
-  check are still pending. The portable zip does not update itself.
+- The downloads carry their own Python and load nothing from the build machine's, but a licence review
+  of the bundled runtime, Authenticode signing and a test on a real clean machine are still pending.
+  The portable zip does not update itself.
 - Windows 11's Snap Layouts flyout does not open from the custom maximize button; Win+Z still works.
 
 > [!IMPORTANT]
