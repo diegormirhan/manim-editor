@@ -1,5 +1,5 @@
 use serde_json::{json, Value};
-use std::{fs::OpenOptions, io::{BufRead, BufReader, Write}, path::PathBuf, process::{Command, Stdio}, sync::{atomic::{AtomicBool, Ordering}, Mutex}, time::{SystemTime, UNIX_EPOCH}};
+use std::{fs::OpenOptions, io::{BufRead, BufReader, Write}, path::PathBuf, process::{Child, ChildStdin, ChildStdout, Command, Stdio}, sync::{atomic::{AtomicBool, Ordering}, Mutex}, time::{SystemTime, UNIX_EPOCH}};
 use tauri::Manager;
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -12,6 +12,10 @@ static CHILD: Mutex<Option<u32>> = Mutex::new(None);
 static DOCUMENTS: Mutex<Vec<PathBuf>> = Mutex::new(Vec::new());
 /// The latest progress event of the running render, for the interface to poll.
 static PROGRESS: Mutex<Option<Value>> = Mutex::new(None);
+/// The live preview's Python worker, which keeps Manim loaded between frames.
+static LIVE: Mutex<Option<LiveWorker>> = Mutex::new(None);
+
+struct LiveWorker { child: Child, stdin: ChildStdin, stdout: BufReader<ChildStdout> }
 
 pub fn log_session(event: &str) {
     let path = project_root().join(".session.log");
@@ -93,6 +97,50 @@ fn execute_bridge(request: Value) -> Result<Value, String> {
         return Err(problems.trim().to_string());
     }
     serde_json::from_slice(&output.stdout).map_err(|error| error.to_string())
+}
+
+/// Starts the live preview worker. It exits by itself when the app closes its stdin.
+fn start_live_worker() -> Result<LiveWorker, String> {
+    let root = project_root();
+    let mut command = Command::new(root.join(".venv/Scripts/python.exe"));
+    command.args(["-m", "renderer.manim_renderer.live_frame"])
+        .current_dir(&root).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
+    #[cfg(windows)]
+    command.creation_flags(0x08000000);
+    let mut child = command.spawn().map_err(|error| error.to_string())?;
+    let (stdin, stdout) = (child.stdin.take().unwrap(), BufReader::new(child.stdout.take().unwrap()));
+    Ok(LiveWorker { child, stdin, stdout })
+}
+
+/// Manim's frame of `project` at `time_ms`, as `{frame: <base64 PNG>, boxes: {<element id>: [left, bottom, right, top]}}`.
+/// Requests take turns on one warm worker.
+fn request_live_frame(project: Value, time_ms: u64) -> Result<Value, String> {
+    let mut slot = LIVE.lock().unwrap_or_else(|poison| poison.into_inner());
+    if slot.as_mut().is_none_or(|worker| !matches!(worker.child.try_wait(), Ok(None))) {
+        *slot = Some(start_live_worker()?);
+    }
+    let worker = slot.as_mut().unwrap();
+    let request = json!({"project": project, "timeMs": time_ms}).to_string() + "\n";
+    let mut reply = String::new();
+    let exchanged = worker.stdin.write_all(request.as_bytes())
+        .and_then(|_| worker.stdin.flush())
+        .and_then(|_| worker.stdout.read_line(&mut reply));
+    if !matches!(exchanged, Ok(read) if read > 0) {
+        *slot = None;
+        return Err("The live preview stopped. It starts again with the next change.".into());
+    }
+    let reply: Value = serde_json::from_str(&reply).map_err(|error| error.to_string())?;
+    match reply.get("error").and_then(Value::as_str) {
+        Some(error) => Err(error.to_string()),
+        None if reply.get("frame").is_some_and(Value::is_string) => Ok(reply),
+        None => Err("The live preview sent an unreadable reply.".into()),
+    }
+}
+
+#[tauri::command]
+pub async fn live_frame(project: Value, time_ms: u64) -> Result<Value, String> {
+    tauri::async_runtime::spawn_blocking(move || request_live_frame(project, time_ms))
+        .await.map_err(|error| error.to_string())?
 }
 
 /// A newline-delimited JSON progress event from the bridge, or `None` for any other stderr line.
@@ -287,6 +335,17 @@ mod tests {
         assert!(perform_action("openRecent", Value::Null, Some(missing), None).unwrap_err().contains("moved"));
         assert!(perform_action("openRecent", Value::Null, Some(project_root().join("README.md")), None).is_err());
         assert!(perform_action("openRecent", Value::Null, None, None).is_err());
+    }
+    #[test]
+    fn live_frames_come_from_one_warm_worker_that_outlives_a_bad_request() {
+        let project: Value = serde_json::from_str(&std::fs::read_to_string(project_root().join("examples/shape-motion.json")).unwrap()).unwrap();
+        let start = request_live_frame(project.clone(), 0).unwrap();
+        assert!(start["frame"].as_str().unwrap().starts_with("iVBORw0KGgo"), "a base64 PNG");
+        assert!(start["boxes"].is_object());
+        let worker = LIVE.lock().unwrap().as_ref().map(|worker| worker.child.id());
+        assert!(request_live_frame(json!({"schemaVersion": 1, "name": "Broken"}), 0).unwrap_err().contains("scene"));
+        assert_ne!(request_live_frame(project, 5000).unwrap()["frame"], start["frame"]);
+        assert_eq!(LIVE.lock().unwrap().as_ref().map(|worker| worker.child.id()), worker);
     }
     #[test]
     fn cancelling_stops_a_running_render_and_its_children() {
