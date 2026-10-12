@@ -35,7 +35,8 @@ the composition and the timing; Manim still produces every pixel.
 ![The editor with a rendered integral, the object pool, the inspector and the timeline](docs/screenshots/calculus-area-dark.png)
 
 *The real Tauri app showing its own Manim render. Object tracks, coloured by kind, show when each
-element is on screen; the animation tracks below control motion. The preview changes only when you render.*
+element is on screen; the animation tracks below control motion. Between renders, the viewer shows
+Manim's own frame at the playhead, live.*
 
 Both demos below were built entirely in the editor, from the bundled [example projects](examples/):
 
@@ -54,9 +55,14 @@ Time savings have not been measured in a user study.
   and other clips. Zoom with Ctrl+wheel; undo and redo everything.
 - **Explicit animation.** Adding an element never adds an animation for you. Animations are clips of
   their own: select one, change it, or delete it without touching its object.
-- **Render and scrub.** Render (Ctrl+Enter) previews the scene at the viewer quality and reports
-  Manim's progress; Esc cancels. A failed render names its cause, such as the LaTeX error, and the
-  last good preview stays.
+- **Live preview.** While you edit or scrub, the viewer shows Manim's own frame at the playhead,
+  usually within half a second, from a Manim process kept loaded in the background. A formula that
+  will not compile says why, and the last good frame stays.
+- **Move objects on the stage.** Drag any object in the viewer to place it; the frame follows as you
+  drag and the whole drag undoes in one step. After a Move animation, dragging moves where that
+  animation ends. Arrow keys nudge the focused object (Shift for bigger steps).
+- **Render and scrub.** Render (Ctrl+Enter) makes the video you play, at the viewer quality, and
+  reports Manim's progress; Esc cancels. A failed render names its cause, such as the LaTeX error.
 - **Export.** Video at 480p to 4K, 15, 30 or 60 fps, as MP4, WebM, GIF or MOV (transparent in WebM
   and MOV), or the same scene as readable Python.
 - **Projects screen.** The app opens on your projects: the one you were working on, recent files
@@ -170,7 +176,10 @@ flowchart LR
 | [Python renderer](renderer/manim_renderer/) | Validate again, compile deterministically, launch Manim, keep diagnostics |
 
 Each render runs in an isolated directory holding the project snapshot, the generated source, the
-log and the video, and only a successful result replaces the preview. To add a feature, extend the
+log and the video, and only a successful result replaces the preview. The live preview compiles the
+same scene in a Python process that keeps Manim loaded: it plays everything before the playhead to
+its end, stops the running animation at the playhead and returns that single frame, with the box of each
+object on screen; the viewer turns those boxes into drag handles. To add a feature, extend the
 contract, the catalog or inspector and the focused compiler, then test both languages.
 
 ## Publishing an update
@@ -202,8 +211,8 @@ cargo test --manifest-path src-tauri/Cargo.toml                    # Rust bridge
 
 | Check | Local result |
 |---|---|
-| Domain, Python and Rust tests | 46, 61 and 13 passing; Rust includes a real render, a cancelled render, a transparent MOV export and a recent file reopened without a dialog |
-| Browser workflows | 62 passing against a simulated desktop: projects, recent files, window controls, updates, render, export, progress, settings |
+| Domain, Python and Rust tests | 51, 66 and 14 passing; Rust includes a real render, a cancelled render, a transparent MOV export, a recent file reopened without a dialog and live frames from one warm Manim worker |
+| Browser workflows | 70 passing against a simulated desktop: projects, recent files, window controls, updates, live preview, dragging on the stage, render, export, progress, settings |
 | Exported formats (ffprobe) | 720p30 and 1080p60 H.264, GIF, VP9 with alpha, QuickTime Animation ARGB; a 15 s scene renders exactly 450 frames at 30 fps and 900 at 60 |
 | The Tauri window | Real renders, Esc cancellation, LaTeX failures named, caption buttons, recent files saved in place, a tampered update refused, a signed one downloaded, verified and launched |
 
@@ -213,8 +222,14 @@ real app with fresh Manim renders; see [media provenance](docs/media/README.md).
 ## Known limitations
 
 - One scene per project. Existing Manim Python cannot be imported, and exported Python is not read back.
-- Render again to see edits; there is no live renderer. Timing sits on a 15 fps grid, so exports use
-  15, 30 or 60 fps, and progress advances once per finished Manim segment.
+- The live preview draws single frames, a few per second while you scrub; smooth playback needs a
+  render. Its first frame waits for Manim to load (several seconds), and a new formula compiles its
+  LaTeX once.
+- Dragging on the stage needs the live preview, since Manim reports where each object sits. Handles
+  are bounding boxes, so a large object such as axes catches clicks across its whole box; smaller
+  objects sit above it.
+- Timing sits on a 15 fps grid, so exports use 15, 30 or 60 fps, and render progress advances once
+  per finished Manim segment.
 - Animations cannot partially overlap; simultaneous animations need an explicit parallel group.
 - Packaging relocation, licence review of the bundled runtime, Authenticode signing and a clean-machine
   check are still pending. The portable zip does not update itself.
