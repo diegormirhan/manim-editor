@@ -14,4 +14,9 @@ export async function projectAction(operation: Operation, project: Project, path
 }
 export const cancelRender = () => invoke<boolean>("cancel_render");
 export const renderProgress = () => invoke<RenderProgress | null>("render_progress");
+/** Where an element on screen sits, in scene units: left, bottom, right, top. */
+export type Box = [number, number, number, number];
+/** Manim's frame of the project at `timeMs` from the live preview worker: a base64 PNG and the box of each element on screen. */
+export const liveFrame = (project: Project, timeMs: number) =>
+  invoke<{ frame: string; boxes: Record<string, Box> }>("live_frame", { project, timeMs: Math.round(timeMs) });
 export const previewUrl = convertFileSrc;
