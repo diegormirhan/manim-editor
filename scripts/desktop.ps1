@@ -5,16 +5,8 @@ $env:RUSTUP_HOME = Join-Path $projectRoot 'work/rustup'
 $env:PATH = (Join-Path $env:CARGO_HOME 'bin') + [IO.Path]::PathSeparator + $env:PATH
 Set-Location $projectRoot
 $command = if ($args.Count -gt 0) { $args[0] } else { 'dev' }
-if ($command -eq 'build') {
-  # Installers carry an updater signature; the private key stays outside the repository.
-  # The bundler reads only TAURI_SIGNING_PRIVATE_KEY, so a key file is loaded into it.
-  if (-not $env:TAURI_SIGNING_PRIVATE_KEY) {
-    $key = if ($env:TAURI_SIGNING_PRIVATE_KEY_PATH) { $env:TAURI_SIGNING_PRIVATE_KEY_PATH } else { Join-Path $HOME '.tauri/manim-editor.key' }
-    if (-not (Test-Path $key)) { throw "Updater signing key not found at $key. See README.md, Updates." }
-    $env:TAURI_SIGNING_PRIVATE_KEY = (Get-Content -Raw $key).Trim()
-  }
-  if ($null -eq $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD) { $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = '' }
-}
+# Installers carry their own Python; updater-manifest.mjs signs them once they are built.
+if ($command -eq 'build') { & (Join-Path $PSScriptRoot 'prepare-runtime.ps1') }
 & npm.cmd run tauri -- $command
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 if ($command -eq 'build') { & node scripts/updater-manifest.mjs }
