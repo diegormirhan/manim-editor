@@ -64,7 +64,7 @@ test("overlap and duplicate entrance are rejected", () => {
   p.scene.animations = [{ kind: "write", targetId: "equation-1", startMs: 0, durationMs: 1000 }];
   expect(validateProject(p)).toBeNull();
   p.scene.animations.push({ kind: "fadeOut", targetId: "equation-1", startMs: 500, durationMs: 1000 });
-  expect(validateProject(p)).toContain("sequential");
+  expect(validateProject(p)).toContain("overlap");
 });
 
 test("duplicating an element copies it without inheriting its animations", () => {
