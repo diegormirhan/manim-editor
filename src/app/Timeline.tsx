@@ -149,7 +149,7 @@ export function Timeline({ project, selection, onSelect, selectedAnimation, onSe
   const reject = (message: string) => { onError(message); setHint({ text: message, invalid: true }); };
   const commit = (next: Project) => {
     const error = validateProject(next);
-    if (error) { reject(error + " The clip stayed in its previous position."); return; }
+    if (error) { reject(error + " The clip went back to where it was."); return; }
     if (JSON.stringify(next) !== JSON.stringify(project)) onChange(next);
   };
   const finish = () => {
