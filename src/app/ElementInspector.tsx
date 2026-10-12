@@ -118,7 +118,7 @@ export function ElementInspector({ element, onChange, project, timing = true }: 
     {positioned && <>
       <VectorFields label="Position" value={element.position} onChange={position => onChange({ ...element, position })} />
       {(element.kind === "line" || element.kind === "arrow") && <VectorFields label="End point" value={element.end} onChange={end => onChange({ ...element, end })} />}
-      <p className={warning ? "hint warning" : "hint"}>{warning ?? "Manim units. X: −7.11 to 7.11; Y: −4 to 4. Large objects may be clipped."}</p>
+      <p className={warning ? "hint warning" : "hint"}>{warning ?? "Drag it in the viewer, or type Manim units. X: −7.11 to 7.11; Y: −4 to 4."}</p>
       <div className="inline-actions">
         <Button variant="outline" size="xs" className="h-7 px-2.5" onClick={() => {
           if (element.kind === "line" || element.kind === "arrow") {
