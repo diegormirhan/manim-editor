@@ -2,6 +2,8 @@
 __pycache__/
 *.egg-info/
 work/
+# Finished downloads of each version, copied out of the build folders.
+/Releases/
 node_modules/
 dist/
 target/
