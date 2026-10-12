@@ -12,6 +12,8 @@ export type Settings = {
   snapping: boolean;
   playAfterRender: boolean;
   loop: boolean;
+  /** Manim's frame at the playhead while you edit, from a worker kept in the background. */
+  livePreview: boolean;
   restoreSession: boolean;
 };
 
@@ -27,6 +29,7 @@ export const DEFAULT_SETTINGS: Settings = {
   snapping: true,
   playAfterRender: false,
   loop: false,
+  livePreview: true,
   restoreSession: true,
 };
 
@@ -66,6 +69,7 @@ export function readSettings(stored: unknown): Settings {
     snapping: flag(value.snapping, defaults.snapping),
     playAfterRender: flag(value.playAfterRender, defaults.playAfterRender),
     loop: flag(value.loop, defaults.loop),
+    livePreview: flag(value.livePreview, defaults.livePreview),
     restoreSession: flag(value.restoreSession, defaults.restoreSession),
   };
 }
