@@ -171,11 +171,32 @@
   }
   /* The scene's background, set per project; the ink adapts so the empty stage stays readable. */
   .stage { --stage-ink: #fafafa; --stage-muted: #a1a1aa; --stage-media: #27272a; --stage-media-ink: #e4e4e7; }
-  .stage video, .empty-preview {
-    max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9; background: var(--stage);
+  /* The scene's 16:9 frame, as large as the stage allows; the handles share its coordinates. */
+  .stage { position: relative; container-type: size; }
+  .canvas { position: relative; width: min(100cqw, 100cqh * 16 / 9); aspect-ratio: 16 / 9; }
+  .stage video, .empty-preview, .stage .live-frame {
+    width: 100%; height: 100%; background: var(--stage);
     border-radius: var(--radius-md); box-shadow: 0 0 0 1px var(--border);
   }
   .stage video { display: block; cursor: pointer; }
+  .stage .live-frame { display: block; object-fit: contain; }
+  /* Empty space passes clicks to the video underneath, which plays and pauses. */
+  .handles { position: absolute; inset: 0; overflow: hidden; border-radius: var(--radius-md); pointer-events: none; }
+  .handle {
+    position: absolute; pointer-events: auto; cursor: grab; border-radius: 3px; background: none;
+    outline: 1px solid transparent; outline-offset: 3px;
+    transition: outline-color 150ms var(--ease-out);
+  }
+  .handle:hover { outline-color: color-mix(in oklab, var(--primary) 55%, transparent); }
+  .handle.selected { outline: 1.5px solid var(--primary); }
+  .handle:focus-visible { outline: 2px solid var(--ring); }
+  .handle.dragging { cursor: grabbing; outline: 1.5px solid var(--primary); }
+  /* The last good frame stays; the reason it could not be updated sits over it. */
+  .live-error {
+    position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); max-width: calc(100% - 48px);
+    padding: 6px 10px; border-radius: var(--radius-md); background: var(--destructive); color: #fff;
+    font-size: 12px; font-weight: 500; text-align: center;
+  }
   .empty-preview {
     height: 100%; min-height: 0; overflow: hidden; display: grid; place-content: center; justify-items: center; gap: 8px;
     padding: 16px; text-align: center; color: var(--stage-muted);
