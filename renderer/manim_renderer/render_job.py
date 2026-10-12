@@ -58,21 +58,26 @@ def _run(command: list[str], *, cwd: Path, env: dict, log, timeout: float, tick:
             tick()
 
 
+def manim_environment(tex_bin: Path | None) -> dict[str, str]:
+    """TinyTeX first on PATH, and TeX barred from shell escapes and from files outside its job."""
+    environment = os.environ.copy()
+    if tex_bin is not None:
+        environment["PATH"] = str(tex_bin.resolve(strict=True)) + os.pathsep + environment.get("PATH", "")
+    environment["shell_escape"] = "f"
+    environment["openin_any"] = "p"
+    environment["openout_any"] = "p"
+    # A wide console keeps each log record on one line, so its cause can be found.
+    environment["COLUMNS"] = "400"
+    return environment
+
+
 def render_project(project: dict, output_root: Path, *, tex_bin: Path | None = None,
                    options: dict | None = None, on_progress: Progress | None = None) -> Path:
     """Renders with resolved options (see render_options.resolve_options); the default is the draft preview."""
     options = options or resolve_options(None)
     source = compile_project(project, fps=options["fps"])
     segments = segment_frames(project)
-    environment = os.environ.copy()
-    if tex_bin is not None:
-        tex_bin = tex_bin.resolve(strict=True)
-        environment["PATH"] = str(tex_bin) + os.pathsep + environment.get("PATH", "")
-    environment["shell_escape"] = "f"
-    environment["openin_any"] = "p"
-    environment["openout_any"] = "p"
-    # A wide console keeps each log record on one line, so its cause can be found.
-    environment["COLUMNS"] = "400"
+    environment = manim_environment(tex_bin)
     job = output_root.resolve() / uuid.uuid4().hex
     job.mkdir(parents=True)
     save_project(project, job / "project.json")
