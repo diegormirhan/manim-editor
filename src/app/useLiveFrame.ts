@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Project } from "../domain/project";
-import { liveFrame, type Box } from "../infrastructure/desktop";
+import type { Box } from "../domain/placement";
+import { liveFrame } from "../infrastructure/desktop";
 
 /**
  * Manim's own frame of the project at the playhead, while `enabled`, with where each element
