@@ -204,7 +204,7 @@ export function Timeline({ project, selection, onSelect, selectedAnimation, onSe
   const trackOf = Object.fromEntries(Object.keys(active.scene.elements).map((id, index) => [id, index + 1]));
   return <div className="timeline-editor">
     <p className={"timeline-help" + (hint.invalid ? " invalid" : "") + (hint.text ? "" : " idle")} aria-live="polite" title={hint.text || undefined}>
-      {hint.text || "Drag to move · Drag edges to resize · Arrows: 0.1 s · Esc: cancel"}</p>
+      {hint.text}</p>
     <div className="timeline-body" ref={scroller}
       onScroll={event => { geometry.current.scrollLeft = event.currentTarget.scrollLeft; }}>
     <div className="timeline-content" style={{ "--zoom": zoom } as CSSProperties}>
