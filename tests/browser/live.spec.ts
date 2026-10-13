@@ -24,8 +24,10 @@ test("an up-to-date render takes over from the live frame until the next edit", 
   await mockDesktop(page, { live: {} });
   await openEditor(page);
   await expect(frame(page)).toBeVisible();
-  await page.getByRole("button", { name: "Render", exact: true }).click();
+  await page.getByRole("button", { name: "Play", exact: true }).click();
   await expect(previewState(page)).toHaveText("Up to date");
+  // Play renders and then plays; editing and dragging work on a paused scene.
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
   await expect(frame(page)).toHaveCount(0);
   await expect(page.getByLabel("Rendered video")).toBeVisible();
 
@@ -74,8 +76,10 @@ test("an object moves where it is dragged on the stage, in one undo step", async
 test("objects over an up-to-date render can be dragged too, and the live frame takes over", async ({ page }) => {
   await mockDesktop(page, { live: {} });
   await openEditor(page);
-  await page.getByRole("button", { name: "Render", exact: true }).click();
+  await page.getByRole("button", { name: "Play", exact: true }).click();
   await expect(previewState(page)).toHaveText("Up to date");
+  // Play renders and then plays; editing and dragging work on a paused scene.
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
   const box = (await page.getByRole("button", { name: "Move Equation" }).boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
@@ -83,6 +87,54 @@ test("objects over an up-to-date render can be dragged too, and the live frame t
   await page.mouse.up();
   await expect(frame(page)).toBeVisible();
   await expect(previewState(page)).toHaveText("Live preview");
+});
+
+/** Presses at the middle of `target`, moves by (dx, dy) pixels and, unless `hold`, lets go. */
+async function dragBy(page: Page, target: { x: number; y: number; width: number; height: number }, dx: number, dy: number, hold = false) {
+  const [x, y] = [target.x + target.width / 2, target.y + target.height / 2];
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + dx, y + dy, { steps: 4 });
+  if (!hold) await page.mouse.up();
+}
+
+test("a dragged object snaps onto the frame's centre and shows the guide, unless guides are off", async ({ page }) => {
+  await mockDesktop(page, { live: {} });
+  await openEditor(page);
+  const handle = page.getByRole("button", { name: "Move Equation" });
+  await dragBy(page, (await handle.boundingBox())!, 4, 40, true);
+  await expect(page.locator(".guide.vertical")).toBeVisible();
+  await page.mouse.up();
+  await expect(page.locator(".guide")).toHaveCount(0);
+  await expect(page.getByLabel("Position X")).toHaveValue("0");
+
+  await page.keyboard.press("Control+,");
+  const settings = page.getByRole("dialog", { name: "Settings" });
+  await settings.getByRole("tab", { name: "Editor" }).click();
+  await settings.getByRole("switch", { name: "Alignment guides" }).click();
+  await page.keyboard.press("Escape");
+  await dragBy(page, (await handle.boundingBox())!, 4, 0);
+  await expect(page.getByLabel("Position X")).not.toHaveValue("0");
+});
+
+test("the selected object turns from its knob and scales from a corner", async ({ page }) => {
+  await mockDesktop(page, { live: {} });
+  await openEditor(page);
+  await page.getByRole("button", { name: "Move Equation" }).click();
+  const handle = page.locator(".handle.selected");
+  const box = (await handle.boundingBox())!;
+  const knob = (await handle.locator(".knob").boundingBox())!;
+  // From straight above the centre to straight right of it: a quarter turn clockwise on screen.
+  await page.mouse.move(knob.x + knob.width / 2, knob.y + knob.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 1.5, box.y + box.height / 2, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(async () => Number(await page.getByLabel("Rotation (degrees)").inputValue())).toBeCloseTo(-90, -1);
+
+  // Once Manim's frame shows the turn, the handle is an upright box again.
+  await expect(handle).not.toHaveAttribute("style", /rotate/);
+  await dragBy(page, (await handle.locator(".corner.se").boundingBox())!, box.width / 2, box.height / 2);
+  await expect.poll(async () => Number(await page.getByLabel("Scale", { exact: true }).inputValue())).toBeCloseTo(2, 0);
 });
 
 test("arrow keys nudge the focused object instead of stepping frames", async ({ page }) => {
