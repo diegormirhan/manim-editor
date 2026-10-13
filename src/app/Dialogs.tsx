@@ -26,13 +26,13 @@ export function ConfirmDialog({ request, onAnswer }: { request: ConfirmRequest |
 const SHORTCUTS: [string, [string, string][]][] = [
   ["Project", [["Ctrl N", "New project"], ["Ctrl O", "Open"], ["Ctrl S", "Save"], ["Ctrl Shift S", "Save as"],
     ["Ctrl Z", "Undo"], ["Ctrl Y", "Redo"], ["Ctrl ,", "Settings"]]],
-  ["Render and export", [["Ctrl Enter", "Render the preview"], ["Ctrl Shift E", "Export video"], ["Ctrl E", "Export Python"],
-    ["Esc", "Cancel a render or export"]]],
-  ["Playback", [["Space", "Play or pause"], ["← →", "Previous or next frame"], ["Shift ← →", "One second back or forward"],
+  ["Export", [["Ctrl Shift E", "Export video"], ["Ctrl E", "Export Python"], ["Esc", "Cancel a render or export"]]],
+  ["Playback", [["Space", "Play, rendering first if needed, or pause"], ["← →", "Previous or next frame"], ["Shift ← →", "One second back or forward"],
     ["Home End", "Scene start or end"], ["= −", "Zoom the timeline in or out"], ["\\", "Fit the scene"],
     ["Ctrl Wheel", "Zoom at the pointer"]]],
   ["Editing", [["Ctrl D", "Duplicate object"], ["Delete", "Remove the selected object or animation"],
     ["← →", "Move a focused clip by 0.1 s"], ["Shift ← →", "Resize a focused clip's end"], ["Esc", "Cancel a drag"],
+    ["Arrows", "Nudge a focused object in the viewer"], ["Shift Drag", "Turn in 15° steps"],
     ["Alt Drag", "Drag with snapping inverted"]]],
 ];
 
