@@ -69,7 +69,6 @@ function GraphFields({ element, project, onChange }: {
       const next = { ...element }; if (event.target.value) next.axesId = event.target.value; else delete next.axesId; onChange(next);
     }}><Option value="">Scene coordinates</Option>{Object.entries(project?.scene.elements ?? {}).filter(([, item]) =>
       item.kind === "axes" || item.kind === "numberPlane").map(([id, item]) => <Option key={id} value={id}>{elementSummary(item)} · {id.slice(0, 8)}</Option>)}</FieldSelect></label>
-    <p className="hint">Link to axes to share their scale and origin.</p>
   </>;
 }
 
@@ -102,7 +101,6 @@ export function ElementInspector({ element, onChange, project, timing = true }: 
           <Option key={id} value={id}>{elementSummary(item)} · {id.slice(0, 8)}</Option>)}
       </FieldSelect></label>
       <RangeFields label="X" value={element.xRange} onChange={xRange => onChange({ ...element, xRange })} />
-      <p className="hint">The area follows the graph between the selected bounds.</p>
     </>}
     {(element.kind === "axes" || element.kind === "numberPlane" || element.kind === "numberLine") && <>
       <RangeFields label="X" value={element.xRange} onChange={xRange => onChange({ ...element, xRange })} />
@@ -113,12 +111,11 @@ export function ElementInspector({ element, onChange, project, timing = true }: 
       </div>
       {element.kind === "numberLine" && <label className="switch-field">Show numbers<Switch checked={element.includeNumbers ?? false}
         onCheckedChange={includeNumbers => onChange({ ...element, includeNumbers })} /></label>}
-      <p className="hint">The position below sets the axes origin (0, 0).</p>
     </>}
     {positioned && <>
       <VectorFields label="Position" value={element.position} onChange={position => onChange({ ...element, position })} />
       {(element.kind === "line" || element.kind === "arrow") && <VectorFields label="End point" value={element.end} onChange={end => onChange({ ...element, end })} />}
-      <p className={warning ? "hint warning" : "hint"}>{warning ?? "Drag it in the viewer, or type Manim units. X: −7.11 to 7.11; Y: −4 to 4."}</p>
+      {warning && <p className="hint warning">{warning}</p>}
       <div className="inline-actions">
         <Button variant="outline" size="xs" className="h-7 px-2.5" onClick={() => {
           if (element.kind === "line" || element.kind === "arrow") {
@@ -144,7 +141,6 @@ export function ElementInspector({ element, onChange, project, timing = true }: 
         <Button variant="outline" size="xs" className="h-7 px-2.5" onClick={() => { const next = { ...element }; delete next.disappearsAtMs; onChange(next); }}>
           <InfinityIcon />Keep until the scene ends</Button>
       </div>}
-      <p className="hint">Instant appearance and removal. Add animations below for transitions.</p>
     </>}
   </>;
 }
