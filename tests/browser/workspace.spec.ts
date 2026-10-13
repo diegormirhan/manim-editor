@@ -99,11 +99,10 @@ test("dragging a clip moves it in the project", async ({ page }) => {
 
 test("commands explain themselves and their shortcut in a tooltip", async ({ page }) => {
   await openEditor(page);
-  await page.getByRole("button", { name: "Render", exact: true }).hover();
+  await page.getByRole("button", { name: "Play", exact: true }).hover();
   const tip = page.getByRole("tooltip");
-  await expect(tip).toContainText("Render");
-  await expect(tip).toContainText("Ctrl");
-  await expect(tip).toContainText("Enter");
+  await expect(tip).toContainText("Play");
+  await expect(tip).toContainText("Space");
   // Leave over the empty stage, where no other control has a tooltip.
   const stage = (await page.locator(".empty-preview").boundingBox())!;
   await page.mouse.move(stage.x + stage.width / 2, stage.y + 20, { steps: 4 });
@@ -134,12 +133,24 @@ test("a short animation clip keeps its duration and lets its name go", async ({ 
   await expect(narrow).toHaveAttribute("title", /^[A-Za-z]+ · /);
 });
 
-test("the object pool fades at its foot while more lies below", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 650 });
+test("the side panels resize from their inner edges, by mouse or keyboard", async ({ page }) => {
   await openEditor(page);
-  const library = page.locator(".library");
-  const hint = () => library.evaluate(node => getComputedStyle(node, "::after").opacity);
-  expect(await hint()).toBe("1");
-  await library.evaluate(node => { node.scrollTop = node.scrollHeight; });
-  await expect.poll(hint).toBe("0");
+  const pool = page.getByRole("complementary", { name: "Object pool" });
+  const before = (await pool.boundingBox())!.width;
+  const edge = (await page.getByRole("separator", { name: "Resize objects panel" }).boundingBox())!;
+  await page.mouse.move(edge.x + edge.width / 2, edge.y + edge.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(edge.x + edge.width / 2 + 60, edge.y + edge.height / 2, { steps: 4 });
+  await page.mouse.up();
+  expect((await pool.boundingBox())!.width).toBeCloseTo(before + 60, 0);
+
+  const inspector = page.getByRole("complementary", { name: "Inspector" });
+  const width = (await inspector.boundingBox())!.width;
+  await page.getByRole("separator", { name: "Resize inspector" }).focus();
+  await page.keyboard.press("ArrowLeft");
+  expect((await inspector.boundingBox())!.width).toBeCloseTo(width + 24, 0);
+
+  // Wide panels give way when the window narrows, so the viewer stays usable.
+  await page.setViewportSize({ width: 800, height: 720 });
+  expect((await page.getByRole("region", { name: "Preview" }).boundingBox())!.width).toBeGreaterThanOrEqual(320);
 });
