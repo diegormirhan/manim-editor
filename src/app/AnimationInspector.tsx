@@ -77,8 +77,7 @@ export function AnimationInspector({ project, targetId, onChange, focusIndex, on
       <Button variant="secondary" size="sm" className="w-full" disabled={kind === "parallel" && (!partner || partner === targetId)} onClick={add}>
         <Plus />Add animation</Button>
     </div>
-    <p className={problem ? "hint warning" : "hint"} role={problem ? "alert" : undefined}>
-      {problem || "Entrance animations replace instant appearance. Group members share the same time span."}</p>
+    {problem && <p className="hint warning" role="alert">{problem}</p>}
     {clips.map((block, index) => childrenOf(block).some(clip => clip.targetId === targetId || clip.destinationId === targetId) && <fieldset key={index}
       data-animation={index} className={index === focusIndex ? "current" : undefined} onFocus={() => onSelectAnimation(index)}>
       <legend><AnimationIcon kind={block.kind} size={13} />{animationLabels[block.kind]}</legend>
