@@ -57,6 +57,7 @@ import { ElementIcon } from "./ElementIcon";
 import { SecondsField } from "./ElementInspector";
 import { ConfirmDialog, ShortcutsDialog, type ConfirmRequest } from "./Dialogs";
 import { Hint } from "./Hint";
+import { Resizer } from "./Resizer";
 import { StageHandles } from "./StageHandles";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,8 @@ import { useTheme } from "./useTheme";
 
 const SESSION_KEY = "manim-editor-session";
 const FRAME_MS = 1000 / 15;
+// When the window narrows, the side panels give way down to their minimums so the viewer keeps its own.
+const POOL_MIN = 176, INSPECTOR_MIN = 246, VIEWER_MIN = 320;
 
 /** The last session, so a crash or a closed window never costs the user their work. */
 function recoveredSession(): { project: Project; filePath: string; saved: string } | null {
@@ -133,13 +136,14 @@ export function App() {
   const [search, setSearch] = useState("");
   const [playheadMs, setPlayheadMs] = useState(0);
   const [timelineHeight, setTimelineHeight] = useState(() => Math.max(250, Math.round(window.innerHeight * 0.42)));
+  const [poolWidth, setPoolWidth] = useState(() => Math.max(POOL_MIN, Math.round(window.innerWidth * 0.21)));
+  const [inspectorWidth, setInspectorWidth] = useState(() => Math.max(INSPECTOR_MIN, Math.round(window.innerWidth * 0.25)));
   const [playing, setPlaying] = useState(false);
   const [zoom, setZoomLevel] = useState(1);
   const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTab | null>(null);
   const [progress, setProgress] = useState<RenderProgress | null>(null);
-  const [previewQuality, setPreviewQuality] = useState("");
   const playNext = useRef(false);
   const answer = useRef<(confirmed: boolean) => void>(() => {});
   const lastEdit = useRef<{ target: Element | null; at: number }>({ target: null, at: 0 });
@@ -147,6 +151,8 @@ export function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const element = project.scene.elements[selection];
   const serialized = JSON.stringify(project);
+  // The video shows the project at the viewer quality it was rendered with.
+  const renderKey = serialized + JSON.stringify(settings.preview);
   const validation = validateProject(project);
   const dirty = saved !== serialized;
   const rendering = busy === "render";
@@ -217,7 +223,6 @@ export function App() {
     setPlayheadMs(0);
     setVideo("");
     setRendered("");
-    setPreviewQuality("");
   };
 
   /** `recentPath` names the file for openRecent; every other operation works on the open document. */
@@ -233,7 +238,7 @@ export function App() {
     setBusy(operation);
     setMessage(operation === "render" ? "Rendering with Manim…" : operation === "openRecent" ? `Opening ${fileName(recentPath)}…`
       : operation === "save" && filePath ? "Saving…" : "Waiting for a file…");
-    const snapshot = serialized;
+    const snapshot = serialized, renderedAs = renderKey;
     const { preview, output } = settings;
     // The preview renders at viewer quality; the video and the Python script follow the export settings.
     const options = operation === "render" ? renderOptions(preview)
@@ -242,7 +247,7 @@ export function App() {
     try {
       const result = await projectAction(operation, project, operation === "openRecent" ? recentPath : filePath, options);
       if (result.cancelled) {
-        setMessage(operation === "render" ? "Render cancelled. The previous preview is unchanged."
+        setMessage(operation === "render" ? "Render cancelled."
           : operation === "exportVideo" ? "Export cancelled. No video was written." : "");
         return;
       }
@@ -254,10 +259,9 @@ export function App() {
         setMessage(`Opened ${fileName(result.path)}.`);
       } else if (operation === "render" && result.path) {
         setVideo(previewUrl(result.path));
-        setRendered(snapshot);
-        setPreviewQuality(describeQuality(preview));
-        playNext.current = settings.playAfterRender;
-        setMessage("Preview updated.");
+        setRendered(renderedAs);
+        playNext.current = true;
+        setMessage("");
       } else if (operation === "exportVideo" && result.path) {
         setMessage(`Exported ${fileName(result.path)} · ${describeOutput(output)}.`);
       } else if (result.path) {
@@ -281,13 +285,13 @@ export function App() {
   const newProject = async () => {
     if (busy || !await confirmDiscard()) return;
     adopt(emptyProject(), "");
-    setMessage("New project. Add objects from the pool; each starts at the playhead.");
+    setMessage("New project.");
   };
   const openExample = async (key: string) => {
     const example = examples.find(item => item.key === key);
     if (!example || busy || !await confirmDiscard()) return;
     adopt(structuredClone(example.project), "");
-    setMessage(example.label + " opened. Click Render.");
+    setMessage(`${example.label} opened.`);
   };
   const showProjects = () => { setMessage(""); setView("start"); };
   const stopRender = () => {
@@ -311,10 +315,10 @@ export function App() {
     if (selectedAnimation !== null) {
       change(removeAnimation(project, selectedAnimation));
       setSelectedAnimation(null);
-      setMessage("Animation removed. Ctrl+Z restores it.");
+      setMessage("Animation removed.");
     } else if (element) {
       change(removeElement(project, selection));
-      setMessage(`${elementLabels[element.kind]} removed. Ctrl+Z restores it.`);
+      setMessage(`${elementLabels[element.kind]} removed.`);
     }
   };
   const duplicate = () => {
@@ -389,7 +393,6 @@ export function App() {
           e: () => { if (!validation) void action(event.shiftKey ? "exportVideo" : "export"); },
           ",": () => setSettingsTab("viewer"),
           d: () => { if (!editing(event.target)) duplicate(); },
-          enter: () => { if (!validation) void action("render"); },
         } as Record<string, () => void>)[key];
         if (command) { event.preventDefault(); command(); }
         return;
@@ -397,7 +400,7 @@ export function App() {
       if (key === "escape" && manimBusy) { event.preventDefault(); stopRender(); return; }
       if (editing(event.target) || event.defaultPrevented) return;
       if (key === "delete") { event.preventDefault(); remove(); }
-      else if (key === " " && video && !(event.target instanceof HTMLButtonElement)) { event.preventDefault(); togglePlay(); }
+      else if (key === " " && !(event.target instanceof HTMLButtonElement)) { event.preventDefault(); play(); }
       else if (key === "arrowleft" || key === "arrowright") {
         event.preventDefault();
         step((key === "arrowleft" ? -1 : 1) * (event.shiftKey ? 15 : 1));
@@ -412,22 +415,16 @@ export function App() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
-  const resize = (event: React.PointerEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const startY = event.clientY, startHeight = timelineHeight;
-    document.body.style.userSelect = "none";
-    const onMove = (move: PointerEvent) =>
-      setTimelineHeight(Math.min(Math.max(160, startHeight - (move.clientY - startY)), window.innerHeight - 300));
-    const stop = () => {
-      document.body.style.userSelect = "";
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", stop);
-    };
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", stop);
-  };
   const elementCount = Object.keys(project.scene.elements).length;
-  const stale = !!video && rendered !== serialized;
+  const upToDate = !!video && rendered === renderKey;
+  const stale = !!video && !upToDate;
+  // Play renders first whenever the video is missing or behind the project.
+  const playBlocked = !rendering && !upToDate && (!!busy || !!validation);
+  const play = () => {
+    if (rendering) stopRender();
+    else if (upToDate) togglePlay();
+    else if (!playBlocked) void action("render");
+  };
   // Manim's frame at the playhead stands in whenever the rendered video cannot show the scene as it is now;
   // either way its boxes let objects be dragged on the stage.
   const liveWanted = settings.livePreview && desktopAvailable() && view === "editor" && !validation && !playing;
@@ -437,13 +434,12 @@ export function App() {
   const percent = progress?.phase === "rendering" ? Math.round(progress.fraction * 100) : null;
   const previewState = rendering ? `Rendering… ${percent === null ? elapsed + " s" : percent + "%"}`
     : showLive ? "Live preview"
-    : video ? (rendered === serialized ? "Up to date" : "Changes not rendered")
+    : video ? (upToDate ? "Up to date" : "Changes not rendered")
     : liveStage ? "Starting live preview…" : "Not rendered yet";
   const status = validation || (manimBusy
     ? `${rendering ? "Rendering" : "Exporting"} with Manim… ${percent === null ? "preparing" : percent + "%"} · ${elapsed} s · Esc cancels`
     : message) || "Ready to create.";
   const selectedBlock = selectedAnimation !== null ? project.scene.animations?.[selectedAnimation] : undefined;
-  // File commands step back so Render leads the bar.
   const quiet = "text-muted-foreground hover:text-foreground";
   // The visible text can be shorter than the accessible name; the tooltip says it all.
   const toolbarButton = ({ name, text = name, tip = name, keys, icon, onClick, disabled = false }: {
@@ -462,7 +458,7 @@ export function App() {
     <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     <SettingsDialog open={settingsTab !== null} tab={settingsTab ?? "viewer"} onTab={setSettingsTab} onClose={() => setSettingsTab(null)}
       settings={settings} onSettings={updateSettings} theme={themePreference} onTheme={setThemePreference}
-      background={project.scene.background} onBackground={setBackground} durationMs={project.scene.durationMs}
+      background={project.scene.background} onBackground={setBackground}
       exportDisabled={!!busy || !!validation} onExportVideo={() => { setSettingsTab(null); void action("exportVideo"); }} />
     {/* With session recovery on, unsaved work comes back after the restart; otherwise the update asks first. */}
     <UpdateBanner busy={manimBusy} beforeInstall={async () => settings.restoreSession || confirmDiscard()} />
@@ -542,20 +538,17 @@ export function App() {
               <SettingsIcon /></Button>
           </Hint>
           {themeToggle}
-          {manimBusy
-            ? <Hint label={rendering ? "Cancel the render" : "Cancel the export"} keys="Esc">
-              <Button size="sm" className="ml-1.5 min-w-24 cursor-pointer font-semibold" onClick={stopRender}><Square fill="currentColor" className="size-3" />Cancel</Button>
-            </Hint>
-            : <Hint label="Render" keys="Ctrl+Enter">
-              <Button size="sm" className="ml-1.5 min-w-24 cursor-pointer font-semibold" disabled={!!busy || !!validation} onClick={() => action("render")}>
-                <Play fill="currentColor" className="size-3.5" />Render</Button>
-            </Hint>}
+          {manimBusy && <Hint label={rendering ? "Cancel the render" : "Cancel the export"} keys="Esc">
+            <Button size="sm" className="ml-1.5 min-w-24 font-semibold" onClick={stopRender}><Square fill="currentColor" className="size-3" />Cancel</Button>
+          </Hint>}
         </nav>
         {windowControls}
       </header>
 
-      <section className="upper">
+      <section className="upper" style={{ gridTemplateColumns:
+        `minmax(${POOL_MIN}px, ${poolWidth}px) minmax(${VIEWER_MIN}px, 1fr) minmax(${INSPECTOR_MIN}px, ${inspectorWidth}px)` }}>
         <aside className="panel pool" aria-label="Object pool">
+          <Resizer label="Resize objects panel" axis="x" grow={1} size={poolWidth} min={POOL_MIN} max={420} onResize={setPoolWidth} />
           <div className="panel-heading"><h2>Objects</h2>
             <NativeSelect size="sm" aria-label="Open example" value="" disabled={!!busy} containerClassName="ml-auto"
               className="h-7 max-w-40 py-0 pr-8 pl-2.5 text-xs" onChange={event => void openExample(event.target.value)}>
@@ -600,20 +593,17 @@ export function App() {
               {PREVIEW_RESOLUTIONS.map(resolution =>
                 <NativeSelectOption key={resolution} value={resolution}>{describeQuality({ ...settings.preview, resolution })}</NativeSelectOption>)}
             </NativeSelect>
-            {video && previewQuality !== describeQuality(settings.preview) && <span className="muted">Last render {previewQuality}</span>}
-            <Hint label={showLive ? "Manim's own frame at the playhead. Drag objects to move them; Render to play the scene." : previewState}>
-              <Badge variant="outline" className={"preview-state" + (rendering ? " busy" : stale && !showLive ? " stale" : "")
-                + (rendering || (stale && !showLive) ? "" : " text-muted-foreground")}>
-                {(rendering || (stale && !showLive)) && <span className="dot" />}{previewState}
-              </Badge>
-            </Hint>
+            <Badge variant="outline" className={"preview-state" + (rendering ? " busy" : stale && !showLive ? " stale" : "")
+              + (rendering || (stale && !showLive) ? "" : " text-muted-foreground")}>
+              {(rendering || (stale && !showLive)) && <span className="dot" />}{previewState}
+            </Badge>
           </div>
           <div className="stage">
             <div className="canvas">
               {showLive && <img className="live-frame" src={live.frame} alt="Manim's frame at the playhead" />}
               {video ? (
                 // Hidden rather than unmounted under a live frame, so Play still has its video.
-                <video ref={videoRef} src={video} aria-label="Rendered video" onClick={togglePlay} loop={settings.loop} hidden={showLive}
+                <video ref={videoRef} src={video} aria-label="Rendered video" onClick={play} loop={settings.loop} hidden={showLive}
                   onLoadedMetadata={event => {
                     const player = event.currentTarget, atEnd = playheadMs >= project.scene.durationMs - FRAME_MS;
                     player.currentTime = playNext.current && atEnd ? 0 : playheadMs / 1000;
@@ -625,14 +615,14 @@ export function App() {
                 <div className="empty-preview" style={stageStyle(project.scene.background)}>
                   <span className="media"><Film className="size-5" strokeWidth={1.5} /></span>
                   <h2>Your scene starts here</h2>
-                  <p>{rendering ? "Manim is rendering the scene. Keep editing; changes made now need another render."
-                    : liveStage && !live.error ? "Manim is drawing the frame at the playhead. The first one takes a few seconds while Manim loads."
-                    : elementCount ? "Render (Ctrl+Enter) to preview the scene here, then scrub the result."
-                    : "Add objects from the pool, place them in time, then Render."}</p>
+                  <p>{rendering ? "Manim is rendering the scene."
+                    : liveStage && !live.error ? "Manim is loading. The first frame takes a few seconds."
+                    : elementCount ? "Press Play to render and watch the scene."
+                    : "Add objects from the pool, then press Play."}</p>
                 </div>
               )}
               {liveWanted && <StageHandles project={project} atMs={playheadMs} boxes={live.boxes} current={live.source === project}
-                selection={selection} onSelect={selectElement} onChange={change} />}
+                selection={selection} onSelect={selectElement} onChange={change} alignmentGuides={settings.alignmentGuides} />}
             </div>
             {liveStage && live.error && <p className="live-error" aria-live="polite">{live.error}</p>}
           </div>
@@ -641,9 +631,10 @@ export function App() {
             <div className="transport-keys">
               <Hint label="Start" keys="Home"><Button variant="ghost" size="icon-sm" aria-label="Go to start" onClick={() => scrub(0)}><SkipBack /></Button></Hint>
               <Hint label="Previous frame" keys="←"><Button variant="ghost" size="icon-sm" aria-label="Previous frame" onClick={() => step(-1)}><StepBack /></Button></Hint>
-              <Hint label={playing ? "Pause" : "Play"} keys="Space">
-                <Button variant="secondary" size="icon" className="mx-1 rounded-full" aria-label={playing ? "Pause" : "Play"} disabled={!video} onClick={togglePlay}>
-                  {playing ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="translate-x-px" />}</Button>
+              <Hint label={rendering ? "Cancel the render" : playing ? "Pause" : "Play"} keys={rendering ? "Esc" : "Space"}>
+                <Button variant="secondary" size="icon" className="mx-1 rounded-full" aria-label={rendering ? "Cancel the render" : playing ? "Pause" : "Play"}
+                  disabled={playBlocked} onClick={play}>
+                  {rendering ? <Square fill="currentColor" className="size-3" /> : playing ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="translate-x-px" />}</Button>
               </Hint>
               <Hint label="Next frame" keys="→"><Button variant="ghost" size="icon-sm" aria-label="Next frame" onClick={() => step(1)}><StepForward /></Button></Hint>
               <Hint label="End" keys="End"><Button variant="ghost" size="icon-sm" aria-label="Go to end" onClick={() => scrub(project.scene.durationMs)}><SkipForward /></Button></Hint>
@@ -653,6 +644,7 @@ export function App() {
         </section>
 
         <aside className="panel inspector-panel" aria-label="Inspector">
+          <Resizer label="Resize inspector" axis="x" grow={-1} size={inspectorWidth} min={INSPECTOR_MIN} max={480} onResize={setInspectorWidth} />
           <div className="panel-heading"><h2>Inspector</h2>{element && <span className="row-actions">
             <Hint label="Duplicate" keys="Ctrl+D">
               <Button variant="ghost" size="icon-sm" className="size-7" aria-label="Duplicate element" onClick={duplicate}><Copy /></Button>
@@ -674,12 +666,7 @@ export function App() {
       </section>
 
       <section className="panel timeline" aria-label="Timeline">
-        <div className="timeline-resizer" role="separator" aria-label="Resize timeline"
-          aria-orientation="horizontal" tabIndex={0} onPointerDown={resize}
-          onKeyDown={event => {
-            if (event.key === "ArrowUp") { event.preventDefault(); setTimelineHeight(h => Math.min(h + 24, window.innerHeight - 300)); }
-            else if (event.key === "ArrowDown") { event.preventDefault(); setTimelineHeight(h => Math.max(160, h - 24)); }
-          }} />
+        <Resizer label="Resize timeline" axis="y" grow={-1} size={timelineHeight} min={160} max={window.innerHeight - 300} onResize={setTimelineHeight} />
         <div className="timeline-heading">
           <span className="timecode hot">{timecode(playheadMs)}</span>
           <h2>Timeline <span>{elementCount} {elementCount === 1 ? "element" : "elements"}</span></h2>
@@ -709,7 +696,6 @@ export function App() {
       <footer className="statusbar">
         <p className={validation ? "status error" : "status"} role="status">{status}</p>
         {manimBusy && percent !== null && <Progress value={percent} className="h-1.5 w-32" aria-label="Render progress" />}
-        <span>Local rendering · Manim CE</span>
         <Hint label="Keyboard shortcuts" keys="?" side="top">
           <Button variant="ghost" size="icon-xs" aria-label="Keyboard shortcuts" onClick={() => setShortcutsOpen(true)}><Keyboard /></Button>
         </Hint>
