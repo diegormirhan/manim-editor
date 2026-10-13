@@ -58,11 +58,14 @@ Time savings have not been measured in a user study.
 - **Live preview.** While you edit or scrub, the viewer shows Manim's own frame at the playhead,
   usually within half a second, from a Manim process kept loaded in the background. A formula that
   will not compile says why, and the last good frame stays.
-- **Move objects on the stage.** Drag any object in the viewer to place it; the frame follows as you
-  drag and the whole drag undoes in one step. After a Move animation, dragging moves where that
-  animation ends. Arrow keys nudge the focused object (Shift for bigger steps).
-- **Render and scrub.** Render (Ctrl+Enter) makes the video you play, at the viewer quality, and
-  reports Manim's progress; Esc cancels. A failed render names its cause, such as the LaTeX error.
+- **Arrange objects on the stage.** Drag an object in the viewer to place it, drag a corner of the
+  selected one to scale it and its knob to turn it (Shift turns in 15° steps). Alignment guides snap
+  it to the frame's centre and edges and to other objects, as in Canva; Alt drags freely. Each
+  gesture undoes in one step, and arrow keys nudge the focused object.
+- **Play renders for you.** Play renders the scene whenever the video is missing or out of date,
+  reports Manim's progress, then plays it; Esc or the same button cancels. A failed render names its
+  cause, such as the LaTeX error.
+- **Your layout.** Drag the edges of the objects panel, the inspector and the timeline to resize them.
 - **Export.** Video at 480p to 4K, 15, 30 or 60 fps, as MP4, WebM, GIF or MOV (transparent in WebM
   and MOV), or the same scene as readable Python.
 - **Projects screen.** The app opens on your projects: the one you were working on, recent files
@@ -127,7 +130,7 @@ python -m venv .venv
 npm run tauri -- dev
 ```
 
-The app opens on **Projects**. Choose the **Area under the curve** example, then **Render**. To build
+The app opens on **Projects**. Choose the **Area under the curve** example, then **Play**. To build
 your own scene, choose **New project**, add an element, edit it, and add animations explicitly.
 
 > [!TIP]
@@ -214,8 +217,8 @@ cargo test --manifest-path src-tauri/Cargo.toml                    # Rust bridge
 
 | Check | Local result |
 |---|---|
-| Domain, Python and Rust tests | 51, 66 and 14 passing; Rust includes a real render, a cancelled render, a transparent MOV export, a recent file reopened without a dialog and live frames from one warm Manim worker |
-| Browser workflows | 70 passing against a simulated desktop: projects, recent files, window controls, updates, live preview, dragging on the stage, render, export, progress, settings |
+| Domain, Python and Rust tests | 54, 66 and 15 passing; Rust includes a real render, a cancelled render, a transparent MOV export, accented text surviving the trip through Python, a recent file reopened without a dialog and live frames from one warm Manim worker |
+| Browser workflows | 72 passing against a simulated desktop: projects, recent files, window controls, updates, live preview, moving, scaling and turning on the stage, alignment guides, panel resizing, Play rendering, export, progress, settings |
 | Exported formats (ffprobe) | 720p30 and 1080p60 H.264, GIF, VP9 with alpha, QuickTime Animation ARGB; a 15 s scene renders exactly 450 frames at 30 fps and 900 at 60 |
 | The Tauri window | Real renders, Esc cancellation, LaTeX failures named, caption buttons, recent files saved in place, a tampered update refused, a signed one downloaded, verified and launched |
 
@@ -228,9 +231,9 @@ real app with fresh Manim renders; see [media provenance](docs/media/README.md).
 - The live preview draws single frames, a few per second while you scrub; smooth playback needs a
   render. Its first frame waits for Manim to load (several seconds), and a new formula compiles its
   LaTeX once.
-- Dragging on the stage needs the live preview, since Manim reports where each object sits. Handles
-  are bounding boxes, so a large object such as axes catches clicks across its whole box; smaller
-  objects sit above it.
+- Moving, scaling and turning on the stage need the live preview, since Manim reports where each
+  object sits. Handles are upright bounding boxes, so a turned object shows the box around it, and a
+  large object such as axes catches clicks across its whole box; smaller objects sit above it.
 - Timing sits on a 15 fps grid, so exports use 15, 30 or 60 fps, and render progress advances once
   per finished Manim segment.
 - Animations cannot partially overlap; simultaneous animations need an explicit parallel group.
