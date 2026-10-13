@@ -28,14 +28,14 @@ test("edits, validates, adds and undoes without pretending to render in browser"
   await expect(page.getByLabel("Select equation 1")).toHaveText("x^2 + 1");
   await page.getByLabel("Appear at (s)").fill("9");
   await expect(
-    page.getByRole("button", { name: "Render", exact: true }),
+    page.getByRole("button", { name: "Play", exact: true }),
   ).toBeDisabled();
   await page.getByLabel("Appear at (s)").fill("0");
   await page.getByRole("button", { name: "Add Equation" }).click();
   await expect(page.getByLabel("Select equation 2")).toBeVisible();
   await page.getByLabel("Undo").click();
   await expect(page.getByLabel("Select equation 2")).toHaveCount(0);
-  await page.getByRole("button", { name: "Render", exact: true }).click();
+  await page.getByRole("button", { name: "Play", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("desktop app");
   await page.screenshot({
     path: ".impeccable/review/desktop.png",
