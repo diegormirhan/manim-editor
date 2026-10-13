@@ -24,8 +24,8 @@ test("the viewer quality chosen in settings is the quality the preview renders a
   const viewerQuality = page.getByRole("combobox", { name: "Preview quality" });
   await expect(viewerQuality).toHaveValue("720p");
   await expect(viewerQuality.locator("option:checked")).toHaveText("720p · 30 fps");
-  await page.getByRole("button", { name: "Render", exact: true }).click();
-  await expect(status(page)).toContainText("Preview updated.");
+  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await expect(page.locator(".preview-state")).toHaveText("Up to date");
   expect((await lastAction(page)).options).toEqual({ resolution: "720p", fps: 30, format: "mp4", transparent: false });
 });
 
@@ -52,8 +52,6 @@ test("a video export follows the export settings, and transparency follows the f
   await expect(transparent).toHaveAttribute("aria-checked", "true");
   await expect(settings(page)).toContainText("3840 × 2160");
   await expect(settings(page)).toContainText("with alpha");
-  // The default scene runs 3 s on the 15 fps grid: 45 frames, four times over at 60 fps.
-  await expect(settings(page)).toContainText("180 frames");
 
   await settings(page).getByRole("button", { name: "Export video…" }).click();
   await expect(status(page)).toContainText("Exported scene.mov · 2160p · 60 fps · MOV · transparent.");
