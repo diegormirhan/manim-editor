@@ -3,8 +3,8 @@ import { childrenOf, isEntrance } from "./timeline";
 
 export type ClipTarget = { type: "element"; id: string } | { type: "animation"; index: number };
 export type ClipGesture = "move" | "start" | "end";
-export const SNAP_MS = 100;
-export const MIN_CLIP_MS = 100;
+const SNAP_MS = 100;
+const MIN_CLIP_MS = 100;
 
 export function retimeAnimation(project: Project, index: number, startMs: number, durationMs: number): Project {
   const next = structuredClone(project), block = next.scene.animations![index];
