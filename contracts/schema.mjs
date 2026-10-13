@@ -9,7 +9,7 @@ const identifier = { type: "string", minLength: 1 };
 const positive = { type: "number", exclusiveMinimum: 0 };
 const bounded = (minimum, maximum) => ({ type: "number", minimum, maximum });
 
-const SHARED_PROPERTIES = {
+export const SHARED_PROPERTIES = {
   position: vector3,
   appearsAtMs: integerFrom(0),
   disappearsAtMs: integerFrom(1),
