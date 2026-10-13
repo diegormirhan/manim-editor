@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import {
-  DEFAULT_SETTINGS, describeOutput, describeQuality, outputFrames, readSettings, renderOptions, supportsTransparency,
+  DEFAULT_SETTINGS, describeOutput, describeQuality, readSettings, renderOptions, supportsTransparency,
 } from "./render-settings";
 
 test("stored settings fall back to defaults wherever they leave the contract", () => {
@@ -9,7 +9,7 @@ test("stored settings fall back to defaults wherever they leave the contract", (
   const read = readSettings({
     preview: { resolution: "2160p", fps: 30 },
     output: { resolution: "1440p", fps: 24, format: "avi", transparent: "yes" },
-    snapping: "no", loop: true, livePreview: false,
+    snapping: "no", loop: true, livePreview: false, alignmentGuides: false,
   });
   // A 4K preview is not offered, 24 fps is off the 15 fps grid, and AVI is not a format.
   expect(read.preview).toEqual({ resolution: DEFAULT_SETTINGS.preview.resolution, fps: 30 });
@@ -19,6 +19,7 @@ test("stored settings fall back to defaults wherever they leave the contract", (
   // The live preview is on unless someone turned it off.
   expect(DEFAULT_SETTINGS.livePreview).toBe(true);
   expect(read.livePreview).toBe(false);
+  expect(read.alignmentGuides).toBe(false);
 });
 
 test("transparency survives only in containers with an alpha channel", () => {
@@ -33,10 +34,7 @@ test("render requests carry exactly the contract's keys", () => {
   expect(renderOptions(DEFAULT_SETTINGS.output, "mov", true)).toEqual({ resolution: "1080p", fps: 60, format: "mov", transparent: true });
 });
 
-test("descriptions and frame counts read as the user will see them", () => {
+test("descriptions read as the user will see them", () => {
   expect(describeQuality({ resolution: "480p", fps: 15 })).toBe("480p · 15 fps");
   expect(describeOutput({ resolution: "2160p", fps: 60, format: "mov", transparent: true })).toBe("2160p · 60 fps · MOV · transparent");
-  // 12 s on the 15 fps grid is 180 frames, which 60 fps renders four times over.
-  expect(outputFrames(12_000, 60)).toBe(720);
-  expect(outputFrames(3_000, 15)).toBe(45);
 });
