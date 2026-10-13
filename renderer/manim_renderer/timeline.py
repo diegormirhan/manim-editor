@@ -28,18 +28,6 @@ def leaf_clips(scene):
     return [child for clip in scene.get("animations", []) for child in children_of(clip)]
 
 
-def lifetimes(scene):
-    spans = {key: [element["appearsAtMs"], element.get("disappearsAtMs", scene["durationMs"])]
-             for key, element in scene["elements"].items()}
-    for clip in leaf_clips(scene):
-        end = clip["startMs"] + clip["durationMs"]
-        if clip["kind"] == "transform" and clip.get("destinationId") in spans:
-            spans[clip["destinationId"]][0] = end
-        if clip["kind"] in ("fadeOut", "transform") and clip.get("targetId") in spans:
-            spans[clip["targetId"]][1] = min(spans[clip["targetId"]][1], end)
-    return spans
-
-
 def check_clip_fields(clip):
     for kind, field in CLIP_FIELDS.items():
         if (clip["kind"] == kind) != (field in clip):
