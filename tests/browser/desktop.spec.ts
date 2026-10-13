@@ -2,15 +2,16 @@ import { test, expect, type Page } from "@playwright/test";
 import { desktopCalls, fileCommand, mockDesktop, openEditor } from "./desktop-mock";
 import officialDemo from "../../examples/official-demo.json" with { type: "json" };
 
-const renderButton = (page: Page) => page.getByRole("button", { name: "Render", exact: true });
+const playButton = (page: Page) => page.getByRole("button", { name: "Play", exact: true });
 const status = (page: Page) => page.getByRole("status");
 const previewState = (page: Page) => page.locator(".preview-state");
 
-test("a render reports its elapsed time and Esc cancels it without inventing a preview", async ({ page }) => {
+test("Play renders a scene it has no video for, and Esc cancels that without inventing a preview", async ({ page }) => {
   await mockDesktop(page, { renderMs: 60_000 });
   await openEditor(page);
-  await renderButton(page).click();
+  await playButton(page).click();
   await expect(page.getByRole("button", { name: "Cancel", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Cancel the render" })).toBeVisible();
   await expect(status(page)).toContainText("Rendering with Manim…");
   await expect(previewState(page)).toContainText("Rendering…");
   // The render belongs to this document, so switching documents waits for it.
@@ -25,39 +26,38 @@ test("a render reports its elapsed time and Esc cancels it without inventing a p
   await page.getByLabel("LaTeX expression").fill("e^{i\\pi} + 1 = 0");
   await page.keyboard.press("Escape");
   await expect(status(page)).toContainText("Render cancelled");
-  await expect(renderButton(page)).toBeEnabled();
+  await expect(playButton(page)).toBeEnabled();
   await expect(page.locator("video")).toHaveCount(0);
   expect((await desktopCalls(page)).map(call => call.cmd)).toEqual(["project_action", "cancel_render"]);
 });
 
-test("a finished render plays, the playhead follows it, and edits mark it stale", async ({ page }) => {
+test("Play plays the finished render, the playhead follows it, and an edit makes Play render again", async ({ page }) => {
   await mockDesktop(page);
   await openEditor(page);
-  await renderButton(page).click();
-  await expect(status(page)).toContainText("Preview updated.");
-  await expect(previewState(page)).toHaveText("Up to date");
-  const video = page.getByLabel("Rendered video");
-  await expect.poll(() => video.evaluate((node: HTMLVideoElement) => node.readyState)).toBeGreaterThan(0);
-
+  await playButton(page).click();
   const playhead = page.getByRole("slider", { name: "Playhead" });
+  await expect.poll(async () => Number(await playhead.getAttribute("aria-valuenow")), { timeout: 5000 }).toBeGreaterThan(0.2);
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(previewState(page)).toHaveText("Up to date");
+
+  const video = page.getByLabel("Rendered video");
   const ruler = (await playhead.boundingBox())!;
   await page.mouse.click(ruler.x + ruler.width / 2, ruler.y + ruler.height / 2);
   await expect.poll(() => video.evaluate((node: HTMLVideoElement) => node.currentTime)).toBeCloseTo(1.5, 1);
 
-  await page.getByRole("button", { name: "Play" }).click();
-  await expect.poll(async () => Number(await playhead.getAttribute("aria-valuenow")), { timeout: 5000 }).toBeGreaterThan(1.7);
-  await page.getByRole("button", { name: "Pause" }).click();
-
   await page.getByLabel("LaTeX expression").fill("x^3");
   await expect(previewState(page)).toHaveText("Changes not rendered");
+  await playButton(page).click();
+  await expect(previewState(page)).toHaveText("Up to date");
+  expect((await desktopCalls(page)).filter(call => call.args.operation === "render")).toHaveLength(2);
 });
 
 test("a failed render says why and keeps the editor usable", async ({ page }) => {
   await mockDesktop(page, { renderError: "LaTeX error: Missing } inserted. Check the equation's LaTeX. Full log: C:\\renders\\render.log" });
   await openEditor(page);
-  await renderButton(page).click();
+  await playButton(page).click();
   await expect(status(page)).toContainText("Render failed. LaTeX error: Missing } inserted.");
-  await expect(renderButton(page)).toBeEnabled();
+  await expect(playButton(page)).toBeEnabled();
 });
 
 test("save asks for a file once, then saves in place; save as picks a new file", async ({ page }) => {
