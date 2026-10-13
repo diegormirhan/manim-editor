@@ -2,7 +2,7 @@
 // renderer/manim_renderer/elements/expressions.py; contracts/expression-cases.json
 // holds the fixtures both sides must agree on.
 
-export type Node =
+type Node =
   | { tag: "num"; value: number }
   | { tag: "x" }
   | { tag: "const"; name: ConstantName }
@@ -140,7 +140,7 @@ export function evaluate(node: Node, x: number): number {
   }
 }
 
-export function samples(node: Node, [low, high]: [number, number]): number[] {
+function samples(node: Node, [low, high]: [number, number]): number[] {
   const step = (high - low) / (SAMPLES - 1);
   return Array.from({ length: SAMPLES }, (_, index) => evaluate(node, low + step * index));
 }
