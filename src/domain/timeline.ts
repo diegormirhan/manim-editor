@@ -8,7 +8,7 @@ export const animationLabels = {
   indicate: "Emphasize · Indicate", wiggle: "Wiggle · Wiggle",
   transform: "Transform · Transform", parallel: "Parallel group",
 } satisfies Record<Animation["kind"], string>;
-export const entranceKinds = ["create", "write", "fadeIn", "grow", "drawBorder"] as const;
+const entranceKinds = ["create", "write", "fadeIn", "grow", "drawBorder"] as const;
 // A clip carries exactly the extra field its kind names here.
 export const clipFields = {
   moveTo: "destination", transform: "destinationId", rotate: "degrees",
