@@ -135,15 +135,16 @@
   .update-actions { flex: none; align-self: center; display: flex; gap: 6px; }
 
   /* Upper row: pool | viewer | inspector */
-  .upper { display: grid; grid-template-columns: 272px minmax(0, 1fr) 320px; gap: var(--seam); min-height: 0; }
+  .upper { display: grid; gap: var(--seam); min-height: 0; }
+  .upper > .panel { position: relative; }
   .library, .inspector { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
-  /* Scroll hint: a fade pinned to the foot that clears once the end is reached. */
-  .library::after, .inspector::after {
-    content: ""; display: block; position: sticky; bottom: 0; height: 32px; margin-top: -32px; pointer-events: none;
-    background: linear-gradient(transparent, var(--panel) 85%);
-    animation: scroll-hint linear both; animation-timeline: scroll(nearest block);
-  }
-  @keyframes scroll-hint { 0%, 90% { opacity: 1; } 100% { opacity: 0; } }
+  /* Separators sit on a panel's edge, half over its neighbour. */
+  .resizer { position: absolute; z-index: 5; touch-action: none; transition: background-color .15s ease, opacity .15s ease; }
+  .resizer:hover, .resizer:focus-visible { background: var(--ring); opacity: .6; outline: none; }
+  .resizer[aria-orientation="horizontal"] { inset: -3px 0 auto; height: 6px; cursor: ns-resize; }
+  .resizer[aria-orientation="vertical"] { top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+  .pool > .resizer { right: -3px; }
+  .inspector-panel > .resizer { left: -3px; }
   .library { padding: 10px 10px 14px; }
   .search-field { position: relative; }
   .search-field > svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted-foreground); pointer-events: none; }
@@ -172,7 +173,7 @@
   /* The scene's background, set per project; the ink adapts so the empty stage stays readable. */
   .stage { --stage-ink: #fafafa; --stage-muted: #a1a1aa; --stage-media: #27272a; --stage-media-ink: #e4e4e7; }
   /* The scene's 16:9 frame, as large as the stage allows; the handles share its coordinates. */
-  .stage { position: relative; container-type: size; }
+  .stage { position: relative; container-type: size; overflow: hidden; }
   .canvas { position: relative; width: min(100cqw, 100cqh * 16 / 9); aspect-ratio: 16 / 9; }
   .stage video, .empty-preview, .stage .live-frame {
     width: 100%; height: 100%; background: var(--stage);
@@ -181,7 +182,8 @@
   .stage video { display: block; cursor: pointer; }
   .stage .live-frame { display: block; object-fit: contain; }
   /* Empty space passes clicks to the video underneath, which plays and pauses. */
-  .handles { position: absolute; inset: 0; overflow: hidden; border-radius: var(--radius-md); pointer-events: none; }
+  /* Handles may reach past the frame, so the knob of an object at its edge stays in reach; the stage clips them. */
+  .handles { position: absolute; inset: 0; pointer-events: none; }
   .handle {
     position: absolute; pointer-events: auto; cursor: grab; border-radius: 3px; background: none;
     outline: 1px solid transparent; outline-offset: 3px;
@@ -191,6 +193,23 @@
   .handle.selected { outline: 1.5px solid var(--primary); }
   .handle:focus-visible { outline: 2px solid var(--ring); }
   .handle.dragging { cursor: grabbing; outline: 1.5px solid var(--primary); }
+  .handle .corner {
+    position: absolute; width: 8px; height: 8px; margin: -4px; border: 1.5px solid var(--primary); border-radius: 2px; background: var(--background);
+  }
+  .corner.nw { left: -3px; top: -3px; cursor: nwse-resize; }
+  .corner.ne { right: -3px; top: -3px; cursor: nesw-resize; }
+  .corner.sw { left: -3px; bottom: -3px; cursor: nesw-resize; }
+  .corner.se { right: -3px; bottom: -3px; cursor: nwse-resize; }
+  /* The turning knob hangs above the top edge on a short stem. */
+  .handle .knob {
+    position: absolute; left: 50%; top: -24px; width: 10px; height: 10px; margin-left: -5px; cursor: grab;
+    border: 1.5px solid var(--primary); border-radius: 50%; background: var(--background);
+  }
+  .handle .knob::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1.5px; height: 12px; margin-left: -.75px; background: var(--primary); }
+  /* Alignment guides cross the whole frame, in a colour no scene object is likely to share. */
+  .guide { position: absolute; pointer-events: none; background: #ff2d87; }
+  .guide.vertical { top: 0; bottom: 0; width: 1px; margin-left: -.5px; }
+  .guide.horizontal { left: 0; right: 0; height: 1px; margin-top: -.5px; }
   /* The last good frame stays; the reason it could not be updated sits over it. */
   .live-error {
     position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); max-width: calc(100% - 48px);
@@ -271,11 +290,6 @@
 
   /* Timeline */
   .timeline { position: relative; overflow: hidden; }
-  .timeline-resizer {
-    position: absolute; inset: -3px 0 auto; height: 6px; cursor: ns-resize; touch-action: none; z-index: 5;
-    transition: background-color .15s ease, opacity .15s ease;
-  }
-  .timeline-resizer:hover, .timeline-resizer:focus-visible { background: var(--ring); opacity: .6; outline: none; }
   .timeline-heading {
     flex: none; height: 40px; display: flex; align-items: center; gap: 12px; padding: 0 8px 0 12px;
     background: var(--panel-head); border-bottom: 1px solid var(--border);
@@ -461,14 +475,11 @@
     .window-controls button { width: 40px; }
   }
   @media (max-width: 1100px) {
-    .upper { grid-template-columns: 216px minmax(0, 1fr) 280px; }
     .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     :root { --label-w: 132px; }
   }
   @media (max-width: 850px) {
-    .upper { grid-template-columns: 176px minmax(0, 1fr) 246px; }
     .pool .panel-heading select { max-width: 100px; }
-    .timeline-help.idle { display: none; }
     .viewer .panel-heading .muted { display: none; }
     .start-content { padding: 24px 24px 40px; }
     .timeline-heading h2 span { display: none; }
@@ -489,8 +500,6 @@
     .preview-state.busy .dot { animation: none; }
     /* Movement goes; the fades that say something arrived or left stay. */
     .splash * { animation: none !important; }
-    /* The scroll hint follows the scroll position, not the clock. */
-    .library::after, .inspector::after { animation-duration: auto !important; }
     .splash { animation: splash-out .2s ease .45s forwards !important; }
     .splash[data-skipped] { animation: splash-skip .12s ease forwards !important; }
     .update-banner { transition: opacity .2s ease !important; }
