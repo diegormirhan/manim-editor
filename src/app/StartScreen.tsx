@@ -27,7 +27,7 @@ function openedAgo(at: number) {
 }
 
 /** A frame of the scene's own timeline: one bar per object, coloured by kind, on its background. */
-export function ProjectThumbnail({ project }: { project: Project }) {
+function ProjectThumbnail({ project }: { project: Project }) {
   const { durationMs, elements } = project.scene;
   const spans = lifetimes(project.scene);
   const lanes = Object.entries(elements).slice(0, MAX_LANES);
