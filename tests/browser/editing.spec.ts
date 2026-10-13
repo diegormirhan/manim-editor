@@ -44,7 +44,7 @@ test("removing a transform also removes the destination it created", async ({ pa
   await expect(heading(page)).toContainText("3 elements");
   await page.getByRole("button", { name: "Remove animation" }).last().click();
   await expect(heading(page)).toContainText("2 elements");
-  await expect(page.getByRole("button", { name: "Render", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Play", exact: true })).toBeEnabled();
 });
 
 test("an animation that cannot fit is refused with the reason", async ({ page }) => {
@@ -55,7 +55,7 @@ test("an animation that cannot fit is refused with the reason", async ({ page })
   await page.getByRole("button", { name: "Add animation" }).click();
   await expect(page.getByRole("alert")).toContainText("entrance");
   await expect(page.locator(".animation-track")).toHaveCount(1);
-  await expect(page.getByRole("button", { name: "Render", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Play", exact: true })).toBeEnabled();
 });
 
 test("typing into a field undoes as one step", async ({ page }) => {
