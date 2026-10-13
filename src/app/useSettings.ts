@@ -3,7 +3,7 @@ import { readSettings, type Settings } from "../domain/render-settings";
 
 const KEY = "manim-editor-settings";
 
-export const storedSettings = (): Settings => {
+const storedSettings = (): Settings => {
   try { return readSettings(JSON.parse(localStorage.getItem(KEY) ?? "null")); } catch { return readSettings(null); }
 };
 
