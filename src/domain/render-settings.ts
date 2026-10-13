@@ -1,16 +1,16 @@
 import contract from "../../contracts/render-options.json";
-import { frameAt } from "./timeline";
 
 export type Resolution = keyof typeof contract.resolutions;
-export type VideoFormat = keyof typeof contract.formats;
-export type FrameRate = 15 | 30 | 60;
+type VideoFormat = keyof typeof contract.formats;
+type FrameRate = 15 | 30 | 60;
 export type Quality = { resolution: Resolution; fps: FrameRate };
-export type OutputSettings = Quality & { format: VideoFormat; transparent: boolean };
+type OutputSettings = Quality & { format: VideoFormat; transparent: boolean };
 export type Settings = {
   preview: Quality;
   output: OutputSettings;
   snapping: boolean;
-  playAfterRender: boolean;
+  /** Dragged objects snap to the frame and to each other, with a line on each alignment. */
+  alignmentGuides: boolean;
   loop: boolean;
   /** Manim's frame at the playhead while you edit, from a worker kept in the background. */
   livePreview: boolean;
@@ -21,13 +21,12 @@ export const RESOLUTIONS = Object.keys(contract.resolutions) as Resolution[];
 export const PREVIEW_RESOLUTIONS = contract.previewResolutions as Resolution[];
 export const FRAME_RATES = contract.frameRates as FrameRate[];
 export const FORMATS = Object.keys(contract.formats) as VideoFormat[];
-export const GRID_FPS = contract.gridFps;
 
 export const DEFAULT_SETTINGS: Settings = {
   preview: { resolution: "480p", fps: 15 },
   output: { resolution: "1080p", fps: 60, format: "mp4", transparent: false },
   snapping: true,
-  playAfterRender: false,
+  alignmentGuides: true,
   loop: false,
   livePreview: true,
   restoreSession: true,
@@ -40,8 +39,6 @@ export const formatCodec = (format: VideoFormat) => contract.formats[format].cod
 export const describeQuality = ({ resolution, fps }: Quality) => `${resolution} · ${fps} fps`;
 export const describeOutput = (output: OutputSettings) =>
   `${describeQuality(output)} · ${formatName(output.format)}${output.transparent ? " · transparent" : ""}`;
-/** Frames in an output: timing lives on the 15 fps grid, and the output rate is a multiple of it. */
-export const outputFrames = (durationMs: number, fps: FrameRate) => frameAt(durationMs) * fps / GRID_FPS;
 
 /** What the bridge receives for a render: the contract's keys and nothing else. */
 export const renderOptions = (quality: Quality, format: VideoFormat = "mp4", transparent = false) =>
@@ -67,7 +64,7 @@ export function readSettings(stored: unknown): Settings {
       transparent: flag(output.transparent, defaults.output.transparent) && supportsTransparency(format),
     },
     snapping: flag(value.snapping, defaults.snapping),
-    playAfterRender: flag(value.playAfterRender, defaults.playAfterRender),
+    alignmentGuides: flag(value.alignmentGuides, defaults.alignmentGuides),
     loop: flag(value.loop, defaults.loop),
     livePreview: flag(value.livePreview, defaults.livePreview),
     restoreSession: flag(value.restoreSession, defaults.restoreSession),
