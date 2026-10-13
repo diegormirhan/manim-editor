@@ -56,18 +56,24 @@ fn root_from_exe(exe: &std::path::Path) -> Option<PathBuf> {
     repo.join(".venv").is_dir().then(|| repo.to_path_buf())
 }
 
-fn execute_bridge(request: Value) -> Result<Value, String> {
+/// The payload's Python running `module`, without a console window. UTF-8 mode makes its pipes
+/// UTF-8 like ours; Windows Python otherwise reads them in the ANSI code page and mangles accents.
+fn python_module(module: &str) -> Result<Command, String> {
     let root = project_root();
     let python = root.join(".venv/Scripts/python.exe");
     if !python.is_file() {
         return Err("Local Python environment missing. See README.md.".into());
     }
     let mut command = Command::new(python);
-    command.args(["-m", "renderer.manim_renderer.desktop_bridge"])
-        .current_dir(&root).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
+    command.args(["-m", module]).current_dir(&root).env("PYTHONUTF8", "1").stdin(Stdio::piped()).stdout(Stdio::piped());
     #[cfg(windows)]
     command.creation_flags(0x08000000);
-    let mut child = command.spawn().map_err(|error| error.to_string())?;
+    Ok(command)
+}
+
+fn execute_bridge(request: Value) -> Result<Value, String> {
+    let mut child = python_module("renderer.manim_renderer.desktop_bridge")?
+        .stderr(Stdio::piped()).spawn().map_err(|error| error.to_string())?;
     *CHILD.lock().unwrap() = Some(child.id());
     // stderr carries progress events between the lines that explain a failure, so it is read as it arrives.
     let stderr = child.stderr.take().unwrap();
@@ -101,13 +107,8 @@ fn execute_bridge(request: Value) -> Result<Value, String> {
 
 /// Starts the live preview worker. It exits by itself when the app closes its stdin.
 fn start_live_worker() -> Result<LiveWorker, String> {
-    let root = project_root();
-    let mut command = Command::new(root.join(".venv/Scripts/python.exe"));
-    command.args(["-m", "renderer.manim_renderer.live_frame"])
-        .current_dir(&root).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
-    #[cfg(windows)]
-    command.creation_flags(0x08000000);
-    let mut child = command.spawn().map_err(|error| error.to_string())?;
+    let mut child = python_module("renderer.manim_renderer.live_frame")?
+        .stderr(Stdio::null()).spawn().map_err(|error| error.to_string())?;
     let (stdin, stdout) = (child.stdin.take().unwrap(), BufReader::new(child.stdout.take().unwrap()));
     Ok(LiveWorker { child, stdin, stdout })
 }
@@ -270,6 +271,16 @@ mod tests {
         let _turn = BRIDGE.lock().unwrap_or_else(|poison| poison.into_inner());
         let result = execute_bridge(json!({"operation": "load", "path": project_root().join("examples/equation.json")})).unwrap();
         assert_eq!(result["project"]["schemaVersion"], 1);
+    }
+    #[test]
+    fn accented_text_survives_the_trip_through_python() {
+        let _turn = BRIDGE.lock().unwrap_or_else(|poison| poison.into_inner());
+        let path = std::env::temp_dir().join(format!("manim-editor-accents-{}.json", std::process::id()));
+        let project = json!({"schemaVersion": 1, "name": "Ação é ótima", "scene": {"durationMs": 1000, "elements": {}}});
+        execute_bridge(json!({"operation": "save", "path": path, "project": project})).unwrap();
+        let saved: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+        std::fs::remove_file(&path).unwrap();
+        assert_eq!(saved["name"], "Ação é ótima");
     }
     #[test]
     fn rejects_unknown_command() {
