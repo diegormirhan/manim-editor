@@ -2,9 +2,8 @@ import { useId, type ReactNode } from "react";
 import { Clapperboard, Film, MonitorPlay, RotateCcw, SlidersHorizontal, Video } from "lucide-react";
 import {
   DEFAULT_SETTINGS, FORMATS, FRAME_RATES, PREVIEW_RESOLUTIONS, RESOLUTIONS, dimensions, formatCodec, formatName,
-  outputFrames, supportsTransparency, type Settings,
+  supportsTransparency, type Settings,
 } from "../domain/render-settings";
-import { seconds } from "../domain/timeline";
 import type { ThemePreference } from "./useTheme";
 import { ColorInput } from "./ElementInspector";
 import { Button } from "@/components/ui/button";
@@ -57,12 +56,12 @@ function Page({ value, title, description, children }: { value: SettingsTab; tit
 }
 
 export function SettingsDialog({ open, tab, onTab, onClose, settings, onSettings, theme, onTheme, background, onBackground,
-  durationMs, onExportVideo, exportDisabled }: {
+  onExportVideo, exportDisabled }: {
   open: boolean; tab: SettingsTab; onTab: (tab: SettingsTab) => void; onClose: () => void;
   settings: Settings; onSettings: (patch: Partial<Settings>) => void;
   theme: ThemePreference; onTheme: (theme: ThemePreference) => void;
   background?: string; onBackground: (color: string | undefined) => void;
-  durationMs: number; onExportVideo: () => void; exportDisabled: boolean;
+  onExportVideo: () => void; exportDisabled: boolean;
 }) {
   const { preview, output } = settings;
   const size = dimensions(output.resolution);
@@ -81,17 +80,15 @@ export function SettingsDialog({ open, tab, onTab, onClose, settings, onSettings
           </TabsList>
         </nav>
 
-        <Page value="viewer" title="Viewer" description="How Render (Ctrl+Enter) previews the scene inside the editor. Higher settings are sharper and take longer.">
+        <Page value="viewer" title="Viewer" description="How Play renders the scene. Higher settings are sharper and take longer.">
           <Choice label="Preview quality" value={preview.resolution} options={PREVIEW_RESOLUTIONS}
             onChange={resolution => onSettings({ preview: { ...preview, resolution } })} />
           <Choice label="Preview frame rate" value={preview.fps} options={FRAME_RATES} name={fps => `${fps} fps`}
             onChange={fps => onSettings({ preview: { ...preview, fps } })} />
           <FieldSeparator />
-          <Toggle label="Play after rendering" description="Start the preview as soon as a render finishes."
-            checked={settings.playAfterRender} onChange={playAfterRender => onSettings({ playAfterRender })} />
           <Toggle label="Loop playback" description="Play the preview again from the start when it ends."
             checked={settings.loop} onChange={loop => onSettings({ loop })} />
-          <Toggle label="Live preview" description="While you edit or scrub, show Manim's own frame at the playhead. A Manim process stays loaded in the background for it."
+          <Toggle label="Live preview" description="Show Manim's frame at the playhead while you edit or scrub."
             checked={settings.livePreview} onChange={livePreview => onSettings({ livePreview })} />
         </Page>
 
@@ -109,7 +106,6 @@ export function SettingsDialog({ open, tab, onTab, onClose, settings, onSettings
           <div className="settings-summary">
             <p><strong>{size.width} × {size.height}</strong> at {output.fps} fps, {formatName(output.format)} ({formatCodec(output.format)}
               {output.transparent ? " with alpha" : ""}).</p>
-            <p className="text-muted-foreground">This {seconds(durationMs)} scene is {outputFrames(durationMs, output.fps).toLocaleString("en-US")} frames.</p>
             <Button variant="outline" size="sm" className="mt-1 w-fit" disabled={exportDisabled} onClick={onExportVideo}><Video />Export video…</Button>
           </div>
         </Page>
@@ -129,13 +125,6 @@ export function SettingsDialog({ open, tab, onTab, onClose, settings, onSettings
                 <RotateCcw /></Button>
             </div>
           </Field>
-          <Field orientation="horizontal" className="settings-row">
-            <FieldContent>
-              <FieldTitle>Timing grid</FieldTitle>
-              <FieldDescription>Clips start and end on 15 fps frames. Higher frame rates add in-between frames without moving them.</FieldDescription>
-            </FieldContent>
-            <span className="text-muted-foreground tabular-nums">15 fps</span>
-          </Field>
         </Page>
 
         <Page value="editor" title="Editor" description="How this window looks and behaves on this computer.">
@@ -144,6 +133,8 @@ export function SettingsDialog({ open, tab, onTab, onClose, settings, onSettings
           <FieldSeparator />
           <Toggle label="Snap clips" description="Dragged clips lock onto the playhead, the scene edges and other clips. Hold Alt while dragging to do the opposite."
             checked={settings.snapping} onChange={snapping => onSettings({ snapping })} />
+          <Toggle label="Alignment guides" description="Dragged objects snap to the frame's centre and edges and to other objects, with a line where they align. Hold Alt to drag freely."
+            checked={settings.alignmentGuides} onChange={alignmentGuides => onSettings({ alignmentGuides })} />
           <Toggle label="Restore unsaved work" description="Reopen the last project after a crash or a closed window."
             checked={settings.restoreSession} onChange={restoreSession => onSettings({ restoreSession })} />
           <FieldSeparator />
