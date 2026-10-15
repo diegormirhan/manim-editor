@@ -18,4 +18,4 @@ await writeFile(
   "src/generated/validate.js",
   'const ucs2length = ' + (ucs2module.default ?? ucs2module).toString() + ';\n' + source,
 );
-await writeFile("src/generated/project.d.ts", await compile(schema, "Project"));
+await writeFile("src/generated/project.d.ts", await compile(schema, "Project", { maxItems: 2 }));
