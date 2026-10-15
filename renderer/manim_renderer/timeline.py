@@ -28,17 +28,38 @@ def leaf_clips(scene):
     return [child for clip in scene.get("animations", []) for child in children_of(clip)]
 
 
+def layer_of(scene, identifier):
+    """An element's timeline layer: its own, or its place in the scene for files from before layers."""
+    return scene["elements"][identifier].get("layer", list(scene["elements"]).index(identifier))
+
+
+def lifetimes(scene):
+    """When each element is on screen: a fade-out or a transform ends it, and a transform destination starts with its end."""
+    spans = {key: [element["appearsAtMs"], element.get("disappearsAtMs", scene["durationMs"])]
+             for key, element in scene["elements"].items()}
+    for clip in leaf_clips(scene):
+        end = clip["startMs"] + clip["durationMs"]
+        if clip["kind"] == "transform" and clip.get("destinationId") in spans:
+            spans[clip["destinationId"]][0] = end
+        if clip["kind"] in ("fadeOut", "transform") and clip.get("targetId") in spans:
+            spans[clip["targetId"]][1] = min(spans[clip["targetId"]][1], end)
+    return spans
+
+
 def check_clip_fields(clip):
     for kind, field in CLIP_FIELDS.items():
         if (clip["kind"] == kind) != (field in clip):
             raise ValueError(f"The field {field!r} belongs only to animation {kind!r}.")
 
 
+def _overlapping(spans):
+    spans = sorted(spans)
+    return any(start < spans[index - 1][1] for index, (start, _) in enumerate(spans) if index)
+
+
 def validate_timeline(scene):
-    clips = sorted(scene.get("animations", []), key=lambda clip: clip["startMs"])
-    leaves = leaf_clips(scene)
-    owners = {}
-    for clip in leaves:
+    owners = set()
+    for clip in leaf_clips(scene):
         if clip["kind"] != "transform":
             continue
         destination = clip.get("destinationId")
@@ -46,15 +67,10 @@ def validate_timeline(scene):
             raise ValueError("Transform requires a different, existing destination.")
         if destination in owners:
             raise ValueError("Each Transform destination belongs to exactly one transformation.")
-        owners[destination] = clip
+        owners.add(destination)
 
-    available = {key: element["appearsAtMs"] for key, element in scene["elements"].items() if key not in owners}
-    entered, removed = set(), set()
-    previous_end = 0
-    for block in clips:
+    for block in scene.get("animations", []):
         start, end = block["startMs"], block["startMs"] + block["durationMs"]
-        if start < previous_end:
-            raise ValueError("Two animations would overlap. Place this one before or after the other.")
         if end > scene["durationMs"]:
             raise ValueError("The animation would run past the end of the scene.")
         if frame_at(end) <= frame_at(start):
@@ -67,37 +83,32 @@ def validate_timeline(scene):
                 raise ValueError("Group animations must share their start time and duration.")
         elif "clips" in block:
             raise ValueError("Only parallel groups accept child animations.")
-        touched, pending = set(), []
-        for clip in children:
-            target = clip.get("targetId")
-            element = scene["elements"].get(target)
-            if element is None:
-                raise ValueError("The animation references an element that does not exist.")
-            if target in touched:
-                raise ValueError("An element cannot have two animations in the same group.")
-            touched.add(target)
-            if target in removed or target not in available or start < available[target]:
-                raise ValueError("The animation would start while its object is not on screen.")
-            if end > element.get("disappearsAtMs", scene["durationMs"]):
-                raise ValueError("The animation would run past the moment its object leaves the screen.")
-            if clip["kind"] in ENTRANCES:
-                if target in entered or target in owners or start != available[target]:
-                    raise ValueError("An entrance plays once, starting when its object appears.")
-                entered.add(target)
-            check_clip_fields(clip)
-            if clip["kind"] == "transform":
-                destination = clip["destinationId"]
-                if destination in available or destination in removed or destination in touched:
-                    raise ValueError("The Transform destination must be hidden.")
-                if scene["elements"][destination].get("disappearsAtMs", scene["durationMs"]) <= end:
-                    raise ValueError("The destination must remain in the scene after Transform.")
-                touched.add(destination)
-                pending.append((destination, end))
-                removed.add(target)
-            if clip["kind"] == "fadeOut":
-                removed.add(target)
-        available.update(pending)
-        previous_end = end
+
+    spans, busy = lifetimes(scene), {}
+    for clip in leaf_clips(scene):
+        target = clip.get("targetId")
+        if target not in scene["elements"]:
+            raise ValueError("The animation references an element that does not exist.")
+        check_clip_fields(clip)
+        (alive, gone), start = spans[target], clip["startMs"]
+        end = start + clip["durationMs"]
+        if not alive <= start < gone:
+            raise ValueError("The animation would start while its object is not on screen.")
+        if end > gone:
+            raise ValueError("The animation would run past the moment its object leaves the screen.")
+        if clip["kind"] in ENTRANCES and (target in owners or start != alive):
+            raise ValueError("An entrance plays once, starting when its object appears.")
+        if clip["kind"] == "transform" and scene["elements"][clip["destinationId"]].get("disappearsAtMs", scene["durationMs"]) <= end:
+            raise ValueError("The destination must remain in the scene after Transform.")
+        busy.setdefault(target, []).append((start, end))
+    if any(_overlapping(times) for times in busy.values()):
+        raise ValueError("An object plays one animation at a time. Move one after the other.")
+    layers = {}
+    for identifier in scene["elements"]:
+        layers.setdefault(layer_of(scene, identifier), []).append(spans[identifier])
+    for layer, times in layers.items():
+        if _overlapping(times):
+            raise ValueError(f"Two objects on layer {layer + 1} overlap in time. Move one to another layer.")
 
 
 def compile_animation(clip, variable, variables=None):
