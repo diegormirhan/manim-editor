@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Project } from "../domain/project";
-import { elementLabels } from "../domain/catalog";
+import { derivedKinds, elementLabels } from "../domain/catalog";
 import { FRAME, alignDrag, moveElement, rotateElement, scaleElement, type Box } from "../domain/placement";
 
 // Thin lines and small dots still get a handle about this many scene units across.
@@ -58,7 +58,7 @@ export function StageHandles({ project, atMs, boxes, current, selection, alignme
 
   const handles = Object.entries(boxes).flatMap(([id, box]) => {
     const element = project.scene.elements[id];
-    if (!element || element.kind === "areaUnderGraph") return [];
+    if (!element || derivedKinds.includes(element.kind)) return [];
     const shown = gesture?.id === id ? gesture : undefined, [left, bottom, right, top] = box;
     const width = Math.max((right - left) * (shown?.scale ?? 1), MIN_HANDLE), height = Math.max((top - bottom) * (shown?.scale ?? 1), MIN_HANDLE);
     const x = (left + right) / 2 + (shown?.dx ?? 0), y = (bottom + top) / 2 + (shown?.dy ?? 0);
