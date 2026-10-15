@@ -1,4 +1,3 @@
-import argparse
 import os
 import re
 from pathlib import Path
@@ -8,8 +7,8 @@ import time
 from typing import Callable
 import uuid
 
-from .project import load_project, save_project
-from .render_options import CONTRACT, resolve_options, workload
+from .project import save_project
+from .render_options import resolve_options, workload
 from .scene_compiler import compile_project, segment_frames
 
 PARTIAL_SUFFIXES = {".mp4", ".mov", ".webm"}
@@ -111,32 +110,3 @@ def render_project(project: dict, output_root: Path, *, tex_bin: Path | None = N
         raise RenderError(f"Manim produced no unique nonempty video; see {log_path}")
     return videos[0]
 
-
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Render a trusted local editor project.")
-    parser.add_argument("project", type=Path)
-    parser.add_argument("--output-root", type=Path, default=Path("work/renders"))
-    parser.add_argument("--tex-bin", type=Path)
-    parser.add_argument("--resolution", choices=list(CONTRACT["resolutions"]), default="480p")
-    parser.add_argument("--fps", type=int, choices=CONTRACT["frameRates"], default=CONTRACT["gridFps"])
-    parser.add_argument("--format", choices=list(CONTRACT["formats"]), default="mp4")
-    parser.add_argument("--transparent", action="store_true")
-    arguments = parser.parse_args()
-    try:
-        options = resolve_options({"resolution": arguments.resolution, "fps": arguments.fps,
-                                   "format": arguments.format, "transparent": arguments.transparent})
-        artifact = render_project(
-            load_project(arguments.project),
-            arguments.output_root,
-            tex_bin=arguments.tex_bin,
-            options=options,
-        )
-    except (ValueError, OSError, RenderError) as error:
-        print(str(error), file=sys.stderr)
-        return 1
-    print(artifact)
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
