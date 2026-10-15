@@ -1,6 +1,7 @@
 import { SHARED_PROPERTIES } from "../../contracts/schema.mjs";
 import type { Element, Project } from "./project";
 import { leafClips } from "./timeline";
+import { derivedKinds } from "./catalog";
 
 /** Manim's camera frame in scene units, centred on the origin. */
 export const FRAME = { width: 128 / 9, height: 8 };
@@ -15,7 +16,7 @@ const hundredths = (value: number) => Math.round(value * 100) / 100;
  */
 export function moveElement(project: Project, id: string, atMs: number, [dx, dy]: [number, number]): Project {
   const next = structuredClone(project), element = next.scene.elements[id];
-  if (!element || element.kind === "areaUnderGraph") return project;
+  if (!element || derivedKinds.includes(element.kind)) return project;
   const shift = (point: [number, number, number]) => {
     point[0] = hundredths(point[0] + dx);
     point[1] = hundredths(point[1] + dy);
@@ -26,15 +27,15 @@ export function moveElement(project: Project, id: string, atMs: number, [dx, dy]
   if (move) shift(move.destination!);
   else {
     shift(element.position);
-    if (element.kind === "line" || element.kind === "arrow") shift(element.end);
+    if ("end" in element) shift(element.end);
   }
   return next;
 }
 
-/** Applies `change` to an element that can be placed; an area follows its graph instead. */
+/** Applies `change` to an element that can be placed; a derived one follows its source instead. */
 function reshape(project: Project, id: string, change: (element: Element) => Partial<Element>): Project {
   const element = project.scene.elements[id];
-  if (!element || element.kind === "areaUnderGraph") return project;
+  if (!element || derivedKinds.includes(element.kind)) return project;
   return { ...project, scene: { ...project.scene, elements: { ...project.scene.elements, [id]: { ...element, ...change(element) } as Element } } };
 }
 
