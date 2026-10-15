@@ -49,12 +49,20 @@ class ElementTests(unittest.TestCase):
             if kind in ("functionGraph", "areaUnderGraph"):
                 compiled.add(kind)
                 continue
-            source = compile_project(sample({"kind": kind, **NEW_ELEMENTS.get(kind, {}), **{
-                "mathTex": dict(latex="x^2"), "text": dict(text="Olá"), "circle": dict(radius=1),
-                "dot": dict(radius=0.1), "rectangle": dict(width=2, height=1), "square": dict(size=2),
-                "triangle": dict(size=2), "line": dict(end=[2, 1, 0]), "arrow": dict(end=[2, 1, 0]),
+            project = sample({"kind": kind, **NEW_ELEMENTS.get(kind, {}), **{
+                "mathTex": dict(latex="x^2"), "tex": dict(latex="Area $x$"), "text": dict(text="Olá"),
+                "decimalNumber": dict(value=3.14), "bulletedList": dict(items=["One", "Two"]),
+                "matrix": dict(rows=[["1", "0"], ["0", "1"]]), "code": dict(code="print(1)"), "circle": dict(radius=1),
+                "dot": dict(radius=0.1), "rectangle": dict(width=2, height=1), "roundedRectangle": dict(width=2, height=1),
+                "square": dict(size=2), "triangle": dict(size=2), "star": dict(points=5, radius=1),
+                "annulus": dict(innerRadius=0.5, radius=1), "sector": dict(radius=1, angleDegrees=90),
+                "line": dict(end=[2, 1, 0]), "dashedLine": dict(end=[2, 1, 0]), "arrow": dict(end=[2, 1, 0]),
+                "doubleArrow": dict(end=[2, 1, 0]), "brace": dict(targetId="b"), "surroundingRectangle": dict(targetId="b"),
                 "axes": dict(xRange=[-3, 3], yRange=[-2, 2]), "numberPlane": dict(xRange=[-3, 3], yRange=[-2, 2]),
-            }.get(kind, {})}))
+                "barChart": dict(values=[1, 2]),
+            }.get(kind, {})})
+            project["scene"]["elements"]["b"] = {"kind": "circle", "radius": 1, "position": [0, 0, 0], "appearsAtMs": 0}
+            source = compile_project(project)
             ast.parse(source)
             compiled.add(kind)
         self.assertEqual(compiled, set(CONTRACT_KINDS))
@@ -72,6 +80,19 @@ class ElementTests(unittest.TestCase):
         styled = compile_project(sample({"kind": "circle", "radius": 1, "rotationDegrees": 45, "opacity": 0.5}))
         self.assertIn("element_0.rotate(np.deg2rad(45))", styled)
         self.assertIn("element_0.set_opacity(0.5)", styled)
+
+    def test_annotations_point_at_another_plain_element(self):
+        project = sample({"kind": "brace", "targetId": "b", "label": "x"})
+        project["scene"]["elements"]["b"] = {"kind": "mathTex", "latex": "x", "position": [0, 0, 0], "appearsAtMs": 0}
+        self.assertIn("BraceLabel(element_1, 'x', brace_direction=DOWN)", compile_project(project))
+        for target in ("a", "missing"):
+            project["scene"]["elements"]["a"]["targetId"] = target
+            with self.assertRaisesRegex(ValueError, "annotate"):
+                validate_project(project)
+
+    def test_matrix_rows_must_be_rectangular(self):
+        with self.assertRaisesRegex(ValueError, "matrix row"):
+            validate_project(sample({"kind": "matrix", "rows": [["1", "2"], ["3"]]}))
 
     def test_area_compiles_after_its_graph_and_axes(self):
         source = compile_project(graph_scene())
