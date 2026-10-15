@@ -9,13 +9,10 @@ dist/
 target/
 test-results/
 playwright-report/
-.session.log
-.session-memory.md
 
 # Internal working docs: kept locally, not published to the public remote.
-# README.md and docs/media/README.md stay tracked.
+# README.md and docs/automation.md stay tracked.
 /AGENTS.md
-/ARCHITECTURE.md
 /DESIGN.md
 /PRODUCT.md
 /docs/architecture/
@@ -24,5 +21,6 @@ playwright-report/
 # Updater signing keys never belong in the repository.
 *.key
 
-# Agent skill packs: local tooling, not published.
+# Agent skill packs and their design notes: local tooling, not published.
 /.agents/
+/.impeccable/
