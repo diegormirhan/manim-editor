@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { FilePlus2, FolderOpen, X } from "lucide-react";
 import type { Project } from "../domain/project";
 import type { RecentProject } from "../domain/recent-projects";
-import { lifetimes, seconds } from "../domain/timeline";
+import { layerOf, lifetimes, seconds } from "../domain/timeline";
 import { Button } from "@/components/ui/button";
 import { Hint } from "./Hint";
 import { stageStyle } from "./stage";
@@ -26,19 +26,22 @@ function openedAgo(at: number) {
   return unit ? new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(Math.round(elapsed / size!), unit) : "just now";
 }
 
-/** A frame of the scene's own timeline: one bar per object, coloured by kind, on its background. */
+/** A frame of the scene's own timeline: its layers, the first at the bottom, with a bar per object coloured by kind. */
 function ProjectThumbnail({ project }: { project: Project }) {
-  const { durationMs, elements } = project.scene;
-  const spans = lifetimes(project.scene);
-  const lanes = Object.entries(elements).slice(0, MAX_LANES);
+  const { scene } = project;
+  const spans = lifetimes(scene);
+  const ids = Object.keys(scene.elements);
+  const layers = [...new Set(ids.map(id => layerOf(scene, id)))].sort((a, b) => a - b).slice(0, MAX_LANES).reverse();
   return (
-    <span className="project-thumb" style={stageStyle(project.scene.background)}>
-      {lanes.length
-        ? <span className="thumb-lanes">{lanes.map(([id, element]) => <span key={id} className="thumb-lane" style={{
-            background: `var(--tone-${toneOf(element.kind)})`,
-            marginLeft: percent(spans[id][0], durationMs), marginRight: percent(durationMs - spans[id][1], durationMs) }} />)}</span>
+    <span className="project-thumb" style={stageStyle(scene.background)}>
+      {layers.length
+        ? <span className="thumb-lanes">{layers.map(layer => <span key={layer} className="thumb-lane">
+            {ids.filter(id => layerOf(scene, id) === layer).map(id => <span key={id} className="thumb-clip" style={{
+              background: `var(--tone-${toneOf(scene.elements[id].kind)})`,
+              left: percent(spans[id][0], scene.durationMs), right: percent(scene.durationMs - spans[id][1], scene.durationMs) }} />)}
+          </span>)}</span>
         : <span className="thumb-empty">Empty scene</span>}
-      <span className="thumb-duration">{seconds(durationMs)}</span>
+      <span className="thumb-duration">{seconds(scene.durationMs)}</span>
     </span>
   );
 }
