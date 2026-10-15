@@ -67,7 +67,7 @@ class ProjectTests(unittest.TestCase):
     def test_appearance_times_are_sorted(self):
         elements = self.project['scene']['elements']
         elements['equation-1']['appearsAtMs'] = 2000
-        elements['earlier'] = {**elements['equation-1'], 'appearsAtMs': 500}
+        elements['earlier'] = {**elements['equation-1'], 'appearsAtMs': 500, 'layer': 1}
         source = compile_project(self.project)
         self.assertLess(source.index('self.add(element_0)'), source.index('self.add(element_1)'))
         self.assertIn('self.wait((8 + 1e-6) / 15)', source)
