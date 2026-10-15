@@ -1,5 +1,7 @@
 import { expect, test } from "vitest";
-import { animationLabels, appearanceTime, clipFields, isEntrance, lifetimes, removeAnimation, rulerTicks, seconds, timecode } from "./timeline";
+import {
+  addAnimation, animationLabels, appearanceTime, clipFields, isEntrance, lifetimes, normalizeProject, removeAnimation, rulerTicks, seconds, timecode,
+} from "./timeline";
 import { createElement } from "./catalog";
 import { initialProject, validateProject, type Animation, type Project } from "./project";
 
@@ -69,6 +71,54 @@ test("an emphasis clip cannot run after the element leaves", () => {
     { kind: "indicate", targetId: "a", startMs: 2000, durationMs: 1000 },
   ];
   expect(validateProject(p)).toContain("not on screen");
+});
+
+test("animations of different objects overlap freely", () => {
+  const p = twoCircles();
+  p.scene.animations = [
+    { kind: "indicate", targetId: "a", startMs: 0, durationMs: 2000 },
+    { kind: "fadeIn", targetId: "b", startMs: 0, durationMs: 1000 },
+    { kind: "wiggle", targetId: "b", startMs: 1000, durationMs: 2000 },
+  ];
+  expect(validateProject(p)).toBeNull();
+});
+
+test("a new animation starts at the playhead, after what its object is already playing", () => {
+  const p = twoCircles();
+  p.scene.animations = [{ kind: "indicate", targetId: "a", startMs: 1000, durationMs: 1000 }];
+  const added = (kind: Animation["kind"], atMs: number) => {
+    const next = addAnimation(p, "a", kind, atMs);
+    if (typeof next === "string") throw Error(next);
+    expect(validateProject(next)).toBeNull();
+    return next.scene.animations!.at(-1)!;
+  };
+  expect(added("wiggle", 1500)).toMatchObject({ startMs: 2000, durationMs: 1000 });
+  expect(added("wiggle", 430)).toMatchObject({ startMs: 400, durationMs: 600 });
+  expect(added("fadeIn", 3000)).toMatchObject({ startMs: 0, durationMs: 1000 });
+  expect(added("fadeOut", 0)).toMatchObject({ startMs: 2000 });
+  p.scene.animations.push({ kind: "fadeIn", targetId: "a", startMs: 0, durationMs: 500 });
+  expect(addAnimation(p, "a", "grow", 0)).toContain("already has an entrance");
+});
+
+test("a transform's destination takes over its object's layer", () => {
+  const p = normalizeProject(twoCircles());
+  const next = addAnimation(p, "a", "transform", 1000);
+  if (typeof next === "string") throw Error(next);
+  const destination = next.scene.animations![0].destinationId!;
+  expect(next.scene.elements[destination].layer).toBe(0);
+  expect(validateProject(next)).toBeNull();
+});
+
+test("older files gain layers and lose parallel groups without changing what plays", () => {
+  const p = twoCircles();
+  const clips: [Animation, Animation] = [
+    { kind: "fadeIn", targetId: "a", startMs: 0, durationMs: 1000 }, { kind: "create", targetId: "b", startMs: 0, durationMs: 1000 }];
+  p.scene.animations = [{ kind: "parallel", startMs: 0, durationMs: 1000, clips }];
+  expect(validateProject(p)).toBeNull();
+  const next = normalizeProject(p);
+  expect(next.scene.animations).toEqual(clips);
+  expect(Object.values(next.scene.elements).map(element => element.layer)).toEqual([0, 1]);
+  expect(validateProject(next)).toBeNull();
 });
 
 test("timecode counts whole seconds and 15 fps frames", () => {
