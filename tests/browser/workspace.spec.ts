@@ -76,7 +76,7 @@ test("a dragged clip locks onto the playhead and says so before release", async 
   await expect(page.locator(".snap-guide")).toHaveCount(1);
   await page.mouse.up();
   await expect(page.locator(".snap-guide")).toHaveCount(0);
-  await expect(page.getByLabel("Appear at (s)")).toHaveValue(String(Math.round(at * 1000) / 1000));
+  await expect(clip).toHaveAttribute("title", new RegExp(`${Math.round(at * 1000) / 1000} s–3 s`));
 });
 
 test("dragging a clip moves it in the project", async ({ page }) => {
@@ -94,7 +94,6 @@ test("dragging a clip moves it in the project", async ({ page }) => {
   await expect(page.locator(".timeline-help")).toContainText("1 s → 3 s");
   await page.mouse.up();
   await expect(clip).toHaveAttribute("title", /1 s–3 s/);
-  await expect(page.getByLabel("Appear at (s)")).toHaveValue("1");
 });
 
 test("commands explain themselves and their shortcut in a tooltip", async ({ page }) => {
@@ -121,16 +120,15 @@ test("booleans are switches that report their state", async ({ page }) => {
   await expect(numbers).toHaveAttribute("aria-checked", "true");
 });
 
-test("a short animation clip keeps its duration and lets its name go", async ({ page }) => {
+test("an animation clip names its animation and keeps its times in the tooltip", async ({ page }) => {
   await openEditor(page, "Shapes and motion");
   const clips = page.locator(".editable-clip.animation");
-  for (const clip of await clips.all()) await expect(clip.locator(".clip-duration")).toBeVisible();
+  for (const clip of await clips.all()) {
+    await expect(clip.locator(".clip-duration")).toBeHidden();
+    await expect(clip).toHaveAttribute("title", /^[A-Za-z]+ · [\d.]+ s–[\d.]+ s$/);
+  }
   const widths = await clips.evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().width));
-  const narrow = clips.nth(widths.indexOf(Math.min(...widths)));
-  expect(Math.min(...widths)).toBeLessThan(112);
-  await expect(narrow.locator(".clip-body span")).toBeHidden();
-  // The name is still on the track label and in the clip's tooltip.
-  await expect(narrow).toHaveAttribute("title", /^[A-Za-z]+ · /);
+  await expect(clips.nth(widths.indexOf(Math.min(...widths))).locator(".clip-body span")).toBeVisible();
 });
 
 test("the side panels resize from their inner edges, by mouse or keyboard", async ({ page }) => {
