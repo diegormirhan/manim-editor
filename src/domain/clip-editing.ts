@@ -46,15 +46,19 @@ export function editClip(project: Project, target: ClipTarget, gesture: ClipGest
   if (target.type === "animation") return retimeAnimation(project, target.index, newStart, newEnd - newStart);
   element!.appearsAtMs = newStart;
   if (gesture === "end" || element!.disappearsAtMs !== undefined) element!.disappearsAtMs = newEnd;
+  // Dragged to the end of the scene, the element stays until the scene ends, however long it gets.
+  if (element!.disappearsAtMs === scene.durationMs) delete element!.disappearsAtMs;
   if (newStart !== start) {
-    for (const clip of scene.animations ?? []) {
-      if (clip.kind === "parallel") {
-        // Shared blocks move from their own lane.
-        continue;
-      }
+    for (const clip of scene.animations ?? [])
       if (clip.targetId === target.id && (gesture === "move" || isEntrance(clip.kind)))
         clip.startMs += newStart - start;
-    }
   }
   return next;
+}
+
+/** Puts an element on another layer; higher layers draw on top. */
+export function moveToLayer(project: Project, id: string, layer: number): Project {
+  const element = project.scene.elements[id];
+  if (!element || element.layer === layer) return project;
+  return { ...project, scene: { ...project.scene, elements: { ...project.scene.elements, [id]: { ...element, layer: Math.max(0, Math.min(99, layer)) } } } };
 }
