@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { editClip, retimeAnimation } from "./clip-editing";
+import { editClip, moveToLayer } from "./clip-editing";
 import { initialProject, validateProject } from "./project";
 test("dragging is immutable, snaps and shifts attached animations", () => {
   const p = initialProject();
@@ -15,18 +15,21 @@ test("resize creates an explicit presence end and respects minimum and boundarie
   expect(editClip(p, target, "end", -5000).scene.elements["equation-1"].disappearsAtMs).toBe(100);
   expect(editClip(p, target, "start", -5000).scene.elements["equation-1"].appearsAtMs).toBe(0);
 });
-test("parallel resize keeps children in sync; conflict stays invalid", () => {
+test("objects share a layer only when they take turns on it", () => {
   const p = initialProject();
-  p.scene.elements.b = { ...p.scene.elements["equation-1"] };
-  p.scene.animations = [{ kind: "parallel", startMs: 0, durationMs: 1000, clips: [
-    { kind: "write", targetId: "equation-1", startMs: 0, durationMs: 1000 },
-    { kind: "fadeIn", targetId: "b", startMs: 0, durationMs: 1000 },
-  ] }];
-  const next = retimeAnimation(p, 0, 500, 1500);
-  expect(next.scene.animations?.[0].clips?.map(c => c.durationMs)).toEqual([1500, 1500]);
-  expect(validateProject(next)).toBeNull();
-  next.scene.animations!.push({ kind: "fadeOut", targetId: "b", startMs: 1500, durationMs: 1000 });
-  expect(validateProject(next)).toContain("overlap");
+  p.scene.elements["equation-1"] = { ...p.scene.elements["equation-1"], layer: 0, disappearsAtMs: 1000 };
+  p.scene.elements.b = { ...p.scene.elements["equation-1"], appearsAtMs: 500, layer: 1 };
+  delete p.scene.elements.b.disappearsAtMs;
+  expect(validateProject(moveToLayer(p, "b", 0))).toContain("overlap in time");
+  const later = editClip(p, { type: "element", id: "b" }, "start", 500);
+  expect(validateProject(moveToLayer(later, "b", 0))).toBeNull();
+  expect(p.scene.elements.b.layer).toBe(1);
+});
+test("dragging an end to the scene's end keeps the object until the scene ends", () => {
+  const p = initialProject();
+  p.scene.elements["equation-1"].disappearsAtMs = 1000;
+  const next = editClip(p, { type: "element", id: "equation-1" }, "end", 5000);
+  expect(next.scene.elements["equation-1"].disappearsAtMs).toBeUndefined();
 });
 test("an edge near a magnet lands on it exactly; farther away the grid wins", () => {
   const p = initialProject(), target = { type: "animation", index: 0 } as const;
