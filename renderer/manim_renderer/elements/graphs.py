@@ -1,8 +1,5 @@
 from .expressions import compile_expression
 
-# Graphs read their axes and areas read their graph, so they compile last.
-DEPENDENCY_ORDER = {"functionGraph": 1, "areaUnderGraph": 2}
-
 
 def compile_axes(element, variable):
     kind = element["kind"]
@@ -37,3 +34,8 @@ def compile_area(element, variable, graph_variable, axes_variable):
     return [
         f"{variable} = {axes_variable}.get_area({graph_variable}, x_range={element['xRange']!r})",
     ]
+
+
+def compile_bar_chart(element, variable):
+    names = f", bar_names={element['labels']!r}" if element.get("labels") else ""
+    return [f"{variable} = BarChart({element['values']!r}{names})", f"{variable}.move_to({element['position']!r})"]
