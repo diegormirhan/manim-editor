@@ -5,17 +5,19 @@ const playButton = (page: Page) => page.getByRole("button", { name: "Play", exac
 
 test("adds each new library element and keeps the project renderable", async ({ page }) => {
   await openEditor(page);
-  for (const label of ["Ellipse", "Polygon", "Arc", "Number line", "Number plane"]) {
-    await page.getByLabel(`Add ${label}`).click();
+  const labels = ["LaTeX text", "Number", "Bullet list", "Matrix", "Code", "Ellipse", "Rounded rectangle", "Polygon", "Star",
+    "Ring", "Arc", "Sector", "Dashed line", "Double arrow", "Brace", "Highlight box", "Number line", "Number plane", "Bar chart"];
+  for (const label of labels) {
+    await page.getByLabel(`Add ${label}`, { exact: true }).click();
     await expect(playButton(page), label).toBeEnabled();
   }
-  await expect(page.getByRole("status")).toHaveText("Number plane added at 0 s.");
-  await expect(page.getByRole("heading", { name: "Timeline" })).toContainText("6 elements");
+  await expect(page.getByRole("status")).toHaveText("Bar chart added at 0 s.");
+  await expect(page.getByRole("heading", { name: "Timeline" })).toContainText(`${labels.length + 1} elements`);
 });
 
 test("the library groups its kinds and keeps derived kinds behind their source", async ({ page }) => {
   await openEditor(page);
-  for (const group of ["Text", "Shapes", "Coordinates", "Graphs"])
+  for (const group of ["Text", "Shapes", "Lines", "Annotations", "Coordinates", "Graphs"])
     await expect(page.getByRole("heading", { name: group, exact: true })).toBeVisible();
 
   const area = page.getByLabel("Add Area under graph");
