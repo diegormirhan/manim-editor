@@ -8,9 +8,9 @@
 [![Tauri](https://img.shields.io/badge/Tauri-2-24C8D8?style=flat-square&logo=tauri&logoColor=white)](src-tauri/)
 [![React](https://img.shields.io/badge/React-19-149ECA?style=flat-square&logo=react&logoColor=white)](src/app/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)](src/domain/)
-[![Manim](https://img.shields.io/badge/Manim_CE-0.21.0-83C167?style=flat-square)](requirements-render.txt)
+[![Manim](https://img.shields.io/badge/Manim_CE-0.21.0-83C167?style=flat-square)](requirements.txt)
 
-[Overview](#overview) • [Features](#features) • [Get started](#getting-started) • [How it works](#how-it-works) • [Updates](#publishing-an-update) • [Limitations](#known-limitations)
+[Overview](#overview) • [Features](#features) • [Get started](#getting-started) • [Automation](#automate-it) • [How it works](#how-it-works) • [Updates](#publishing-an-update) • [Limitations](#known-limitations)
 
 </div>
 
@@ -34,9 +34,8 @@ the composition and the timing; Manim still produces every pixel.
 
 ![The editor with a rendered integral, the object pool, the inspector and the timeline](docs/screenshots/calculus-area-dark.png)
 
-*The real Tauri app showing its own Manim render. Object tracks, coloured by kind, show when each
-element is on screen; the animation tracks below control motion. Between renders, the viewer shows
-Manim's own frame at the playhead, live.*
+*The real Tauri app showing its own Manim render. Between renders, the viewer shows Manim's own
+frame at the playhead, live.*
 
 Both demos below were built entirely in the editor, from the bundled [example projects](examples/):
 
@@ -50,11 +49,15 @@ Time savings have not been measured in a user study.
 
 ## Features
 
-- **A timeline, not a form.** Add objects at the playhead, drag clips to move them and their edges
-  to resize them, with a live span readout and magnetic snapping to the playhead, the scene bounds
-  and other clips. Zoom with Ctrl+wheel; undo and redo everything.
-- **Explicit animation.** Adding an element never adds an animation for you. Animations are clips of
-  their own: select one, change it, or delete it without touching its object.
+- **A timeline like a video editor's.** The timeline is a stack of layers, V1 at the bottom, and
+  higher layers draw on top. Each object is a clip on a layer and its animations ride inside it, so
+  one row shows when an object is on screen and what it does. Drag a clip along its layer to move
+  it, up or down to change layer, and its edges to resize it, with magnetic snapping to the playhead,
+  the scene bounds and other clips. Drag the playhead from the ruler or by its line. Zoom with
+  Ctrl+wheel; undo and redo everything.
+- **Animations without typing times.** Choose one from **Add animation** in the inspector and it lands
+  at the playhead, after whatever its object is already playing. Animations of different objects
+  overlap freely; adjust them by dragging their clips. Adding an object never adds an animation for you.
 - **Live preview.** While you edit or scrub, the viewer shows Manim's own frame at the playhead,
   usually within half a second, from a Manim process kept loaded in the background. A formula that
   will not compile says why, and the last good frame stays.
@@ -71,6 +74,8 @@ Time savings have not been measured in a user study.
 - **Projects screen.** The app opens on your projects: the one you were working on, recent files
   with thumbnails drawn from their own timelines, and the bundled examples. Unsaved work survives a
   crash or a closed window.
+- **Ready for scripts and AI agents.** A command line checks a project, draws any frame, renders
+  the video and explains the format; see [Automate it](#automate-it).
 - **A real desktop app.** Its own title bar with Windows 11 caption buttons, a short launch
   animation, light and dark themes that follow the system, and a signed in-app updater.
 
@@ -91,14 +96,16 @@ Time savings have not been measured in a user study.
 
 | Part of a scene | Available today |
 |---|---|
-| Text and notation | Plain text, LaTeX equations |
-| Shapes | Circle, dot, ellipse, rectangle, square, triangle, regular polygon, arc, line, arrow |
+| Text and notation | Text, LaTeX equations and text, numbers, bullet lists, matrices, code |
+| Shapes | Circle, dot, ellipse, rectangle, rounded rectangle, square, triangle, regular polygon, star, ring, arc, sector |
+| Lines | Line, dashed line, arrow, double arrow |
+| Annotations | Braces with a label, highlight boxes, around any other object |
 | Coordinates | Axes, number plane, number line |
-| Graphs | Function graphs, areas under axis-linked graphs |
+| Graphs | Function graphs, areas under axis-linked graphs, bar charts |
 | Entrances | Create, Write, FadeIn, GrowFromCenter, DrawBorderThenFill |
 | Motion and appearance | MoveTo, Rotate, Scale, SetColor |
 | Emphasis and exits | Indicate, Wiggle, FadeOut, Transform |
-| Timing | Sequential clips and explicit parallel groups |
+| Timing | Layers, and animations of different objects overlapping freely |
 
 Every element accepts colour, scale and opacity; positioned elements also rotate.
 
@@ -126,7 +133,7 @@ From the repository root, in PowerShell:
 ```powershell
 npm ci
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-render.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 npm run tauri -- dev
 ```
 
@@ -138,16 +145,23 @@ your own scene, choose **New project**, add an element, edit it, and add animati
 > no Rust build. Only what needs the operating system (open, save, export, render) is unavailable,
 > and it says so. Use this loop for UI work and the Tauri window for rendering and files.
 
-### Render without the interface
+## Automate it
+
+A project is one JSON file, so a script or an AI agent can write a whole video as data. The command
+line beside the app, `manim-editor-cli.cmd`, uses the editor's own validation and renderer, offline:
 
 ```powershell
-.\.venv\Scripts\python.exe -m renderer.manim_renderer.render_job examples/calculus-area.json --tex-bin work/runtime/tex/TinyTeX/bin/windows
-.\.venv\Scripts\python.exe -m renderer.manim_renderer.render_job examples/calculus-area.json --tex-bin work/runtime/tex/TinyTeX/bin/windows --resolution 1080p --fps 60 --format webm --transparent
-.\.venv\Scripts\python.exe -m renderer.manim_renderer.cli examples/calculus-area.json
+.\manim-editor-cli.cmd guide                                      # the format, every element kind and its fields
+.\manim-editor-cli.cmd check examples/calculus-area.json          # validate and summarise
+.\manim-editor-cli.cmd frame examples/calculus-area.json --at 4   # Manim's frame at 4 s, and where each object sits
+.\manim-editor-cli.cmd render examples/calculus-area.json -o area.mp4 --resolution 720p
+.\manim-editor-cli.cmd python examples/calculus-area.json         # the generated Manim Python
 ```
 
-The first two print the video path under `work/renders/<job-id>/`; the last prints the generated
-Python. The choices are listed once, in [contracts/render-options.json](contracts/render-options.json).
+An agent writes the project, runs `check` until it is valid, looks at a few frames, adjusts, and
+renders. `manim-editor.exe scene.json` opens the result in the editor for a person to finish. The
+whole guide is in [docs/automation.md](docs/automation.md); the render choices are listed once, in
+[contracts/render-options.json](contracts/render-options.json).
 
 ## How it works
 
@@ -185,6 +199,23 @@ its end, stops the running animation at the playhead and returns that single fra
 object on screen; the viewer turns those boxes into drag handles. To add a feature, extend the
 contract, the catalog or inspector and the focused compiler, then test both languages.
 
+## Project structure
+
+| Folder | What lives there |
+|---|---|
+| [`src/domain`](src/domain/) | The editor's rules in plain TypeScript: catalog, timeline, clip editing, validation |
+| [`src/app`](src/app/) | The React interface: projects screen, stage, timeline, inspectors |
+| [`src/components/ui`](src/components/ui/) | shadcn/ui components |
+| [`src/infrastructure`](src/infrastructure/) | Calls into the desktop shell: files, renders, updates, the window |
+| [`src/generated`](src/generated/) | Types and validator generated from the contract; never edited by hand |
+| [`contracts`](contracts/) | The project format's single definition, and the render options |
+| [`renderer`](renderer/) | Python: validation, the scene compiler, renders, live frames, the command line |
+| [`src-tauri`](src-tauri/) | The Rust desktop shell: files, dialogs, the bridge to Python, updates |
+| [`examples`](examples/) | The bundled example projects |
+| [`tests/browser`](tests/browser/) | Playwright workflows against a simulated desktop |
+| [`scripts`](scripts/) | Build, packaging, release and media scripts |
+| [`docs`](docs/) | The automation guide, screenshots and demo media |
+
 ## Publishing an update
 
 Installed copies read
@@ -217,13 +248,14 @@ cargo test --manifest-path src-tauri/Cargo.toml                    # Rust bridge
 
 | Check | Local result |
 |---|---|
-| Domain, Python and Rust tests | 54, 66 and 15 passing; Rust includes a real render, a cancelled render, a transparent MOV export, accented text surviving the trip through Python, a recent file reopened without a dialog and live frames from one warm Manim worker |
-| Browser workflows | 72 passing against a simulated desktop: projects, recent files, window controls, updates, live preview, moving, scaling and turning on the stage, alignment guides, panel resizing, Play rendering, export, progress, settings |
+| Domain, Python and Rust tests | 61, 71 and 16 passing; Rust includes a real render, a cancelled render, a transparent MOV export, accented text surviving the trip through Python, a recent file reopened without a dialog, a project named at launch and live frames from one warm Manim worker |
+| Browser workflows | 75 passing against a simulated desktop: projects, recent files, window controls, updates, live preview, layers, overlapping animations, the playhead's line, moving, scaling and turning on the stage, alignment guides, panel resizing, Play rendering, export, progress, settings |
 | Exported formats (ffprobe) | 720p30 and 1080p60 H.264, GIF, VP9 with alpha, QuickTime Animation ARGB; a 15 s scene renders exactly 450 frames at 30 fps and 900 at 60 |
 | The Tauri window | Real renders, Esc cancellation, LaTeX failures named, caption buttons, recent files saved in place, a tampered update refused, a signed one downloaded, verified and launched |
 
 These are local results, not a CI badge or a clean-machine guarantee. The screenshots come from the
-real app with fresh Manim renders; see [media provenance](docs/media/README.md).
+real app with fresh Manim renders, captured by [capture-readme.mjs](scripts/capture-readme.mjs); the
+demo videos by [generate-demo-media.ps1](scripts/generate-demo-media.ps1).
 
 ## Known limitations
 
@@ -236,7 +268,8 @@ real app with fresh Manim renders; see [media provenance](docs/media/README.md).
   large object such as axes catches clicks across its whole box; smaller objects sit above it.
 - Timing sits on a 15 fps grid, so exports use 15, 30 or 60 fps, and render progress advances once
   per finished Manim segment.
-- Animations cannot partially overlap; simultaneous animations need an explicit parallel group.
+- An object plays one animation at a time, and two objects share a layer only when they take turns.
+- The timeline cannot be exported to Premiere, DaVinci Resolve, Final Cut Pro or VEGAS; the video can.
 - The downloads carry their own Python and load nothing from the build machine's, but a licence review
   of the bundled runtime, Authenticode signing and a test on a real clean machine are still pending.
   The portable zip does not update itself.
@@ -251,5 +284,4 @@ real app with fresh Manim renders; see [media provenance](docs/media/README.md).
 - [Manim Community documentation](https://docs.manim.community/)
 - [Tauri 2 documentation](https://v2.tauri.app/) and its [updater plugin](https://v2.tauri.app/plugin/updater/)
 - [shadcn/ui](https://ui.shadcn.com/), the component system the interface is built from
-- [Media and screenshot reproduction](docs/media/README.md)
 - [Example projects](examples/)
