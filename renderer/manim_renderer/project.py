@@ -26,8 +26,14 @@ def validate_project(project: dict) -> None:
             raise ValueError(f"elements/{element_id}/appearsAtMs: must precede scene end")
         if frame_at(element["appearsAtMs"]) >= frame_at(scene["durationMs"]):
             raise ValueError("The element must appear before the final frame.")
-        if element["kind"] in ("line", "arrow") and element["position"] == element["end"]:
+        if "end" in element and element["position"] == element["end"]:
             raise ValueError("Lines and arrows require distinct endpoints.")
+        if element["kind"] == "matrix" and any(len(row) != len(element["rows"][0]) for row in element["rows"]):
+            raise ValueError("Every matrix row needs as many entries as the first.")
+        if "targetId" in element:
+            target = scene["elements"].get(element["targetId"])
+            if not target or element["targetId"] == element_id or "targetId" in target:
+                raise ValueError("Choose another object to annotate.")
         end = element.get("disappearsAtMs", scene["durationMs"])
         if end > scene["durationMs"] or frame_at(end) <= frame_at(element["appearsAtMs"]):
             raise ValueError("The element must end after it starts and within the scene.")
@@ -56,7 +62,8 @@ def validate_project(project: dict) -> None:
 
 
 def load_project(path: Path) -> dict:
-    project = json.loads(path.read_text(encoding="utf-8"))
+    # Files written by Windows tools may start with a byte order mark.
+    project = json.loads(path.read_text(encoding="utf-8-sig"))
     validate_project(project)
     return project
 
