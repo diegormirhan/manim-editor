@@ -1,0 +1,2 @@
+jsonschema==4.26.0
+manim==0.21.0
