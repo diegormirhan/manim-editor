@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Manim editor project",
+  "description": "A Manim animation as data. Times are integer milliseconds and snap to a 15 fps grid; positions are scene units with the origin at the frame's centre.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -40,7 +41,22 @@
                 "$ref": "#/$defs/mathTex"
               },
               {
+                "$ref": "#/$defs/tex"
+              },
+              {
                 "$ref": "#/$defs/text"
+              },
+              {
+                "$ref": "#/$defs/decimalNumber"
+              },
+              {
+                "$ref": "#/$defs/bulletedList"
+              },
+              {
+                "$ref": "#/$defs/matrix"
+              },
+              {
+                "$ref": "#/$defs/code"
               },
               {
                 "$ref": "#/$defs/circle"
@@ -55,6 +71,9 @@
                 "$ref": "#/$defs/rectangle"
               },
               {
+                "$ref": "#/$defs/roundedRectangle"
+              },
+              {
                 "$ref": "#/$defs/square"
               },
               {
@@ -64,13 +83,34 @@
                 "$ref": "#/$defs/regularPolygon"
               },
               {
+                "$ref": "#/$defs/star"
+              },
+              {
+                "$ref": "#/$defs/annulus"
+              },
+              {
                 "$ref": "#/$defs/arc"
+              },
+              {
+                "$ref": "#/$defs/sector"
               },
               {
                 "$ref": "#/$defs/line"
               },
               {
+                "$ref": "#/$defs/dashedLine"
+              },
+              {
                 "$ref": "#/$defs/arrow"
+              },
+              {
+                "$ref": "#/$defs/doubleArrow"
+              },
+              {
+                "$ref": "#/$defs/brace"
+              },
+              {
+                "$ref": "#/$defs/surroundingRectangle"
               },
               {
                 "$ref": "#/$defs/axes"
@@ -86,9 +126,13 @@
               },
               {
                 "$ref": "#/$defs/areaUnderGraph"
+              },
+              {
+                "$ref": "#/$defs/barChart"
               }
             ]
-          }
+          },
+          "description": "Elements by identifier. Any unique string works as a key."
         },
         "animations": {
           "type": "array",
@@ -119,15 +163,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -141,7 +194,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -150,7 +204,78 @@
         },
         "latex": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "LaTeX math, without $ delimiters."
+        },
+        "fontSize": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 144
+        }
+      }
+    },
+    "tex": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "latex"
+      ],
+      "properties": {
+        "kind": {
+          "const": "tex"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "latex": {
+          "type": "string",
+          "minLength": 1,
+          "description": "LaTeX text; math goes between $ signs."
         },
         "fontSize": {
           "type": "number",
@@ -178,15 +303,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -200,7 +334,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -215,6 +350,308 @@
           "type": "number",
           "minimum": 8,
           "maximum": 144
+        }
+      }
+    },
+    "decimalNumber": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "const": "decimalNumber"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "value": {
+          "type": "number"
+        },
+        "decimals": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "fontSize": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 144
+        }
+      }
+    },
+    "bulletedList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "items"
+      ],
+      "properties": {
+        "kind": {
+          "const": "bulletedList"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 12,
+          "description": "One LaTeX text line per bullet."
+        },
+        "fontSize": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 144
+        }
+      }
+    },
+    "matrix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "rows"
+      ],
+      "properties": {
+        "kind": {
+          "const": "matrix"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 8
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "description": "Rows of LaTeX entries; every row has as many entries as the first."
+        }
+      }
+    },
+    "code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "code"
+      ],
+      "properties": {
+        "kind": {
+          "const": "code"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "language": {
+          "enum": [
+            "python",
+            "javascript",
+            "typescript",
+            "c",
+            "cpp",
+            "java",
+            "rust",
+            "go",
+            "bash",
+            "sql"
+          ]
         }
       }
     },
@@ -237,15 +674,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -259,7 +705,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -291,15 +738,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -313,7 +769,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -346,15 +803,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -368,7 +834,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -405,15 +872,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -427,7 +903,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -441,6 +918,80 @@
         "height": {
           "type": "number",
           "exclusiveMinimum": 0
+        }
+      }
+    },
+    "roundedRectangle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "kind": {
+          "const": "roundedRectangle"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
         }
       }
     },
@@ -463,15 +1014,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -485,7 +1045,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -518,15 +1079,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -540,7 +1110,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -574,15 +1145,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -596,7 +1176,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -612,6 +1193,145 @@
           "type": "number",
           "minimum": 0.05,
           "maximum": 20
+        }
+      }
+    },
+    "star": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "points",
+        "radius"
+      ],
+      "properties": {
+        "kind": {
+          "const": "star"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "points": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 12
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "annulus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "innerRadius",
+        "radius"
+      ],
+      "properties": {
+        "kind": {
+          "const": "annulus"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "innerRadius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
         }
       }
     },
@@ -635,15 +1355,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -657,7 +1386,83 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "angleDegrees": {
+          "type": "number",
+          "minimum": -360,
           "maximum": 360
+        },
+        "startDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        }
+      }
+    },
+    "sector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "radius",
+        "angleDegrees"
+      ],
+      "properties": {
+        "kind": {
+          "const": "sector"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -699,15 +1504,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -721,7 +1535,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -734,7 +1549,77 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "[x, y, z] in scene units. The frame spans x −7.11 to 7.11 and y −4 to 4; z is ignored."
+        }
+      }
+    },
+    "dashedLine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "end"
+      ],
+      "properties": {
+        "kind": {
+          "const": "dashedLine"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "end": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "[x, y, z] in scene units. The frame spans x −7.11 to 7.11 and y −4 to 4; z is ignored."
         }
       }
     },
@@ -757,15 +1642,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -779,7 +1673,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -792,7 +1687,225 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "[x, y, z] in scene units. The frame spans x −7.11 to 7.11 and y −4 to 4; z is ignored."
+        }
+      }
+    },
+    "doubleArrow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "end"
+      ],
+      "properties": {
+        "kind": {
+          "const": "doubleArrow"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "end": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "[x, y, z] in scene units. The frame spans x −7.11 to 7.11 and y −4 to 4; z is ignored."
+        }
+      }
+    },
+    "brace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "targetId"
+      ],
+      "properties": {
+        "kind": {
+          "const": "brace"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The key of another element in scene.elements."
+        },
+        "direction": {
+          "enum": [
+            "down",
+            "up",
+            "left",
+            "right"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Optional LaTeX math beside the brace."
+        }
+      }
+    },
+    "surroundingRectangle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "targetId"
+      ],
+      "properties": {
+        "kind": {
+          "const": "surroundingRectangle"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The key of another element in scene.elements."
+        },
+        "buff": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
         }
       }
     },
@@ -816,15 +1929,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -838,7 +1960,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -893,15 +2016,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -915,7 +2047,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -969,15 +2102,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -991,7 +2133,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -1036,15 +2179,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -1058,7 +2210,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -1068,7 +2221,8 @@
         "expression": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 120
+          "maxLength": 120,
+          "description": "Restricted notation such as x^2, sin(2x)/2 or 0.5x^2 - 1; never Python."
         },
         "xRange": {
           "type": "array",
@@ -1080,7 +2234,8 @@
         },
         "axesId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "The key of another element in scene.elements."
         }
       }
     },
@@ -1104,15 +2259,24 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
         },
         "appearsAtMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
         },
         "disappearsAtMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
         },
         "color": {
           "type": "string",
@@ -1126,7 +2290,8 @@
         "rotationDegrees": {
           "type": "number",
           "minimum": -360,
-          "maximum": 360
+          "maximum": 360,
+          "description": "Counterclockwise."
         },
         "opacity": {
           "type": "number",
@@ -1135,7 +2300,8 @@
         },
         "graphId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "The key of another element in scene.elements."
         },
         "xRange": {
           "type": "array",
@@ -1144,6 +2310,82 @@
           },
           "minItems": 2,
           "maxItems": 2
+        }
+      }
+    },
+    "barChart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "position",
+        "appearsAtMs",
+        "values"
+      ],
+      "properties": {
+        "kind": {
+          "const": "barChart"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Where the element's centre sits; a line's start point."
+        },
+        "appearsAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the element enters, in milliseconds from the scene start."
+        },
+        "disappearsAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When the element leaves. Omit it to keep the element until the scene ends."
+        },
+        "layer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 10
+        },
+        "rotationDegrees": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360,
+          "description": "Counterclockwise."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "description": "One LaTeX label per bar, in order."
         }
       }
     },
@@ -1172,11 +2414,13 @@
             "indicate",
             "wiggle",
             "parallel"
-          ]
+          ],
+          "description": "parallel only appears in older files; overlapping animations replace it."
         },
         "targetId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "The key of another element in scene.elements."
         },
         "startMs": {
           "type": "integer",
@@ -1192,25 +2436,30 @@
             "type": "number"
           },
           "minItems": 3,
-          "maxItems": 3
+          "maxItems": 3,
+          "description": "moveTo: where the element's centre ends up."
         },
         "destinationId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "transform: an element that stays hidden until the transform ends, then replaces the target."
         },
         "degrees": {
           "type": "number",
           "minimum": -1080,
-          "maximum": 1080
+          "maximum": 1080,
+          "description": "rotate: counterclockwise turn."
         },
         "factor": {
           "type": "number",
           "minimum": 0.05,
-          "maximum": 10
+          "maximum": 10,
+          "description": "scaleTo: relative scale."
         },
         "color": {
           "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "recolor: the final colour."
         },
         "clips": {
           "type": "array",
@@ -1219,7 +2468,8 @@
             "$ref": "#/$defs/animation"
           }
         }
-      }
+      },
+      "description": "One animation of one element. Animations of different elements may overlap in time; one element plays one at a time. Entrances (create, write, fadeIn, grow, drawBorder) start when their element appears; fadeOut and transform end it."
     }
   }
 }
