@@ -26,29 +26,21 @@ test("edits, validates, adds and undoes without pretending to render in browser"
   ).toBeVisible();
   await page.getByLabel("LaTeX expression").fill("x^2 + 1");
   await expect(page.getByLabel("Select equation 1")).toHaveText("x^2 + 1");
-  await page.getByLabel("Appear at (s)").fill("9");
+  await page.getByLabel("Opacity").fill("3");
   await expect(
     page.getByRole("button", { name: "Play", exact: true }),
   ).toBeDisabled();
-  await page.getByLabel("Appear at (s)").fill("0");
+  await page.getByLabel("Opacity").fill("1");
   await page.getByRole("button", { name: "Add Equation" }).click();
   await expect(page.getByLabel("Select equation 2")).toBeVisible();
   await page.getByLabel("Undo").click();
   await expect(page.getByLabel("Select equation 2")).toHaveCount(0);
   await page.getByRole("button", { name: "Play", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("desktop app");
-  await page.screenshot({
-    path: ".impeccable/review/desktop.png",
-    fullPage: true,
-  });
   await page.setViewportSize({ width: 800, height: 650 });
   await expect
     .poll(() =>
       page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
     )
     .toBe(true);
-  await page.screenshot({
-    path: ".impeccable/review/compact.png",
-    fullPage: true,
-  });
 });
