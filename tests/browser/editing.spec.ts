@@ -4,6 +4,12 @@ import { fileCommand, mockDesktop, openEditor } from "./desktop-mock";
 const status = (page: Page) => page.getByRole("status");
 const heading = (page: Page) => page.getByRole("heading", { name: "Timeline" });
 const timecode = (page: Page) => page.locator(".transport .timecode").first();
+const pills = (page: Page) => page.locator(".editable-clip.animation");
+/** Adds an animation to the selected object from the inspector's menu. */
+async function addAnimation(page: Page, item: string) {
+  await page.getByRole("button", { name: "Add animation" }).click();
+  await page.getByRole("menuitem", { name: item }).click();
+}
 
 test("a new object starts at the playhead", async ({ page }) => {
   await openEditor(page);
@@ -11,36 +17,34 @@ test("a new object starts at the playhead", async ({ page }) => {
   const ruler = (await playhead.boundingBox())!;
   await page.mouse.click(ruler.x + ruler.width / 2, ruler.y + ruler.height / 2);
   await page.getByLabel("Add Circle").click();
-  await expect(page.getByLabel("Appear at (s)")).toHaveValue("1.5");
+  await expect(page.locator(".editable-clip.current")).toHaveAttribute("title", /1\.5 s–3 s/);
   await expect(status(page)).toContainText("Circle added at 1.5 s.");
 });
 
 test("Delete removes the selected animation, not the object it animates", async ({ page }) => {
   await openEditor(page);
   await page.getByLabel("Add Circle").click();
-  await page.getByLabel("Animation type").selectOption("grow");
-  await page.getByRole("button", { name: "Add animation" }).click();
-  await expect(page.locator(".animation-track")).toHaveCount(1);
+  await addAnimation(page, "Grow · GrowFromCenter");
+  await expect(pills(page)).toHaveCount(1);
   // The new clip is selected, so its settings are the inspector's focus.
-  await expect(page.locator(".animation-track.current")).toHaveCount(1);
+  await expect(page.locator(".editable-clip.animation.current")).toHaveCount(1);
   await expect(page.locator("fieldset.current")).toBeVisible();
 
   await page.getByLabel("Select circle 2").click();
-  await expect(page.locator(".animation-track.current")).toHaveCount(0);
-  await page.getByRole("button", { name: "Select grow · growfromcenter 1" }).click();
+  await expect(page.locator(".editable-clip.animation.current")).toHaveCount(0);
+  await page.getByRole("button", { name: "Select grow of circle 2" }).click();
   await page.keyboard.press("Delete");
-  await expect(page.locator(".animation-track")).toHaveCount(0);
+  await expect(pills(page)).toHaveCount(0);
   await expect(page.getByLabel("Select circle 2")).toBeVisible();
   await expect(status(page)).toContainText("Animation removed.");
   await page.keyboard.press("Control+z");
-  await expect(page.locator(".animation-track")).toHaveCount(1);
+  await expect(pills(page)).toHaveCount(1);
 });
 
 test("removing a transform also removes the destination it created", async ({ page }) => {
   await openEditor(page);
   await page.getByLabel("Add Circle").click();
-  await page.getByLabel("Animation type").selectOption("transform");
-  await page.getByRole("button", { name: "Add animation" }).click();
+  await addAnimation(page, "Transform · Transform");
   await expect(heading(page)).toContainText("3 elements");
   await page.getByRole("button", { name: "Remove animation" }).last().click();
   await expect(heading(page)).toContainText("2 elements");
@@ -50,11 +54,10 @@ test("removing a transform also removes the destination it created", async ({ pa
 test("an animation that cannot fit is refused with the reason", async ({ page }) => {
   await openEditor(page);
   await page.getByLabel("Add Circle").click();
-  await page.getByLabel("Animation type").selectOption("fadeIn");
-  await page.getByRole("button", { name: "Add animation" }).click();
-  await page.getByRole("button", { name: "Add animation" }).click();
+  await addAnimation(page, "Fade in · FadeIn");
+  await addAnimation(page, "Fade in · FadeIn");
   await expect(page.getByRole("alert")).toContainText("entrance");
-  await expect(page.locator(".animation-track")).toHaveCount(1);
+  await expect(pills(page)).toHaveCount(1);
   await expect(page.getByRole("button", { name: "Play", exact: true })).toBeEnabled();
 });
 
@@ -207,7 +210,7 @@ test("an object can enter while another object's animation plays", async ({ page
   await page.goto("/");
   await page.getByRole("button", { name: "Open…" }).click();
   const grip = page.getByRole("button", { name: "Adjust start of Circle 2" });
-  const lane = (await page.locator(".clip-lane").nth(1).boundingBox())!;
+  const lane = (await page.locator(".clip-lane").first().boundingBox())!;
   const box = (await grip.boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
@@ -216,6 +219,58 @@ test("an object can enter while another object's animation plays", async ({ page
   await expect(page.locator(".timeline-help")).not.toHaveClass(/invalid/);
   await page.mouse.up();
   await expect(page.getByRole("status")).not.toContainText("went back");
-  await page.getByRole("button", { name: "Select circle 2" }).click();
-  await expect(page.getByLabel("Appear at (s)")).toHaveValue("1.5");
+  await expect(page.locator(".editable-clip", { has: page.getByRole("button", { name: "Select circle 2" }) }))
+    .toHaveAttribute("title", /1\.5 s–6 s/);
+});
+
+test("dragging the playhead's line over the clips only moves the playhead", async ({ page }) => {
+  await openEditor(page, "Shapes and motion");
+  await page.getByLabel("Select ellipse 1").click();
+  const selected = await page.locator(".editable-clip.current").getAttribute("title");
+  const ruler = (await page.getByRole("slider", { name: "Playhead" }).boundingBox())!;
+  await page.mouse.click(ruler.x + ruler.width * 0.2, ruler.y + ruler.height / 2);
+  const line = (await page.locator(".playhead").boundingBox())!;
+  const clip = (await page.locator(".editable-clip", { has: page.getByRole("button", { name: "Select arc 3" }) }).boundingBox())!;
+  // Pressed where the line crosses another object's clip.
+  await page.mouse.move(line.x + 0.5, clip.y + clip.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(ruler.x + ruler.width * 0.5, clip.y + clip.height / 2, { steps: 6 });
+  await page.mouse.up();
+  await expect(timecode(page)).toHaveText("00:00:07:08");
+  await expect(page.locator(".editable-clip.current")).toHaveAttribute("title", selected!);
+  expect(await page.evaluate(() => getSelection()!.toString())).toBe("");
+});
+
+test("an object moves between layers by dragging, but not onto a layer that is busy then", async ({ page }) => {
+  await openEditor(page);
+  await page.getByLabel("Add Circle").click();
+  const rowOf = (layer: number) => page.locator(`[data-layer="${layer}"]`);
+  const circle = () => page.locator(".editable-clip", { has: page.getByRole("button", { name: "Select circle 2" }) });
+  await expect(rowOf(1).locator(circle())).toHaveCount(1);
+  const dragTo = async (layer: number) => {
+    const [from, to] = [(await circle().boundingBox())!, (await rowOf(layer).boundingBox())!];
+    await page.mouse.move(from.x + from.width / 2, from.y + 8);
+    await page.mouse.down();
+    await page.mouse.move(from.x + from.width / 2, to.y + to.height / 2, { steps: 6 });
+    await expect(rowOf(layer)).toHaveClass(/drop-target/);
+    await page.mouse.up();
+  };
+  // The empty layer on top takes it, and keeps its time.
+  await dragTo(2);
+  await expect(rowOf(2).locator(circle())).toHaveCount(1);
+  await expect(circle()).toHaveAttribute("title", /0 s–3 s/);
+  // The equation fills the first layer for the whole scene.
+  await dragTo(0);
+  await expect(status(page)).toContainText("Two objects on layer 1 overlap in time.");
+  await expect(rowOf(2).locator(circle())).toHaveCount(1);
+});
+
+test("animations of different objects play at the same time", async ({ page }) => {
+  await openEditor(page);
+  await addAnimation(page, "Write · Write");
+  await page.getByLabel("Add Circle").click();
+  await addAnimation(page, "Draw · Create");
+  await expect(pills(page)).toHaveCount(2);
+  for (const pill of await pills(page).all()) await expect(pill).toHaveAttribute("title", /0 s–1 s/);
+  await expect(page.getByRole("button", { name: "Play", exact: true })).toBeEnabled();
 });
