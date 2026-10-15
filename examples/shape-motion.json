@@ -1,28 +1,161 @@
 {
-  "schemaVersion": 1,
   "name": "Shapes and motion",
   "scene": {
+    "animations": [
+      {
+        "durationMs": 1200,
+        "kind": "grow",
+        "startMs": 0,
+        "targetId": "ellipse"
+      },
+      {
+        "durationMs": 1200,
+        "kind": "drawBorder",
+        "startMs": 1200,
+        "targetId": "polygon"
+      },
+      {
+        "durationMs": 1200,
+        "kind": "create",
+        "startMs": 2400,
+        "targetId": "arc"
+      },
+      {
+        "durationMs": 1200,
+        "kind": "create",
+        "startMs": 3600,
+        "targetId": "ruler"
+      },
+      {
+        "durationMs": 600,
+        "kind": "grow",
+        "startMs": 4800,
+        "targetId": "marker"
+      },
+      {
+        "destination": [
+          3,
+          -2.5,
+          0
+        ],
+        "durationMs": 1400,
+        "kind": "moveTo",
+        "startMs": 5600,
+        "targetId": "marker"
+      },
+      {
+        "degrees": 180,
+        "durationMs": 1200,
+        "kind": "rotate",
+        "startMs": 7000,
+        "targetId": "polygon"
+      },
+      {
+        "durationMs": 1000,
+        "factor": 1.4,
+        "kind": "scaleTo",
+        "startMs": 8400,
+        "targetId": "ellipse"
+      },
+      {
+        "color": "#FF6BD6",
+        "durationMs": 1000,
+        "kind": "recolor",
+        "startMs": 9600,
+        "targetId": "arc"
+      },
+      {
+        "durationMs": 800,
+        "kind": "indicate",
+        "startMs": 10800,
+        "targetId": "polygon"
+      },
+      {
+        "durationMs": 800,
+        "kind": "wiggle",
+        "startMs": 11800,
+        "targetId": "ellipse"
+      },
+      {
+        "durationMs": 800,
+        "kind": "fadeOut",
+        "startMs": 12800,
+        "targetId": "marker"
+      }
+    ],
     "durationMs": 15000,
     "elements": {
-      "ellipse": { "kind": "ellipse", "position": [-4, 1.5, 0], "appearsAtMs": 0, "width": 3, "height": 1.6, "color": "#58C4DD" },
-      "polygon": { "kind": "regularPolygon", "position": [0, 1.5, 0], "appearsAtMs": 1200, "sides": 6, "size": 2, "rotationDegrees": 15, "color": "#FC6255" },
-      "arc": { "kind": "arc", "position": [4, 1.5, 0], "appearsAtMs": 2400, "radius": 1.2, "angleDegrees": 240, "startDegrees": 30, "color": "#FFFF00" },
-      "ruler": { "kind": "numberLine", "position": [0, -2.5, 0], "appearsAtMs": 3600, "xRange": [-5, 5], "xLength": 10, "includeNumbers": true, "color": "#FFFFFF" },
-      "marker": { "kind": "dot", "position": [-5, -2.5, 0], "appearsAtMs": 4800, "radius": 0.12, "color": "#83C167" }
-    },
-    "animations": [
-      { "kind": "grow", "targetId": "ellipse", "startMs": 0, "durationMs": 1200 },
-      { "kind": "drawBorder", "targetId": "polygon", "startMs": 1200, "durationMs": 1200 },
-      { "kind": "create", "targetId": "arc", "startMs": 2400, "durationMs": 1200 },
-      { "kind": "create", "targetId": "ruler", "startMs": 3600, "durationMs": 1200 },
-      { "kind": "grow", "targetId": "marker", "startMs": 4800, "durationMs": 600 },
-      { "kind": "moveTo", "targetId": "marker", "startMs": 5600, "durationMs": 1400, "destination": [3, -2.5, 0] },
-      { "kind": "rotate", "targetId": "polygon", "startMs": 7000, "durationMs": 1200, "degrees": 180 },
-      { "kind": "scaleTo", "targetId": "ellipse", "startMs": 8400, "durationMs": 1000, "factor": 1.4 },
-      { "kind": "recolor", "targetId": "arc", "startMs": 9600, "durationMs": 1000, "color": "#FF6BD6" },
-      { "kind": "indicate", "targetId": "polygon", "startMs": 10800, "durationMs": 800 },
-      { "kind": "wiggle", "targetId": "ellipse", "startMs": 11800, "durationMs": 800 },
-      { "kind": "fadeOut", "targetId": "marker", "startMs": 12800, "durationMs": 800 }
-    ]
-  }
+      "arc": {
+        "angleDegrees": 240,
+        "appearsAtMs": 2400,
+        "color": "#FFFF00",
+        "kind": "arc",
+        "layer": 2,
+        "position": [
+          4,
+          1.5,
+          0
+        ],
+        "radius": 1.2,
+        "startDegrees": 30
+      },
+      "ellipse": {
+        "appearsAtMs": 0,
+        "color": "#58C4DD",
+        "height": 1.6,
+        "kind": "ellipse",
+        "layer": 0,
+        "position": [
+          -4,
+          1.5,
+          0
+        ],
+        "width": 3
+      },
+      "marker": {
+        "appearsAtMs": 4800,
+        "color": "#83C167",
+        "kind": "dot",
+        "layer": 4,
+        "position": [
+          -5,
+          -2.5,
+          0
+        ],
+        "radius": 0.12
+      },
+      "polygon": {
+        "appearsAtMs": 1200,
+        "color": "#FC6255",
+        "kind": "regularPolygon",
+        "layer": 1,
+        "position": [
+          0,
+          1.5,
+          0
+        ],
+        "rotationDegrees": 15,
+        "sides": 6,
+        "size": 2
+      },
+      "ruler": {
+        "appearsAtMs": 3600,
+        "color": "#FFFFFF",
+        "includeNumbers": true,
+        "kind": "numberLine",
+        "layer": 3,
+        "position": [
+          0,
+          -2.5,
+          0
+        ],
+        "xLength": 10,
+        "xRange": [
+          -5,
+          5
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
 }
