@@ -37,6 +37,7 @@ export async function mockDesktop(page: Page, options: { renderMs?: number; rend
           return new Promise(() => {});
         }
         if (cmd === "plugin:window|is_maximized") return false;
+        if (cmd === "launch_file") return null;
         // Without `live`, the worker never answers, as if Manim were still loading.
         if (cmd === "live_frame") {
           if (!live) return new Promise(() => {});
@@ -84,7 +85,7 @@ export async function mockDesktop(page: Page, options: { renderMs?: number; rend
 /** The project commands the page sent, without the progress polling and the window and updater plugins. */
 export const desktopCalls = (page: Page) =>
   page.evaluate(() => (window as unknown as { __desktopCalls: DesktopCall[] }).__desktopCalls
-    .filter(call => !["render_progress", "live_frame"].includes(call.cmd) && !call.cmd.startsWith("plugin:")));
+    .filter(call => !["render_progress", "live_frame", "launch_file"].includes(call.cmd) && !call.cmd.startsWith("plugin:")));
 
 /** The live preview requests the page sent: the playhead time and the project's name. */
 export const liveFrameCalls = (page: Page) =>
