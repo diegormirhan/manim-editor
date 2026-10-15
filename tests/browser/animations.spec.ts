@@ -26,32 +26,40 @@ test("a curve undefined inside its range is rejected, not silently plotted", asy
 });
 
 const motionClips = [
-  { kind: "rotate", field: "Turn (degrees)", value: "90" },
-  { kind: "scaleTo", field: "Scale factor", value: "1.5" },
-  { kind: "recolor", field: "Final color", value: "#fc6255" },
+  { item: "Rotate · Rotate", field: "Turn (degrees)", value: "90" },
+  { item: "Scale · Scale", field: "Scale factor", value: "1.5" },
+  { item: "Recolor · SetColor", field: "Final color", value: "#fc6255" },
 ] as const;
 
-for (const { kind, field, value } of motionClips) {
-  test(`${kind} adds its own field and a timeline clip`, async ({ page }) => {
+/** Adds an animation to the selected object from the inspector's menu. */
+async function addAnimation(page: Page, item: string) {
+  await page.getByRole("button", { name: "Add animation" }).click();
+  await page.getByRole("menuitem", { name: item }).click();
+}
+
+for (const { item, field, value } of motionClips) {
+  test(`${item} adds its own field and a clip inside its object's clip`, async ({ page }) => {
     await openEditor(page);
     await page.getByLabel("Add Circle").click();
-    await page.getByLabel("Animation type").selectOption(kind);
-    await page.getByRole("button", { name: "Add animation" }).click();
+    await addAnimation(page, item);
     await expect(page.getByLabel(field)).toHaveValue(value);
-    await expect(page.locator(".animation-track")).toHaveCount(1);
+    await expect(page.locator("[data-layer='1'] .editable-clip.animation")).toHaveCount(1);
     await expect(playButton(page)).toBeEnabled();
   });
 }
 
-test("new entrances replace the instantaneous appearance", async ({ page }) => {
+test("an entrance replaces the instantaneous appearance and carries it when moved", async ({ page }) => {
   await openEditor(page);
   await page.getByLabel("Add Circle").click();
-  await page.getByLabel("Animation type").selectOption("grow");
-  await page.getByRole("button", { name: "Add animation" }).click();
-  await expect(page.getByRole("button", { name: "Select grow · growfromcenter 1" })).toBeVisible();
+  await addAnimation(page, "Grow · GrowFromCenter");
+  const grow = page.getByRole("button", { name: "Select grow of circle 2" });
+  await expect(grow).toBeVisible();
   await expect(playButton(page)).toBeEnabled();
   // Moving an entrance carries the element it introduces, so the project stays valid.
-  await page.getByLabel("Start (s)").fill("1");
-  await expect(page.getByLabel("Appear at (s)")).toHaveValue("1");
+  await grow.focus();
+  for (let step = 0; step < 10; step++) await page.keyboard.press("ArrowRight");
+  await expect(page.locator(".editable-clip", { has: page.getByRole("button", { name: "Select circle 2" }) }))
+    .toHaveAttribute("title", /1 s–3 s/);
+  await expect(page.locator("fieldset.current .clip-time")).toHaveText("1 s → 2 s");
   await expect(playButton(page)).toBeEnabled();
 });
