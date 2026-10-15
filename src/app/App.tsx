@@ -40,6 +40,7 @@ import {
 import {
   cancelRender,
   desktopAvailable,
+  launchFile,
   previewUrl,
   projectAction,
   renderProgress,
@@ -49,7 +50,7 @@ import {
 import { PREVIEW_RESOLUTIONS, describeOutput, describeQuality, renderOptions, type Resolution } from "../domain/render-settings";
 
 import { addElement, additionBlocked, duplicateElement, elementGroups, elementLabels } from "../domain/catalog";
-import { frameAt, removeAnimation, removeElement, seconds, timecode } from "../domain/timeline";
+import { frameAt, normalizeProject, removeAnimation, removeElement, seconds, timecode } from "../domain/timeline";
 import { ElementInspector } from "./ElementInspector";
 import { AnimationInspector } from "./AnimationInspector";
 import { Timeline } from "./Timeline";
@@ -114,7 +115,7 @@ export function App() {
   // The last session waits on the start screen; until the user picks something, an empty stage stands in.
   const [boot] = useState(() => {
     const session = settings.restoreSession ? recoveredSession() : null;
-    const project = session?.project ?? emptyProject();
+    const project = normalizeProject(session?.project ?? emptyProject());
     return { project, filePath: session?.filePath ?? "", saved: session ? session.saved : JSON.stringify(project), recovered: !!session };
   });
   const [view, setView] = useState<"start" | "editor">("start");
@@ -178,6 +179,8 @@ export function App() {
     if (!continuing) setPast((p) => [...p, project]);
     setFuture([]);
     setProject(next);
+    // A message about the project as it was would mislead now.
+    setMessage("");
   };
   const undo = () => {
     if (!past.length) return;
@@ -211,7 +214,8 @@ export function App() {
     confirm: "Discard changes",
   });
   /** Another document: its own history, file and preview, opened in the editor. */
-  const adopt = (next: Project, path: string) => {
+  const adopt = (opened: Project, path: string) => {
+    const next = normalizeProject(opened);
     setView("editor");
     setHasCurrent(true);
     setProject(next);
@@ -281,6 +285,10 @@ export function App() {
       setBusy("");
     }
   }
+  // A project named on the command line, as in `manim-editor.exe scene.json`, opens once the app starts.
+  useEffect(() => {
+    if (desktopAvailable()) launchFile().then(path => { if (path) void action("openRecent", path); }).catch(() => {});
+  }, []);
   // A render or a file dialog in flight belongs to the current document.
   const newProject = async () => {
     if (busy || !await confirmDiscard()) return;
@@ -305,7 +313,8 @@ export function App() {
     change({ ...project, scene });
   };
   const add = (kind: Project["scene"]["elements"][string]["kind"]) => {
-    const next = addElement(project, kind, playheadMs);
+    // An annotation goes around the selected object.
+    const next = addElement(project, kind, playheadMs, element && !("targetId" in element) ? selection : undefined);
     const id = Object.keys(next.scene.elements).at(-1)!;
     change(next);
     selectElement(id);
@@ -658,7 +667,7 @@ export function App() {
             {element ? <>
               <p className="inspector-title"><ElementIcon kind={element.kind} size={15} />{elementLabels[element.kind]}</p>
               <ElementInspector project={project} element={element} onChange={next => change({ ...project, scene: { ...project.scene, elements: { ...project.scene.elements, [selection]: next } } })} />
-              <AnimationInspector project={project} targetId={selection} onChange={change}
+              <AnimationInspector project={project} targetId={selection} playheadMs={playheadMs} onChange={change}
                 focusIndex={selectedAnimation} onSelectAnimation={index => selectAnimation(index)} />
             </> : <p className="hint">Select an object in the timeline, or add one from the pool.</p>}
           </section>
