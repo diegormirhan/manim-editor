@@ -59,12 +59,33 @@ test("deleting an element removes its animations and is immutable", () => {
   expect(next.scene.animations).toEqual([]);
   expect(p.scene.animations).toHaveLength(1);
 });
-test("overlap and duplicate entrance are rejected", () => {
+test("an object plays one animation at a time", () => {
   const p = initialProject();
   p.scene.animations = [{ kind: "write", targetId: "equation-1", startMs: 0, durationMs: 1000 }];
   expect(validateProject(p)).toBeNull();
   p.scene.animations.push({ kind: "fadeOut", targetId: "equation-1", startMs: 500, durationMs: 1000 });
-  expect(validateProject(p)).toContain("overlap");
+  expect(validateProject(p)).toContain("one animation at a time");
+});
+
+test("annotations go around another object and leave with it", () => {
+  const p = initialProject();
+  expect(additionBlocked({ ...p, scene: { ...p.scene, elements: {} } }, "brace")).toContain("annotate");
+  const next = addElement(p, "brace", 0, "equation-1");
+  const [brace] = Object.keys(next.scene.elements).filter(id => id !== "equation-1");
+  expect(next.scene.elements[brace]).toMatchObject({ targetId: "equation-1" });
+  expect(validateProject(next)).toBeNull();
+  expect(Object.keys(removeElement(next, "equation-1").scene.elements)).toEqual([]);
+});
+
+test("a new object goes on the top layer when it is free, otherwise on a new layer above", () => {
+  const p = initialProject();
+  p.scene.elements["equation-1"].layer = 2;
+  const stacked = addElement(p, "circle", 0);
+  expect(Object.values(stacked.scene.elements).map(element => element.layer)).toEqual([2, 3]);
+  p.scene.elements["equation-1"].disappearsAtMs = 1000;
+  const after = addElement(p, "circle", 1000);
+  expect(Object.values(after.scene.elements).map(element => element.layer)).toEqual([2, 2]);
+  expect(validateProject(after)).toBeNull();
 });
 
 test("duplicating an element copies it without inheriting its animations", () => {
@@ -74,7 +95,8 @@ test("duplicating an element copies it without inheriting its animations", () =>
   const next = duplicateElement(project, id);
   const added = Object.keys(next.scene.elements).filter((key) => !(key in project.scene.elements));
   expect(added).toHaveLength(1);
-  expect(next.scene.elements[added[0]]).toEqual(project.scene.elements[id]);
+  // The copy plays at the same time, so it sits on a layer of its own.
+  expect(next.scene.elements[added[0]]).toEqual({ ...project.scene.elements[id], layer: 1 });
   expect(next.scene.animations?.length ?? 0).toBe(animations);
   expect(validateProject(next)).toBe(null);
 });
