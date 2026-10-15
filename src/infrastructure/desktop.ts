@@ -19,3 +19,5 @@ export const renderProgress = () => invoke<RenderProgress | null>("render_progre
 export const liveFrame = (project: Project, timeMs: number) =>
   invoke<{ frame: string; boxes: Record<string, Box> }>("live_frame", { project, timeMs: Math.round(timeMs) });
 export const previewUrl = convertFileSrc;
+/** The project file the app was started with, as in `manim-editor.exe scene.json`. */
+export const launchFile = () => invoke<string | null>("launch_file");
