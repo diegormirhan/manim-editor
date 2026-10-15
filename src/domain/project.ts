@@ -28,18 +28,23 @@ export function validateProject(project: unknown): string | null {
       (validate.errors?.[0]?.message ?? "check the fields.")
     );
   const scene = (project as Project).scene;
-  for (const element of Object.values(scene.elements)) {
+  for (const [id, element] of Object.entries(scene.elements)) {
     for (const value of Object.values(element))
-      if ((typeof value === "number" && !Number.isFinite(value)) ||
-        (Array.isArray(value) && value.some((item) => !Number.isFinite(item))))
+      if ([value].flat().some(item => typeof item === "number" && !Number.isFinite(item)))
         return "All element numbers must be finite.";
     if (element.appearsAtMs >= scene.durationMs)
       return "The element must appear before the scene ends.";
     const end = element.disappearsAtMs ?? scene.durationMs;
     if (end > scene.durationMs || Math.round(end * 15 / 1000) <= Math.round(element.appearsAtMs * 15 / 1000))
       return "The element must end after it starts and within the scene.";
-    if ((element.kind === "line" || element.kind === "arrow") && element.position.every((v, i) => v === element.end[i]))
+    if ("end" in element && element.position.every((v, i) => v === element.end[i]))
       return "Lines and arrows require distinct endpoints.";
+    if (element.kind === "matrix" && element.rows.some(row => row.length !== element.rows[0].length))
+      return "Every matrix row needs as many entries as the first.";
+    if ("targetId" in element) {
+      const target = scene.elements[element.targetId];
+      if (!target || element.targetId === id || "targetId" in target) return "Choose another object to annotate.";
+    }
     for (const range of [("xRange" in element ? element.xRange : undefined), ("yRange" in element ? element.yRange : undefined)])
       if (range && (range[0] >= range[1] || range[0] < -100 || range[1] > 100 || range[1] - range[0] < 0.1))
         return "Invalid axis range: the minimum must be less than the maximum, between −100 and 100.";
