@@ -47,7 +47,9 @@
       "../work/runtime/python": ".venv",
       "../renderer": "renderer",
       "../contracts": "contracts",
-      "../work/runtime/tex": "work/runtime/tex"
+      "../work/runtime/tex": "work/runtime/tex",
+      "../manim-editor-cli.cmd": "manim-editor-cli.cmd",
+      "../docs/automation.md": "docs/automation.md"
     },
     "windows": {
       "webviewInstallMode": {
