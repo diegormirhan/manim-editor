@@ -1,5 +1,5 @@
 use serde_json::{json, Value};
-use std::{fs::OpenOptions, io::{BufRead, BufReader, Write}, path::PathBuf, process::{Child, ChildStdin, ChildStdout, Command, Stdio}, sync::{atomic::{AtomicBool, Ordering}, Mutex}, time::{SystemTime, UNIX_EPOCH}};
+use std::{io::{BufRead, BufReader, Write}, path::PathBuf, process::{Child, ChildStdin, ChildStdout, Command, Stdio}, sync::{atomic::{AtomicBool, Ordering}, Mutex}};
 use tauri::Manager;
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -17,13 +17,6 @@ static LIVE: Mutex<Option<LiveWorker>> = Mutex::new(None);
 
 struct LiveWorker { child: Child, stdin: ChildStdin, stdout: BufReader<ChildStdout> }
 
-pub fn log_session(event: &str) {
-    let path = project_root().join(".session.log");
-    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).map(|value| value.as_secs()).unwrap_or_default();
-    if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(path) {
-        let _ = writeln!(file, "{}\t{}", timestamp, event);
-    }
-}
 struct BusyGuard;
 impl Drop for BusyGuard {
     fn drop(&mut self) { BUSY.store(false, Ordering::Release); }
@@ -223,7 +216,6 @@ fn perform_action(operation: &str, project: Value, known: Option<PathBuf>, optio
 
 #[tauri::command]
 pub async fn project_action(app: tauri::AppHandle, operation: String, project: Value, path: Option<PathBuf>, options: Option<Value>) -> Result<Value, String> {
-    log_session(&format!("operation_start:{}", operation));
     if BUSY.swap(true, Ordering::AcqRel) { return Err("Another operation is in progress.".into()); }
     let guard = BusyGuard;
     CANCELLED.store(false, Ordering::Release);
@@ -236,7 +228,6 @@ pub async fn project_action(app: tauri::AppHandle, operation: String, project: V
     }).await.map_err(|error| error.to_string())?;
     *PROGRESS.lock().unwrap() = None;
     if CANCELLED.swap(false, Ordering::AcqRel) {
-        log_session(&format!("operation_cancelled:{}", operation));
         return Ok(json!({"cancelled": true}));
     }
     let result = result?;
@@ -245,13 +236,11 @@ pub async fn project_action(app: tauri::AppHandle, operation: String, project: V
             app.asset_protocol_scope().allow_file(path).map_err(|error| error.to_string())?;
         }
     }
-    log_session(&format!("operation_end:{}", operation));
     Ok(result)
 }
 
 #[tauri::command]
 pub fn cancel_render() -> bool {
-    log_session("cancel_requested");
     cancel_running()
 }
 
@@ -260,9 +249,28 @@ pub fn render_progress() -> Option<Value> {
     PROGRESS.lock().unwrap().clone()
 }
 
+/// The project named on the command line (`manim-editor.exe scene.json`), for the interface to open at launch.
+#[tauri::command]
+pub fn launch_file() -> Option<PathBuf> {
+    launch_argument(std::env::args_os().skip(1).map(PathBuf::from))
+}
+
+fn launch_argument(arguments: impl Iterator<Item = PathBuf>) -> Option<PathBuf> {
+    arguments.filter(|path| path.extension().is_some_and(|extension| extension.eq_ignore_ascii_case("json")))
+        .find(|path| path.is_file()).and_then(|path| std::path::absolute(path).ok())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_project_named_at_launch_is_found_among_the_arguments() {
+        let example = project_root().join("examples/equation.json");
+        let found = launch_argument([PathBuf::from("--flag"), PathBuf::from("missing.json"), example.clone()].into_iter());
+        assert_eq!(found, Some(example));
+        assert_eq!(launch_argument([PathBuf::from("README.md")].into_iter()), None);
+    }
     use std::time::{Duration, Instant};
     // Bridge tests share the running-child slot, so they take turns.
     static BRIDGE: Mutex<()> = Mutex::new(());
