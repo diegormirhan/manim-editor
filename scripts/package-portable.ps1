@@ -38,6 +38,9 @@ Copy-Item (Join-Path $root "work/runtime/python") (Join-Path $payload ".venv") -
 New-Item -ItemType Directory -Force -Path (Join-Path $payload "work/runtime") | Out-Null
 Copy-Item (Join-Path $root "work/runtime/tex") (Join-Path $payload "work/runtime/tex") -Recurse -Force
 Copy-Item (Join-Path $root "README.md") (Join-Path $payload "README.md") -Force
+Copy-Item (Join-Path $root "manim-editor-cli.cmd") (Join-Path $payload "manim-editor-cli.cmd") -Force
+New-Item -ItemType Directory -Force -Path (Join-Path $payload "docs") | Out-Null
+Copy-Item (Join-Path $root "docs/automation.md") (Join-Path $payload "docs/automation.md") -Force
 Copy-Item (Join-Path $root "LICENSE") (Join-Path $payload "LICENSE") -Force -ErrorAction SilentlyContinue
 
 $destination = Join-Path $root $Output
