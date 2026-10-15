@@ -5,31 +5,51 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+/**
+ * A Manim animation as data. Times are integer milliseconds and snap to a 15 fps grid; positions are scene units with the origin at the frame's centre.
+ */
 export interface ManimEditorProject {
   schemaVersion: 1;
   name: string;
   scene: {
     durationMs: number;
     background?: string;
+    /**
+     * Elements by identifier. Any unique string works as a key.
+     */
     elements: {
       [k: string]:
         | MathTex
+        | Tex
         | Text
+        | DecimalNumber
+        | BulletedList
+        | Matrix
+        | Code
         | Circle
         | Dot
         | Ellipse
         | Rectangle
+        | RoundedRectangle
         | Square
         | Triangle
         | RegularPolygon
+        | Star
+        | Annulus
         | Arc
+        | Sector
         | Line
+        | DashedLine
         | Arrow
+        | DoubleArrow
+        | Brace
+        | SurroundingRectangle
         | Axes
         | NumberPlane
         | NumberLine
         | FunctionGraph
-        | AreaUnderGraph;
+        | AreaUnderGraph
+        | BarChart;
     };
     animations?: Animation[];
   };
@@ -37,46 +57,264 @@ export interface ManimEditorProject {
 export interface MathTex {
   kind: "mathTex";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
+  /**
+   * LaTeX math, without $ delimiters.
+   */
+  latex: string;
+  fontSize?: number;
+}
+export interface Tex {
+  kind: "tex";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * LaTeX text; math goes between $ signs.
+   */
   latex: string;
   fontSize?: number;
 }
 export interface Text {
   kind: "text";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   text: string;
   fontSize?: number;
 }
-export interface Circle {
-  kind: "circle";
+export interface DecimalNumber {
+  kind: "decimalNumber";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  value: number;
+  decimals?: number;
+  fontSize?: number;
+}
+export interface BulletedList {
+  kind: "bulletedList";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * One LaTeX text line per bullet.
+   *
+   * @minItems 1
+   * @maxItems 12
+   */
+  items: [string, ...string[]];
+  fontSize?: number;
+}
+export interface Matrix {
+  kind: "matrix";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * Rows of LaTeX entries; every row has as many entries as the first.
+   *
+   * @minItems 1
+   * @maxItems 8
+   */
+  rows: [[string, ...string[]], ...[string, ...string[]][]];
+}
+export interface Code {
+  kind: "code";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  code: string;
+  language?: "python" | "javascript" | "typescript" | "c" | "cpp" | "java" | "rust" | "go" | "bash" | "sql";
+}
+export interface Circle {
+  kind: "circle";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   radius: number;
@@ -84,14 +322,29 @@ export interface Circle {
 export interface Dot {
   kind: "dot";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   radius: number;
@@ -99,14 +352,29 @@ export interface Dot {
 export interface Ellipse {
   kind: "ellipse";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   width: number;
@@ -115,30 +383,92 @@ export interface Ellipse {
 export interface Rectangle {
   kind: "rectangle";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   width: number;
   height: number;
 }
-export interface Square {
-  kind: "square";
+export interface RoundedRectangle {
+  kind: "roundedRectangle";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  width: number;
+  height: number;
+  cornerRadius?: number;
+}
+export interface Square {
+  kind: "square";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   size: number;
@@ -146,14 +476,29 @@ export interface Square {
 export interface Triangle {
   kind: "triangle";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   size: number;
@@ -161,30 +506,154 @@ export interface Triangle {
 export interface RegularPolygon {
   kind: "regularPolygon";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   sides: number;
   size: number;
 }
-export interface Arc {
-  kind: "arc";
+export interface Star {
+  kind: "star";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  points: number;
+  radius: number;
+}
+export interface Annulus {
+  kind: "annulus";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  innerRadius: number;
+  radius: number;
+}
+export interface Arc {
+  kind: "arc";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  radius: number;
+  angleDegrees: number;
+  startDegrees?: number;
+}
+export interface Sector {
+  kind: "sector";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   radius: number;
@@ -194,17 +663,70 @@ export interface Arc {
 export interface Line {
   kind: "line";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   /**
+   * [x, y, z] in scene units. The frame spans x −7.11 to 7.11 and y −4 to 4; z is ignored.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  end: [number, number, number];
+}
+export interface DashedLine {
+  kind: "dashedLine";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * [x, y, z] in scene units. The frame spans x −7.11 to 7.11 and y −4 to 4; z is ignored.
+   *
    * @minItems 3
    * @maxItems 3
    */
@@ -213,33 +735,173 @@ export interface Line {
 export interface Arrow {
   kind: "arrow";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   /**
+   * [x, y, z] in scene units. The frame spans x −7.11 to 7.11 and y −4 to 4; z is ignored.
+   *
    * @minItems 3
    * @maxItems 3
    */
   end: [number, number, number];
 }
-export interface Axes {
-  kind: "axes";
+export interface DoubleArrow {
+  kind: "doubleArrow";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * [x, y, z] in scene units. The frame spans x −7.11 to 7.11 and y −4 to 4; z is ignored.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  end: [number, number, number];
+}
+export interface Brace {
+  kind: "brace";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * The key of another element in scene.elements.
+   */
+  targetId: string;
+  direction?: "down" | "up" | "left" | "right";
+  /**
+   * Optional LaTeX math beside the brace.
+   */
+  label?: string;
+}
+export interface SurroundingRectangle {
+  kind: "surroundingRectangle";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * The key of another element in scene.elements.
+   */
+  targetId: string;
+  buff?: number;
+}
+export interface Axes {
+  kind: "axes";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   /**
@@ -258,14 +920,29 @@ export interface Axes {
 export interface NumberPlane {
   kind: "numberPlane";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   /**
@@ -284,14 +961,29 @@ export interface NumberPlane {
 export interface NumberLine {
   kind: "numberLine";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
   /**
@@ -305,37 +997,76 @@ export interface NumberLine {
 export interface FunctionGraph {
   kind: "functionGraph";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
+  /**
+   * Restricted notation such as x^2, sin(2x)/2 or 0.5x^2 - 1; never Python.
+   */
   expression: string;
   /**
    * @minItems 2
    * @maxItems 2
    */
   xRange: [number, number];
+  /**
+   * The key of another element in scene.elements.
+   */
   axesId?: string;
 }
 export interface AreaUnderGraph {
   kind: "areaUnderGraph";
   /**
+   * Where the element's centre sits; a line's start point.
+   *
    * @minItems 3
    * @maxItems 3
    */
   position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
   appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
   disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
   color?: string;
   scale?: number;
+  /**
+   * Counterclockwise.
+   */
   rotationDegrees?: number;
   opacity?: number;
+  /**
+   * The key of another element in scene.elements.
+   */
   graphId: string;
   /**
    * @minItems 2
@@ -343,7 +1074,53 @@ export interface AreaUnderGraph {
    */
   xRange: [number, number];
 }
+export interface BarChart {
+  kind: "barChart";
+  /**
+   * Where the element's centre sits; a line's start point.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: [number, number, number];
+  /**
+   * When the element enters, in milliseconds from the scene start.
+   */
+  appearsAtMs: number;
+  /**
+   * When the element leaves. Omit it to keep the element until the scene ends.
+   */
+  disappearsAtMs?: number;
+  /**
+   * The timeline layer. Higher layers draw on top; elements on one layer cannot overlap in time.
+   */
+  layer?: number;
+  color?: string;
+  scale?: number;
+  /**
+   * Counterclockwise.
+   */
+  rotationDegrees?: number;
+  opacity?: number;
+  /**
+   * @minItems 1
+   * @maxItems 20
+   */
+  values: [number, ...number[]];
+  /**
+   * One LaTeX label per bar, in order.
+   *
+   * @maxItems 20
+   */
+  labels?: string[];
+}
+/**
+ * One animation of one element. Animations of different elements may overlap in time; one element plays one at a time. Entrances (create, write, fadeIn, grow, drawBorder) start when their element appears; fadeOut and transform end it.
+ */
 export interface Animation {
+  /**
+   * parallel only appears in older files; overlapping animations replace it.
+   */
   kind:
     | "create"
     | "write"
@@ -359,17 +1136,34 @@ export interface Animation {
     | "indicate"
     | "wiggle"
     | "parallel";
+  /**
+   * The key of another element in scene.elements.
+   */
   targetId?: string;
   startMs: number;
   durationMs: number;
   /**
+   * moveTo: where the element's centre ends up.
+   *
    * @minItems 3
    * @maxItems 3
    */
   destination?: [number, number, number];
+  /**
+   * transform: an element that stays hidden until the transform ends, then replaces the target.
+   */
   destinationId?: string;
+  /**
+   * rotate: counterclockwise turn.
+   */
   degrees?: number;
+  /**
+   * scaleTo: relative scale.
+   */
   factor?: number;
+  /**
+   * recolor: the final colour.
+   */
   color?: string;
   /**
    * @minItems 2
