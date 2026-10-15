@@ -79,10 +79,14 @@ class CatalogTests(unittest.TestCase):
         source = compile_project(p)
         self.assertIn("Transform(element_0, element_1)", source)
 
-    def test_parallel_group_compiles_as_explicit_animation_group(self):
+    def test_animations_of_one_moment_share_one_play(self):
         p = sample()
         p["scene"]["elements"]["b"] = {"kind": "circle", "radius": 1, "position": [1, 0, 0], "appearsAtMs": 0}
         p["scene"]["animations"] = [{"kind": "parallel", "startMs": 0, "durationMs": 1000, "clips": [
             {"kind": "create", "targetId": "a", "startMs": 0, "durationMs": 1000},
             {"kind": "fadeIn", "targetId": "b", "startMs": 0, "durationMs": 1000}]}]
-        self.assertIn("AnimationGroup(Create(element_0), FadeIn(element_1), lag_ratio=0)", compile_project(p))
+        grouped = compile_project(p)
+        self.assertIn("self.play(Create(element_0), FadeIn(element_1), run_time=(15 - 1e-6) / 15)", grouped)
+        # Older files group them; the same animations side by side play the same way.
+        p["scene"]["animations"] = p["scene"]["animations"][0]["clips"]
+        self.assertEqual(compile_project(p), grouped)
