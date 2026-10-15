@@ -3,7 +3,7 @@
    don't: the frame, the viewer, the inspector grid and the timeline. */
 @layer components {
   :root {
-    --label-w: 176px;
+    --label-w: 56px;
     --lane-start: 10px;
     --lane-end: 16px;
     --seam: 1px;
@@ -76,7 +76,8 @@
     background: var(--stage); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .06); --stage-muted: #a1a1aa;
   }
   .thumb-lanes { position: absolute; inset: 14% 9% 20%; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
-  .thumb-lane { height: 7px; min-width: 4px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16); }
+  .thumb-lane { position: relative; height: 7px; }
+  .thumb-clip { position: absolute; top: 0; bottom: 0; min-width: 4px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16); }
   .thumb-empty { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; color: var(--stage-muted); }
   .thumb-duration {
     position: absolute; right: 6px; bottom: 6px; padding: 1px 6px; border-radius: var(--radius-sm); background: rgb(0 0 0 / .55); color: #fafafa;
@@ -279,6 +280,9 @@
     font-size: 13px; font-weight: 600; color: var(--foreground);
   }
   .animation-inspector legend svg { color: var(--muted-foreground); }
+  .animation-inspector .clip-time {
+    margin-left: auto; flex: none; font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--muted-foreground);
+  }
   .animation-inspector legend + * { clear: both; }
   /* The selected animation: the same vermilion as its ring in the timeline. */
   .animation-inspector fieldset.current {
@@ -309,7 +313,11 @@
   .timeline-help.invalid { color: var(--destructive); font-weight: 500; }
 
   /* One scroller for both axes: the ruler sticks to the top, track labels to the left. */
-  .timeline-body { position: relative; flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; background: var(--track); }
+  .timeline-body {
+    position: relative; flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; background: var(--track);
+    /* Drags start on text; nothing here is meant to be selected. */
+    user-select: none;
+  }
   .timeline-content {
     position: relative; min-height: 100%; display: flex; flex-direction: column;
     width: calc(var(--label-w) + (100% - var(--label-w)) * var(--zoom, 1));
@@ -337,28 +345,17 @@
 
   .tracks { flex: 1; }
   .tracks-empty { padding: 16px 12px 0 calc(var(--label-w) + var(--lane-start)); font-size: 12px; color: var(--muted-foreground); }
-  .track-section {
-    height: 24px; display: flex; align-items: center; font-size: 11.5px; font-weight: 500;
-    color: var(--muted-foreground); background: var(--panel-head); border-bottom: 1px solid var(--border);
-  }
-  .track-section span { position: sticky; left: 12px; }
-  .track { height: 36px; border-bottom: 1px solid var(--border); }
+  .track { height: 48px; border-bottom: 1px solid var(--border); }
   .track.alt { background: linear-gradient(to right, transparent var(--label-w), var(--track-alt) var(--label-w)); }
-  .animation-track { height: 30px; }
+  .track.drop-target { background: color-mix(in oklab, var(--primary) 10%, var(--track)); }
   .track-label {
-    position: sticky; left: 0; z-index: 2; display: flex; align-items: center; gap: 8px; height: 100%; min-width: 0;
-    padding: 0 12px; border: 0; border-right: 1px solid var(--border); background: var(--panel); color: var(--foreground);
-    font-size: 13px; white-space: nowrap; overflow: hidden; cursor: pointer;
+    position: sticky; left: 0; z-index: 2; display: flex; align-items: center; justify-content: center; height: 100%; min-width: 0;
+    border-right: 1px solid var(--border); background: var(--panel); white-space: nowrap; overflow: hidden;
   }
-  .track-label:hover { background: var(--accent); }
-  .track-label:focus-visible { outline: none; box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--ring) 60%, transparent); }
-  .track-label svg { flex: none; color: var(--muted-foreground); }
-  .track-label span:last-child { overflow: hidden; text-overflow: ellipsis; }
-  .track-id { width: 24px; flex: none; font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); }
-  .track-name { overflow: hidden; text-overflow: ellipsis; }
-  .track-target { flex: none; font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); }
-  /* The wash marks what belongs to the selection; it changes instantly. */
-  .track.selected .track-label { background: var(--accent); font-weight: 500; }
+  .track-id { font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); }
+  /* The wash marks the layer of the selection; it changes instantly. */
+  .track.selected .track-label { background: var(--accent); }
+  .track.selected .track-id { color: var(--foreground); font-weight: 600; }
   /* The lane's own box is the time axis: clip offsets and drag maths both measure it. */
   .clip-lane { position: relative; min-width: 0; margin: 0 var(--lane-end) 0 var(--lane-start); }
 
@@ -372,12 +369,18 @@
   .editable-clip[data-tone="tex"] { background: var(--tone-tex); }
   .editable-clip[data-tone="text"] { background: var(--tone-text); }
   .editable-clip.owned { background-image: repeating-linear-gradient(135deg, transparent 0 9px, rgb(0 0 0 / .12) 9px 10px); }
+  /* An object's clip fills its layer; its animations ride along its lower half. */
+  .editable-clip.presence { top: 3px; bottom: 3px; }
+  .editable-clip.presence .clip-body, .editable-clip.presence .clip-duration { align-items: flex-start; padding-top: 4px; }
   .editable-clip.animation {
-    top: 5px; bottom: 5px; border-radius: 999px; background: var(--tone-fx); color: var(--tone-fx-ink);
+    top: auto; bottom: 6px; height: 18px; border-radius: 999px; background: var(--tone-fx); color: var(--tone-fx-ink);
     box-shadow: inset 0 0 0 1px var(--tone-fx-line);
   }
+  .editable-clip.animation .clip-body { font-size: 11px; padding: 0 2px; gap: 3px; }
+  .editable-clip.selected { box-shadow: inset 0 0 0 1px rgb(255 255 255 / .5); }
   /* The ring marks what Delete and the arrow keys act on. */
-  .track.current .editable-clip { box-shadow: 0 0 0 2px var(--primary); }
+  .editable-clip.current { box-shadow: 0 0 0 2px var(--primary); }
+  .editable-clip.dragging { opacity: .92; box-shadow: 0 0 0 2px var(--primary), 0 6px 16px rgb(0 0 0 / .3); }
   .clip-body {
     flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-start; gap: 5px; padding: 0 8px;
     border: 0; border-radius: inherit; background: none; color: inherit; font-size: 12px; font-weight: 500;
@@ -386,17 +389,14 @@
   .clip-body:hover { background: rgb(255 255 255 / .08); }
   .clip-body:active { cursor: grabbing; }
   .clip-body:focus-visible { outline: none; box-shadow: inset 0 0 0 2px rgb(255 255 255 / .6); }
-  .editable-clip.animation .clip-body { padding-right: 4px; }
-  .editable-clip.animation .clip-duration { padding-right: 9px; }
-  /* A short clip keeps its duration; the name gives way and stays on the track label and tooltip. */
+  /* A pill names its animation; its times are in the tooltip and the inspector. */
+  .editable-clip.animation .clip-duration { display: none; }
+  /* A short clip keeps its duration; the name gives way and stays in the tooltip. */
   @container (max-width: 112px) {
-    .clip-body span { display: none; }
-    .editable-clip.animation .clip-duration { padding-right: 6px; }
+    .editable-clip.presence .clip-body span { display: none; }
   }
-  /* Narrower still, the duration alone spans the pill; it ignores the pointer, so the grips still work. */
-  @container (max-width: 64px) {
-    .clip-body svg { display: none; }
-    .editable-clip.animation .clip-duration { position: absolute; inset: 0; justify-content: center; padding: 0; overflow: hidden; }
+  @container (max-width: 40px) {
+    .clip-body svg, .clip-body span { display: none; }
   }
   .clip-body span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* A zoomed clip that starts off-screen keeps its name beside the track labels. */
@@ -405,7 +405,8 @@
     flex: none; display: flex; align-items: center; gap: 4px; padding-right: 8px; white-space: nowrap; pointer-events: none;
     font-family: var(--font-mono); font-size: 10.5px; opacity: .85;
   }
-  .clip-grip { width: 7px; flex: 0 0 7px; padding: 0; border: 0; background: none; cursor: ew-resize; }
+  /* Grips sit above the playhead's line, so a clip under the playhead still resizes. */
+  .clip-grip { position: relative; z-index: 2; width: 7px; flex: 0 0 7px; padding: 0; border: 0; background: none; cursor: ew-resize; }
   .clip-grip.start { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
   .clip-grip.end { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
   .clip-grip:hover, .clip-grip:focus-visible { background: rgb(255 255 255 / .3); outline: none; }
@@ -414,7 +415,9 @@
     position: absolute; top: 0; bottom: 0; z-index: 1; pointer-events: none;
     left: calc(var(--label-w) + var(--lane-start)); right: var(--lane-end);
   }
-  .playhead { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--primary); }
+  /* The line drags like the ruler; its hit area is wider than it looks. */
+  .playhead { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--primary); pointer-events: auto; cursor: ew-resize; touch-action: none; }
+  .playhead::before { content: ""; position: absolute; inset: 0 -4px; }
   .snap-guide { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--foreground); opacity: .7; }
 
   /* Status strip */
@@ -476,7 +479,6 @@
   }
   @media (max-width: 1100px) {
     .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    :root { --label-w: 132px; }
   }
   @media (max-width: 850px) {
     .pool .panel-heading select { max-width: 100px; }
@@ -486,7 +488,6 @@
     .inspector label { grid-template-columns: 84px minmax(0, 1fr); }
     /* The scene duration stays in the timeline heading, so the transport drops it. */
     .timecode.dim { display: none; }
-    :root { --label-w: 108px; }
   }
   @media (max-height: 760px) {
     .empty-preview p, .empty-preview .media { display: none; }
