@@ -1,6 +1,7 @@
-import { Crosshair, InfinityIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Crosshair } from "lucide-react";
 import type { Element, Project } from "../domain/project";
-import { positionWarning, elementSummary, plottableGraphs } from "../domain/catalog";
+import { annotatable, positionWarning, elementSummary, plottableGraphs } from "../domain/catalog";
 import { EXPRESSION_PRESETS, expressionError, expressionWarning } from "../domain/expression";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,20 @@ function RangeFields({ label, value, onChange }: { label: string; value: [number
     <NumberField label={label + " maximum"} value={value[1]} onChange={number => onChange([value[0], number])} />
   </div>;
 }
+/** A text field for a list or a table: the text stays as typed while it still means the same value. */
+function ParsedField<T>({ label, value, format, parse, multiline, onChange }: {
+  label: string; value: T; format: (value: T) => string; parse: (text: string) => T; multiline?: boolean; onChange: (value: T) => void;
+}) {
+  const [text, setText] = useState(() => format(value));
+  useEffect(() => { if (JSON.stringify(parse(text)) !== JSON.stringify(value)) setText(format(value)); }, [value]);
+  const edit = (next: string) => { setText(next); onChange(parse(next)); };
+  return <label>{label}{multiline
+    ? <Textarea spellCheck={false} value={text} className="min-h-20 font-mono" onChange={event => edit(event.target.value)} />
+    : <Input spellCheck={false} value={text} className="h-8 px-2.5" onChange={event => edit(event.target.value)} />}</label>;
+}
+const lines = (text: string) => text.split("\n").map(line => line.trim()).filter(Boolean);
+const commaList = (text: string) => text.split(",").map(item => item.trim()).filter(Boolean);
+
 /** A native select in shadcn dress, full width in the inspector grid. */
 export function FieldSelect(props: React.ComponentProps<typeof NativeSelect>) {
   return <NativeSelect size="sm" containerClassName="w-full" className="w-full pl-2.5" {...props} />;
@@ -72,28 +87,71 @@ function GraphFields({ element, project, onChange }: {
   </>;
 }
 
-export function ElementInspector({ element, onChange, project, timing = true }: {
-  element: Element; onChange: (element: Element) => void; project?: Project; timing?: boolean;
+export function ElementInspector({ element, onChange, project }: {
+  element: Element; onChange: (element: Element) => void; project?: Project;
 }) {
   const warning = positionWarning(element);
-  const positioned = element.kind !== "areaUnderGraph";
+  const positioned = !("targetId" in element) && element.kind !== "areaUnderGraph";
+  const others = project ? annotatable(project).filter(([, item]) => item !== element) : [];
   return <>
-    {element.kind === "mathTex" && <label>LaTeX expression<Textarea spellCheck={false} value={element.latex} className="min-h-20 font-mono"
-      onChange={event => onChange({ ...element, latex: event.target.value })} /></label>}
+    {(element.kind === "mathTex" || element.kind === "tex") && <label>{element.kind === "tex" ? "LaTeX text" : "LaTeX expression"}
+      <Textarea spellCheck={false} value={element.latex} className="min-h-20 font-mono"
+        onChange={event => onChange({ ...element, latex: event.target.value })} /></label>}
     {element.kind === "text" && <label>Text content<Textarea value={element.text} className="min-h-20"
       onChange={event => onChange({ ...element, text: event.target.value })} /></label>}
-    {(element.kind === "mathTex" || element.kind === "text") && <NumberField label="Font size" value={element.fontSize ?? 48} min={8} max={144} step={1} onChange={fontSize => onChange({ ...element, fontSize })} />}
-    {(element.kind === "circle" || element.kind === "dot" || element.kind === "arc") && <NumberField label="Radius" min={0.01} value={element.radius} onChange={radius => onChange({ ...element, radius })} />}
-    {element.kind === "arc" && <div className="coordinates">
+    {element.kind === "decimalNumber" && <div className="coordinates">
+      <NumberField label="Value" step={0.1} value={element.value} onChange={value => onChange({ ...element, value })} />
+      <NumberField label="Decimal places" min={0} max={6} step={1} value={element.decimals ?? 2} onChange={decimals => onChange({ ...element, decimals })} />
+    </div>}
+    {element.kind === "bulletedList" && <ParsedField label="Points, one per line" multiline value={element.items}
+      format={items => items.join("\n")} parse={text => lines(text) as typeof element.items} onChange={items => onChange({ ...element, items })} />}
+    {element.kind === "matrix" && <ParsedField label="Rows, entries split by &" multiline value={element.rows}
+      format={rows => rows.map(row => row.join(" & ")).join("\n")}
+      parse={text => lines(text).map(row => row.split("&").map(entry => entry.trim())) as typeof element.rows}
+      onChange={rows => onChange({ ...element, rows })} />}
+    {element.kind === "code" && <>
+      <label>Code<Textarea spellCheck={false} value={element.code} className="min-h-28 font-mono"
+        onChange={event => onChange({ ...element, code: event.target.value })} /></label>
+      <label>Language<FieldSelect value={element.language ?? "python"} onChange={event => onChange({ ...element, language: event.target.value as typeof element.language })}>
+        {["python", "javascript", "typescript", "c", "cpp", "java", "rust", "go", "bash", "sql"].map(language => <Option key={language} value={language}>{language}</Option>)}
+      </FieldSelect></label>
+    </>}
+    {(element.kind === "mathTex" || element.kind === "tex" || element.kind === "text" || element.kind === "decimalNumber"
+      || element.kind === "bulletedList") && <NumberField label="Font size" value={element.fontSize ?? 48} min={8} max={144} step={1}
+        onChange={fontSize => onChange({ ...element, fontSize })} />}
+    {("radius" in element) && <NumberField label="Radius" min={0.01} value={element.radius} onChange={radius => onChange({ ...element, radius } as Element)} />}
+    {element.kind === "annulus" && <NumberField label="Inner radius" min={0.01} value={element.innerRadius} onChange={innerRadius => onChange({ ...element, innerRadius })} />}
+    {element.kind === "star" && <NumberField label="Points" min={3} max={12} step={1} value={element.points} onChange={points => onChange({ ...element, points })} />}
+    {(element.kind === "arc" || element.kind === "sector") && <div className="coordinates">
       <NumberField label="Arc angle" min={-360} max={360} step={15} value={element.angleDegrees} onChange={angleDegrees => onChange({ ...element, angleDegrees })} />
       <NumberField label="Start angle" min={-360} max={360} step={15} value={element.startDegrees ?? 0} onChange={startDegrees => onChange({ ...element, startDegrees })} />
     </div>}
     {(element.kind === "square" || element.kind === "triangle" || element.kind === "regularPolygon") && <NumberField label="Size" min={0.05} max={20} value={element.size} onChange={size => onChange({ ...element, size })} />}
     {element.kind === "regularPolygon" && <NumberField label="Number of sides" min={3} max={12} step={1} value={element.sides} onChange={sides => onChange({ ...element, sides })} />}
-    {(element.kind === "rectangle" || element.kind === "ellipse") && <div className="coordinates">
-      <NumberField label="Width" min={0.01} value={element.width} onChange={width => onChange({ ...element, width })} />
-      <NumberField label="Height" min={0.01} value={element.height} onChange={height => onChange({ ...element, height })} />
+    {"width" in element && <div className="coordinates">
+      <NumberField label="Width" min={0.01} value={element.width} onChange={width => onChange({ ...element, width } as Element)} />
+      <NumberField label="Height" min={0.01} value={element.height} onChange={height => onChange({ ...element, height } as Element)} />
     </div>}
+    {element.kind === "roundedRectangle" && <NumberField label="Corner radius" min={0} max={10} step={0.1} value={element.cornerRadius ?? 0.5}
+      onChange={cornerRadius => onChange({ ...element, cornerRadius })} />}
+    {"targetId" in element && <>
+      <label>Object<FieldSelect value={element.targetId} onChange={event => onChange({ ...element, targetId: event.target.value })}>
+        {others.map(([id, item]) => <Option key={id} value={id}>{elementSummary(item)} · {id.slice(0, 8)}</Option>)}
+      </FieldSelect></label>
+      {element.kind === "brace" ? <>
+        <label>Side<FieldSelect value={element.direction ?? "down"} onChange={event => onChange({ ...element, direction: event.target.value as typeof element.direction })}>
+          {["down", "up", "left", "right"].map(side => <Option key={side} value={side}>{side[0].toUpperCase() + side.slice(1)}</Option>)}
+        </FieldSelect></label>
+        <label>Label<Input spellCheck={false} value={element.label ?? ""} className="h-8 px-2.5 font-mono" placeholder="LaTeX, optional"
+          onChange={event => onChange({ ...element, label: event.target.value })} /></label>
+      </> : <NumberField label="Padding" min={0} max={2} step={0.05} value={element.buff ?? 0.1} onChange={buff => onChange({ ...element, buff })} />}
+    </>}
+    {element.kind === "barChart" && <>
+      <ParsedField label="Values, split by commas" value={element.values} format={values => values.join(", ")}
+        parse={text => commaList(text).map(Number) as typeof element.values} onChange={values => onChange({ ...element, values })} />
+      <ParsedField label="Bar labels" value={element.labels ?? []} format={labels => labels.join(", ")}
+        parse={commaList} onChange={labels => onChange({ ...element, labels })} />
+    </>}
     {element.kind === "functionGraph" && <GraphFields element={element} project={project} onChange={onChange} />}
     {element.kind === "areaUnderGraph" && <>
       <label>Graph<FieldSelect value={element.graphId} onChange={event => onChange({ ...element, graphId: event.target.value })}>
@@ -114,14 +172,14 @@ export function ElementInspector({ element, onChange, project, timing = true }: 
     </>}
     {positioned && <>
       <VectorFields label="Position" value={element.position} onChange={position => onChange({ ...element, position })} />
-      {(element.kind === "line" || element.kind === "arrow") && <VectorFields label="End point" value={element.end} onChange={end => onChange({ ...element, end })} />}
+      {"end" in element && <VectorFields label="End point" value={element.end} onChange={end => onChange({ ...element, end } as Element)} />}
       {warning && <p className="hint warning">{warning}</p>}
       <div className="inline-actions">
         <Button variant="outline" size="xs" className="h-7 px-2.5" onClick={() => {
-          if (element.kind === "line" || element.kind === "arrow") {
+          if ("end" in element) {
             const center = element.position.map((v, i) => (v + element.end[i]) / 2);
             onChange({ ...element, position: element.position.map((v, i) => v - center[i]) as typeof element.position,
-              end: element.end.map((v, i) => v - center[i]) as typeof element.end });
+              end: element.end.map((v, i) => v - center[i]) as typeof element.end } as Element);
           } else onChange({ ...element, position: [0, 0, 0] });
         }}><Crosshair />Center element</Button>
       </div>
@@ -134,13 +192,5 @@ export function ElementInspector({ element, onChange, project, timing = true }: 
       <NumberField label="Opacity" min={0} max={1} step={0.05} value={element.opacity ?? 1} onChange={opacity => onChange({ ...element, opacity })} />
     </div>
     {positioned && <NumberField label="Rotation (degrees)" min={-360} max={360} step={15} value={element.rotationDegrees ?? 0} onChange={rotationDegrees => onChange({ ...element, rotationDegrees })} />}
-    {timing && <><h3>Timing</h3>
-      <SecondsField label="Appear at" value={element.appearsAtMs} onChange={appearsAtMs => onChange({ ...element, appearsAtMs })} />
-      <SecondsField label="End at" min={100} value={element.disappearsAtMs ?? project?.scene.durationMs ?? 3000} onChange={disappearsAtMs => onChange({ ...element, disappearsAtMs })} />
-      {element.disappearsAtMs !== undefined && <div className="inline-actions">
-        <Button variant="outline" size="xs" className="h-7 px-2.5" onClick={() => { const next = { ...element }; delete next.disappearsAtMs; onChange(next); }}>
-          <InfinityIcon />Keep until the scene ends</Button>
-      </div>}
-    </>}
   </>;
 }
