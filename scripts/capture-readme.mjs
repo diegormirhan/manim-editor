@@ -99,9 +99,10 @@ try {
     await waitFor('!!document.querySelector(".projects-screen")');
     await click(`[aria-label="Open ${name}"]`);
     await waitFor(`!!document.querySelector(".workspace") && ${status} === "Opened ${key}.json."`);
-    await evaluate(`[...document.querySelectorAll("button")].find(button => button.textContent.trim() === "Render").click()`);
-    await waitFor(`${status} === "Preview updated."`, 400000);
-    await waitFor('document.querySelector("video")?.readyState >= 2');
+    // Play renders the scene first, then plays it.
+    await click('[aria-label="Play"]');
+    await waitFor('!!document.querySelector("[aria-label=Pause]") && document.querySelector("video")?.readyState >= 2', 400000);
+    await click('[aria-label="Pause"]');
     await evaluate(`document.querySelector('video').currentTime = ${time}`);
     await waitFor('!document.querySelector("video").seeking');
     await evaluate('document.querySelector(".library").scrollTop = 0');
