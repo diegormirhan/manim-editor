@@ -35,13 +35,54 @@ class TimelineRegressions(unittest.TestCase):
         p["scene"]["animations"][-1]["targetId"] = "b"
         validate_project(p)
 
-    def test_simultaneous_elements_are_layered_in_track_order(self):
+    def test_higher_layers_draw_on_top(self):
         p = scene()
-        p["scene"]["elements"] = {"z": p["scene"]["elements"]["a"], "a": p["scene"]["elements"]["b"]}
+        p["scene"]["elements"]["a"]["layer"] = 3
+        p["scene"]["elements"]["b"]["layer"] = 0
         source = compile_project(p)
-        # Later tracks are drawn over earlier ones, whatever their identifiers.
-        self.assertLess(source.index("radius=1"), source.index("radius=2"))
-        self.assertIn("self.add(element_0)\n        self.add(element_1)", source)
+        self.assertIn("element_0.set_z_index(3)", source)
+        self.assertNotIn("element_1.set_z_index", source)
+        # Files from before layers keep their element order as layers.
+        del p["scene"]["elements"]["a"]["layer"], p["scene"]["elements"]["b"]["layer"]
+        self.assertIn("element_1.set_z_index(1)", compile_project(p))
+
+    def test_objects_on_one_layer_take_turns(self):
+        p = scene()
+        p["scene"]["elements"]["a"].update(layer=0, disappearsAtMs=3000)
+        p["scene"]["elements"]["b"].update(layer=0, appearsAtMs=2000)
+        with self.assertRaisesRegex(ValueError, "layer 1"):
+            validate_project(p)
+        p["scene"]["elements"]["b"]["appearsAtMs"] = 3000
+        validate_project(p)
+
+    def test_animations_of_different_objects_overlap_freely(self):
+        p = scene()
+        p["scene"]["elements"]["b"]["appearsAtMs"] = 500
+        p["scene"]["animations"] = [
+            dict(kind="indicate", targetId="a", startMs=0, durationMs=2000),
+            dict(kind="create", targetId="b", startMs=500, durationMs=1000),
+            dict(kind="moveTo", targetId="b", startMs=1500, durationMs=1000, destination=[1, 0, 0])]
+        source = compile_project(p)
+        # One play covers the chain; each animation runs in its own share of it.
+        self.assertIn("self.play(between(0 / 38, 30 / 38, Indicate(element_0)), between(8 / 38, 23 / 38, Create(element_1)), "
+                      "between(23 / 38, 38 / 38, element_1.animate.move_to([1, 0, 0]), entering=True), "
+                      "run_time=(38 - 1e-6) / 15)", source)
+        self.assertEqual(segment_frames(p), [38, 52])
+        p["scene"]["animations"][2]["startMs"] = 1000
+        with self.assertRaisesRegex(ValueError, "one animation at a time"):
+            validate_project(p)
+
+    def test_a_transform_hands_over_before_the_play_ends(self):
+        p = scene()
+        p["scene"]["elements"]["c"] = {"kind": "dot", "radius": 0.1, "position": [-3, 0, 0], "appearsAtMs": 0}
+        p["scene"]["animations"] = [
+            dict(kind="transform", targetId="a", destinationId="b", startMs=0, durationMs=1000),
+            dict(kind="wiggle", targetId="c", startMs=500, durationMs=2000),
+            dict(kind="indicate", targetId="b", startMs=1000, durationMs=1000)]
+        source = compile_project(p)
+        self.assertIn("between(0 / 38, 15 / 38, Transform(element_0, element_1))", source)
+        self.assertIn("at(15 / 38, Replace(element_0, element_1))", source)
+        self.assertIn("between(15 / 38, 30 / 38, Indicate(element_1), entering=True)", source)
 
     def test_the_output_rate_is_configurable_while_timing_stays_on_the_grid(self):
         p = scene()
@@ -68,7 +109,7 @@ class TimelineRegressions(unittest.TestCase):
         p["scene"]["animations"][0]["clips"][1]["targetId"] = "a"
         with self.assertRaises(ValueError): validate_project(p)
 
-    def test_parallel_cannot_bypass_overlap_or_lifecycle(self):
+    def test_parallel_cannot_bypass_lifecycle(self):
         p = scene()
         p["scene"]["animations"] = [dict(kind="fadeOut", targetId="a", startMs=0, durationMs=1000),
             dict(kind="parallel", startMs=500, durationMs=1000, clips=[
