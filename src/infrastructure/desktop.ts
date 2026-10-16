@@ -3,7 +3,7 @@ import type { Box } from "../domain/placement";
 import type { Project } from "../domain/project";
 import type { renderOptions } from "../domain/render-settings";
 export const desktopAvailable = isTauri;
-export type Operation = "save" | "saveAs" | "load" | "openRecent" | "export" | "exportVideo" | "render";
+export type Operation = "save" | "saveAs" | "load" | "openRecent" | "export" | "exportVideo" | "exportTimeline" | "render";
 type RenderOptions = ReturnType<typeof renderOptions>;
 export type RenderProgress = { event: "progress"; phase: "preparing" | "rendering"; fraction: number };
 /** `path` is the document's own file, or the recent file to reopen; the desktop side only writes files the user chose. */
