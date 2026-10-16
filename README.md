@@ -71,6 +71,10 @@ Time savings have not been measured in a user study.
 - **Your layout.** Drag the edges of the objects panel, the inspector and the timeline to resize them.
 - **Export.** Video at 480p to 4K, 15, 30 or 60 fps, as MP4, WebM, GIF or MOV (transparent in WebM
   and MOV), or the same scene as readable Python.
+- **Finish in your video editor.** Export › Timeline for video editors renders each layer as a
+  transparent ProRes 4444 video and writes a timeline that puts them on tracks at their times:
+  `timeline.xml` for Premiere Pro, DaVinci Resolve and VEGAS Pro, `timeline.fcpxml` for Final Cut Pro
+  and DaVinci Resolve. The animations arrive baked into the videos.
 - **Projects screen.** The app opens on your projects: the one you were working on, recent files
   with thumbnails drawn from their own timelines, and the bundled examples. Unsaved work survives a
   crash or a closed window.
@@ -156,6 +160,7 @@ line beside the app, `manim-editor-cli.cmd`, uses the editor's own validation an
 .\manim-editor-cli.cmd frame examples/calculus-area.json --at 4   # Manim's frame at 4 s, and where each object sits
 .\manim-editor-cli.cmd render examples/calculus-area.json -o area.mp4 --resolution 720p
 .\manim-editor-cli.cmd python examples/calculus-area.json         # the generated Manim Python
+.\manim-editor-cli.cmd timeline examples/calculus-area.json -o area   # layers and timelines for video editors
 ```
 
 An agent writes the project, runs `check` until it is valid, looks at a few frames, adjusts, and
@@ -269,7 +274,10 @@ demo videos by [generate-demo-media.ps1](scripts/generate-demo-media.ps1).
 - Timing sits on a 15 fps grid, so exports use 15, 30 or 60 fps, and render progress advances once
   per finished Manim segment.
 - An object plays one animation at a time, and two objects share a layer only when they take turns.
-- The timeline cannot be exported to Premiere, DaVinci Resolve, Final Cut Pro or VEGAS; the video can.
+- In a video editor the layers are videos: an animation can be cut, moved or faded there, but not
+  edited as Manim. The timeline files have not yet been opened in each of those editors here; they
+  follow the FCP7 XML and FCPXML 1.10 formats and point at the videos by absolute path, so moving the
+  folder means relinking.
 - The downloads carry their own Python and load nothing from the build machine's, but a licence review
   of the bundled runtime, Authenticode signing and a test on a real clean machine are still pending.
   The portable zip does not update itself.
