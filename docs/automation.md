@@ -19,6 +19,7 @@ checkout. It runs the Python, Manim and LaTeX that ship with the editor, offline
 | `manim-editor-cli frame scene.json --at 2.5 -o frame.png` | Draws Manim's frame at 2.5 s and prints where each element sits, as `[left, bottom, right, top]` in scene units. |
 | `manim-editor-cli render scene.json -o scene.mp4` | Renders the video, 1080p at 30 fps by default. The extension picks the format: `.mp4`, `.webm`, `.gif` or `.mov`. `--transparent` works with `.webm` and `.mov`. |
 | `manim-editor-cli python scene.json -o scene.py` | Writes the readable Manim Python the editor generates. |
+| `manim-editor-cli timeline scene.json -o folder` | Renders each layer as a transparent ProRes 4444 video and writes `timeline.xml` (FCP7 XML, for Premiere Pro, DaVinci Resolve and VEGAS Pro) and `timeline.fcpxml` (Final Cut Pro, DaVinci Resolve), which place every layer on its own track at its time. |
 
 Each command accepts `-` instead of a file to read the project from standard input. A failure exits with code 1 and
 prints the reason on standard error, in the same words the editor shows.
