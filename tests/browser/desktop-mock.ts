@@ -55,7 +55,8 @@ export async function mockDesktop(page: Page, options: { renderMs?: number; rend
         }
         switch (args.operation) {
           case "render":
-          case "exportVideo": {
+          case "exportVideo":
+          case "exportTimeline": {
             if (renderError) throw renderError;
             renderStarted = Date.now();
             const cancelled = await new Promise<boolean>(resolve => {
@@ -65,6 +66,7 @@ export async function mockDesktop(page: Page, options: { renderMs?: number; rend
             stopRender = null;
             renderStarted = 0;
             if (cancelled) return { cancelled: true };
+            if (args.operation === "exportTimeline") return { path: "C:\\Videos\\First equation timeline" };
             return args.operation === "render" ? { path: "/docs/media/shape-motion.mp4" } : { path: "C:\\Videos\\scene." + args.options?.format };
           }
           case "load": return { project: openProject, path: "C:\\Projects\\opened.json" };
