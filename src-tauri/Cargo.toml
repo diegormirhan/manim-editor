@@ -1,6 +1,6 @@
 [package]
 name = "manim-editor"
-version = "3.0.1"
+version = "3.1.0"
 edition = "2021"
 
 [build-dependencies]
