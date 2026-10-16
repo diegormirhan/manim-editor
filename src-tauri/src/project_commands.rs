@@ -186,7 +186,7 @@ fn recent_document(known: Option<PathBuf>) -> Result<PathBuf, String> {
 }
 
 fn perform_action(operation: &str, project: Value, known: Option<PathBuf>, options: Option<Value>) -> Result<Value, String> {
-    if !["load", "openRecent", "save", "saveAs", "export", "exportVideo", "render"].contains(&operation) {
+    if !["load", "openRecent", "save", "saveAs", "export", "exportVideo", "exportTimeline", "render"].contains(&operation) {
         return Err("Unknown operation.".into());
     }
     let path = match operation {
@@ -201,6 +201,7 @@ fn perform_action(operation: &str, project: Value, known: Option<PathBuf>, optio
             rfd::FileDialog::new().add_filter("Video", &[extension])
                 .set_file_name(video_file_name(&project, extension)).save_file()
         }
+        "exportTimeline" => rfd::FileDialog::new().set_title("Choose where to put the timeline folder").pick_folder(),
         _ => None,
     };
     if operation != "render" && path.is_none() { return Ok(json!({"cancelled": true})); }
