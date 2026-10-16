@@ -30,6 +30,7 @@ import {
   LayoutGrid,
   Settings2,
   Video,
+  Layers,
 } from "lucide-react";
 import {
   emptyProject,
@@ -158,7 +159,7 @@ export function App() {
   const dirty = saved !== serialized;
   const rendering = busy === "render";
   // Exports run Manim too, so they share the progress, the clock and Esc.
-  const manimBusy = rendering || busy === "exportVideo";
+  const manimBusy = rendering || busy === "exportVideo" || busy === "exportTimeline";
 
   useEffect(() => {
     if (!project.scene.elements[selection]) select(Object.keys(project.scene.elements)[0] ?? "");
@@ -247,12 +248,14 @@ export function App() {
     // The preview renders at viewer quality; the video and the Python script follow the export settings.
     const options = operation === "render" ? renderOptions(preview)
       : operation === "exportVideo" ? renderOptions(output, output.format, output.transparent)
+      : operation === "exportTimeline" ? renderOptions(output, "mov", true)
       : operation === "export" ? renderOptions(output) : undefined;
     try {
       const result = await projectAction(operation, project, operation === "openRecent" ? recentPath : filePath, options);
       if (result.cancelled) {
         setMessage(operation === "render" ? "Render cancelled."
-          : operation === "exportVideo" ? "Export cancelled. No video was written." : "");
+          : operation === "exportVideo" ? "Export cancelled. No video was written."
+          : operation === "exportTimeline" ? "Export cancelled. The timeline folder may hold some layers." : "");
         return;
       }
       if (opening && result.project && result.path) {
@@ -268,6 +271,8 @@ export function App() {
         setMessage("");
       } else if (operation === "exportVideo" && result.path) {
         setMessage(`Exported ${fileName(result.path)} · ${describeOutput(output)}.`);
+      } else if (operation === "exportTimeline" && result.path) {
+        setMessage(`Exported the folder ${fileName(result.path)}: a video per layer, timeline.xml and timeline.fcpxml.`);
       } else if (result.path) {
         if (operation !== "export") {
           setFilePath(result.path);
@@ -277,7 +282,7 @@ export function App() {
         setMessage(`${operation === "export" ? "Exported" : "Saved"} ${fileName(result.path)}.`);
       }
     } catch (error) {
-      setMessage((operation === "render" ? "Render failed. " : operation === "exportVideo" ? "Export failed. "
+      setMessage((operation === "render" ? "Render failed. " : operation === "exportVideo" || operation === "exportTimeline" ? "Export failed. "
         : operation === "openRecent" ? `Couldn't open ${fileName(recentPath)}. ` : "")
         + String(error).replace(/^Error: /, ""));
     } finally {
@@ -523,7 +528,7 @@ export function App() {
               <Save /><span className="label">Save</span></Button>
           </Hint>
           <DropdownMenu>
-            <Hint label="Export a video or a Python script">
+            <Hint label="Export a video, a Python script or a timeline for video editors">
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className={quiet} aria-label="Export" disabled={!!busy || !!validation}>
                   <Download /><span className="label">Export</span><ChevronDown className="size-3.5 opacity-60" /></Button>
@@ -536,6 +541,10 @@ export function App() {
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => void action("export")}>
                 <FileCode2 />Python script…<DropdownMenuShortcut>Ctrl+E</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void action("exportTimeline")}>
+                <Layers /><span className="grid">Timeline for video editors…<span className="text-xs text-muted-foreground">
+                  Premiere, DaVinci Resolve, Final Cut Pro, VEGAS</span></span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => setSettingsTab("export")}><Settings2 />Export settings…</DropdownMenuItem>
