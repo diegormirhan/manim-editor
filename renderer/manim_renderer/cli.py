@@ -15,6 +15,7 @@ from .render_job import RenderError, manim_environment, render_project
 from .render_options import CONTRACT, resolve_options
 from .scene_compiler import compile_project
 from .timeline import layer_of, leaf_clips
+from .video_editor_export import export_for_video_editors
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -72,18 +73,26 @@ def frame(arguments) -> str:
     return json.dumps({"image": arguments.output, "boxes": boxes})
 
 
+def progress(phase: str, fraction: float) -> None:
+    print(f"{phase} {fraction:.0%}", file=sys.stderr, flush=True)
+
+
 def render(arguments) -> str:
     project = read_project(arguments.project)
     options = resolve_options({"resolution": arguments.resolution, "fps": arguments.fps,
                                "format": Path(arguments.output).suffix.lstrip(".").lower() or "mp4",
                                "transparent": arguments.transparent})
-
-    def progress(phase: str, fraction: float) -> None:
-        print(f"{phase} {fraction:.0%}", file=sys.stderr, flush=True)
-
     video = render_project(project, render_root(ROOT), tex_bin=tex_bin(), options=options, on_progress=progress)
     publish(video, Path(arguments.output))
     return arguments.output
+
+
+def timeline(arguments) -> str:
+    project = read_project(arguments.project)
+    options = resolve_options({"resolution": arguments.resolution, "fps": arguments.fps, "format": "mov", "transparent": True})
+    files = export_for_video_editors(project, Path(arguments.output), render_root(ROOT), options=options,
+                                     tex_bin=tex_bin(), on_progress=progress)
+    return "\n".join(map(str, files))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -108,6 +117,12 @@ def main(argv: list[str] | None = None) -> int:
     command.add_argument("--resolution", choices=list(CONTRACT["resolutions"]), default="1080p")
     command.add_argument("--fps", type=int, choices=CONTRACT["frameRates"], default=30)
     command.add_argument("--transparent", action="store_true", help="WebM or MOV only")
+    command = commands.add_parser("timeline", help="a folder for Premiere, DaVinci Resolve, Final Cut Pro or VEGAS: "
+                                  "a transparent video per layer, timeline.xml and timeline.fcpxml")
+    command.add_argument("project")
+    command.add_argument("-o", "--output", default="timeline", help="the folder to write")
+    command.add_argument("--resolution", choices=list(CONTRACT["resolutions"]), default="1080p")
+    command.add_argument("--fps", type=int, choices=CONTRACT["frameRates"], default=30)
     arguments = parser.parse_args(argv)
     schema = ROOT / "contracts/project.schema.json"
     try:
@@ -116,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
         elif arguments.command == "guide":
             print((ROOT / "docs/automation.md").read_text(encoding="utf-8") + kinds(json.loads(schema.read_text(encoding="utf-8"))), end="")
         else:
-            print({"check": check, "python": python, "frame": frame, "render": render}[arguments.command](arguments))
+            print({"check": check, "python": python, "frame": frame, "render": render, "timeline": timeline}[arguments.command](arguments))
         return 0
     except (ValueError, OSError, RenderError) as error:
         print(f"Error: {error}", file=sys.stderr)
