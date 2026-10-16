@@ -80,3 +80,20 @@ class DispatchTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_a_timeline_export_writes_a_folder_named_after_the_project(self):
+        written = []
+
+        def fake_export(project, folder, root, **keywords):
+            written.append((folder, keywords["options"]))
+            return [folder / "V1.mov"]
+
+        request = {"operation": "exportTimeline", "project": self.project, "path": str(self.folder),
+                   "options": {"resolution": "720p", "fps": 30, "format": "mp4", "transparent": False}}
+        with patch("renderer.manim_renderer.desktop_bridge.export_for_video_editors", fake_export):
+            result = dispatch(request, self.folder)
+        folder, options = written[0]
+        self.assertEqual(folder, self.folder / f"{self.project['name']} timeline")
+        self.assertEqual(result, {"path": str(folder)})
+        # The layers always travel as transparent video, whatever the video export is set to.
+        self.assertEqual((options["format"], options["transparent"], options["width"]), ("mov", True, 1280))
