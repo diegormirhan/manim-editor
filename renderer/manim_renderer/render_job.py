@@ -19,6 +19,25 @@ class RenderError(RuntimeError):
     pass
 
 
+# Cairo draws premultiplied colour and Manim writes it as is, while video files and editors expect straight alpha:
+# without this, everything partly transparent turns darker once composited.
+STRAIGHT_ALPHA = '''
+import numpy as np
+from manim.renderer.cairo_renderer import CairoRenderer
+
+_add_frame = CairoRenderer.add_frame
+
+
+def _add_straight_frame(self, frame, num_frames=1):
+    alpha = frame[..., 3:4].astype(np.float32)
+    colour = np.where(alpha > 0, frame[..., :3].astype(np.float32) * 255 / np.maximum(alpha, 1), 0)
+    _add_frame(self, np.concatenate([np.clip(colour.round(), 0, 255), alpha], axis=-1).astype(np.uint8), num_frames)
+
+
+CairoRenderer.add_frame = _add_straight_frame
+'''
+
+
 def render_timeout(project: dict, options: dict | None = None) -> float:
     """Manim needs several seconds of work per second of output, more for more pixels and frames."""
     scale = max(1.0, workload(options or resolve_options(None)))
@@ -71,10 +90,10 @@ def manim_environment(tex_bin: Path | None) -> dict[str, str]:
 
 
 def render_project(project: dict, output_root: Path, *, tex_bin: Path | None = None,
-                   options: dict | None = None, on_progress: Progress | None = None) -> Path:
+                   options: dict | None = None, on_progress: Progress | None = None, layer: int | None = None) -> Path:
     """Renders with resolved options (see render_options.resolve_options); the default is the draft preview."""
     options = options or resolve_options(None)
-    source = compile_project(project, fps=options["fps"])
+    source = compile_project(project, fps=options["fps"], layer=layer) + (STRAIGHT_ALPHA if options["transparent"] else "")
     segments = segment_frames(project)
     environment = manim_environment(tex_bin)
     job = output_root.resolve() / uuid.uuid4().hex
