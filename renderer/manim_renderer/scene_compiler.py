@@ -51,8 +51,12 @@ def _play(stretch, scene: dict, variables: dict[str, str]) -> tuple[list[str], l
     return parts, changes
 
 
-def _plan(project: dict) -> tuple[list[str], list[int]]:
-    """The scene's statements, and the grid frames of each play or wait in the order Manim renders them."""
+def _plan(project: dict, layer: int | None = None) -> tuple[list[str], list[int]]:
+    """The scene's statements, and the grid frames of each play or wait in the order Manim renders them.
+
+    With `layer`, every other layer's objects still play their part but are drawn transparent, so the layer can be
+    rendered on its own and line up with the others in a video editor.
+    """
     validate_project(project)
     scene = project["scene"]
     elements, variables = _by_appearance(scene), element_variables(scene)
@@ -69,6 +73,13 @@ def _plan(project: dict) -> tuple[list[str], list[int]]:
             events.append((frame_at(element["appearsAtMs"]), 1, order[identifier], identifier))
         if "disappearsAtMs" in element and element["disappearsAtMs"] < scene["durationMs"]:
             events.append((frame_at(element["disappearsAtMs"]), 0, order[identifier], identifier))
+    others = [variables[identifier] for identifier in scene["elements"] if layer is not None and layer_of(scene, identifier) != layer]
+    if others:
+        # A scene updater runs after each frame's animations, so nothing an animation does can show them again.
+        statements += [f"hidden = [{', '.join(others)}]", "for mobject in hidden: mobject.set_opacity(0)",
+                       "self.add_updater(lambda dt: [mobject.set_opacity(0) for mobject in hidden])"]
+    # That updater would make Manim redraw each wait, which renders one frame more than a frozen wait.
+    frozen = ", frozen_frame=True" if others else ""
     for index, stretch in enumerate(_stretches(leaves)):
         events.append((stretch[0], 2, index, stretch))
     current = 0
@@ -77,7 +88,7 @@ def _plan(project: dict) -> tuple[list[str], list[int]]:
         if index in folded:
             continue
         if start > current:
-            statements.append(f"self.wait(({start - current} + 1e-6) / {FPS})")
+            statements.append(f"self.wait(({start - current} + 1e-6) / {FPS}{frozen})")
             segments.append(start - current)
         if event_kind < 2:
             statements.append(f"self.{'remove' if event_kind == 0 else 'add'}({variables[payload]})")
@@ -95,7 +106,7 @@ def _plan(project: dict) -> tuple[list[str], list[int]]:
         current = end
     remaining = frame_at(scene["durationMs"]) - current
     if remaining:
-        statements.append(f"self.wait(({remaining} + 1e-6) / {FPS})")
+        statements.append(f"self.wait(({remaining} + 1e-6) / {FPS}{frozen})")
         segments.append(remaining)
     return statements, segments
 
@@ -149,9 +160,9 @@ def between(start, end, animation, entering=False):
 '''
 
 
-def compile_project(project: dict, fps: int = FPS) -> str:
+def compile_project(project: dict, fps: int = FPS, layer: int | None = None) -> str:
     """Readable Manim source. Timing stays on the 15 fps grid, so `fps` must be a multiple of it."""
-    statements, _ = _plan(project)
+    statements, _ = _plan(project, layer)
     background = project["scene"].get("background")
     mid_play = any(" at(" in statement or "between(" in statement for statement in statements)
     header = ("import numpy as np\nfrom manim import *\n"
