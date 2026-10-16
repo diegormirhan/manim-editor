@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import sys
 
@@ -8,6 +9,7 @@ from .project import load_project, save_project, validate_project
 from .render_job import render_project
 from .render_options import resolve_options
 from .scene_compiler import compile_project
+from .video_editor_export import export_for_video_editors
 
 
 # Where the bundled TinyTeX lives, relative to the app's root.
@@ -67,6 +69,13 @@ def dispatch(request: dict, root: Path, emit=emit_progress) -> dict:
             return {"path": str(artifact)}
         publish(artifact, Path(request["path"]))
         return {"path": request["path"]}
+    if operation == "exportTimeline":
+        options = resolve_options({**(request.get("options") or {}), "format": "mov", "transparent": True})
+        # A folder of its own, so two projects' layer videos never overwrite each other.
+        name = re.sub(r'[<>:"/\\|?*]', "", project["name"]).strip() or "Scene"
+        folder = Path(request["path"]) / f"{name} timeline"
+        export_for_video_editors(project, folder, render_root(root), options=options, tex_bin=root / TEX_BIN, on_progress=emit)
+        return {"path": str(folder)}
     raise ValueError("Unsupported operation")
 
 
