@@ -175,3 +175,12 @@ test("the theme follows the system until the user picks one, and Settings can ha
   await choice(page, "Theme", "System").click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
+
+test("the timeline export renders transparent layers at the export quality", async ({ page }) => {
+  await mockDesktop(page);
+  await openEditor(page);
+  await page.getByRole("button", { name: "Export" }).click();
+  await page.getByRole("menuitem", { name: /Timeline for video editors/ }).click();
+  await expect(status(page)).toContainText("Exported the folder First equation timeline: a video per layer, timeline.xml and timeline.fcpxml.");
+  expect(await lastAction(page)).toMatchObject({ operation: "exportTimeline", options: { format: "mov", transparent: true } });
+});
