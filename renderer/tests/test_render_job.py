@@ -141,3 +141,30 @@ class RenderJobTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class StraightAlphaTests(unittest.TestCase):
+    def test_transparent_frames_reach_the_file_with_straight_alpha(self):
+        import numpy as np
+        from manim.renderer.cairo_renderer import CairoRenderer
+        from renderer.manim_renderer.render_job import STRAIGHT_ALPHA
+        written, original = [], CairoRenderer.add_frame
+        fake = type("Renderer", (), {"skip_animations": False, "time": 0,
+                                     "camera": type("Camera", (), {"frame_rate": 15})(),
+                                     "file_writer": type("Writer", (), {"write_frame": lambda self, frame, num_frames: written.append(frame)})()})()
+        try:
+            exec(STRAIGHT_ALPHA, {})
+            # Cairo stores #83C167 at 45 % opacity premultiplied, as about (59, 87, 46, 115).
+            CairoRenderer.add_frame(fake, np.array([[[59, 87, 46, 115], [0, 0, 0, 0], [255, 255, 255, 255]]], dtype=np.uint8))
+        finally:
+            CairoRenderer.add_frame = original
+        self.assertEqual(written[0].tolist(), [[[131, 193, 102, 115], [0, 0, 0, 0], [255, 255, 255, 255]]])
+
+    def test_only_transparent_renders_change_how_frames_are_written(self):
+        start = manim()
+        with tempfile.TemporaryDirectory() as directory, patch(POPEN, start):
+            opaque = render_project(load_project(ROOT / 'examples/equation.json'), Path(directory))
+            self.assertNotIn('add_frame', (opaque.parents[4] / 'scene.py').read_text())
+            options = resolve_options({'resolution': '480p', 'fps': 15, 'format': 'webm', 'transparent': True})
+            clear = render_project(load_project(ROOT / 'examples/equation.json'), Path(directory), options=options)
+            self.assertIn('CairoRenderer.add_frame = ', (clear.parents[4] / 'scene.py').read_text())
